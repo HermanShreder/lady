@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="robots" content="noindex,nofollow">
+<title>Mila - Exclusive Content</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Roboto',sans-serif}
+body{background:#fff;color:#000;padding-bottom:40px}
+.header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #e2e8f0;position:sticky;top:0;background:#fff;z-index:100}
+.header-left{display:flex;align-items:center;gap:12px}
+.back-arrow{font-size:20px;color:#8a96a3}
+.profile-info h1{font-size:16px;font-weight:700;display:flex;align-items:center;gap:4px}
+.vb{width:16px;height:16px;fill:#00aff0}
+.banner{width:100%;height:140px;background:linear-gradient(45deg,#00aff0,#007bb5);position:relative}
+.avatar-wrap{position:absolute;bottom:-45px;left:16px}
+.avatar{width:90px;height:90px;border-radius:50%;border:4px solid #fff;background:linear-gradient(135deg,#00aff0,#007bb5);display:flex;align-items:center;justify-content:center;color:#fff;font-size:32px;font-weight:700}
+.info{margin-top:55px;padding:0 16px}
+.name{font-size:20px;font-weight:700;display:flex;align-items:center;gap:5px}
+.uname{color:#8a96a3;font-size:14px;margin-top:2px}
+.counters{display:flex;gap:20px;margin-top:12px;border-bottom:1px solid #e2e8f0;padding-bottom:15px}
+.ci{font-size:14px;color:#8a96a3}
+.ci strong{color:#000}
+.ob{display:inline-flex;align-items:center;gap:6px;background:rgba(0,175,240,.1);color:#00aff0;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:bold;margin-top:10px}
+.od{width:8px;height:8px;background:#24d14b;border-radius:50%;animation:pulse 1.5s infinite}
+.news{background:#f8fafc;border-left:4px solid #ff4a4a;padding:12px;margin:15px 16px;border-radius:0 8px 8px 0}
+.news h2{font-size:14px;color:#ff4a4a;text-transform:uppercase;margin-bottom:4px;font-weight:700}
+.news p{font-size:14px;color:#334155;line-height:1.4}
+.pw{padding:0 16px;margin-top:15px}
+.pc{position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,.15);background:#000;cursor:pointer}
+.po{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;background:rgba(0,0,0,.4);z-index:2}
+.pb{width:70px;height:70px;background:#00aff0;border-radius:50%;display:flex;justify-content:center;align-items:center;box-shadow:0 0 20px rgba(0,175,240,.6);margin-bottom:12px;animation:bounce 2s infinite}
+.pb svg{width:30px;height:30px;fill:#fff;margin-left:4px}
+.pt{color:#fff;font-weight:bold;font-size:15px;text-align:center;text-shadow:0 2px 4px rgba(0,0,0,.8)}
+.arrows{display:flex;flex-direction:column;align-items:center;margin-top:-5px;margin-bottom:10px;animation:slideD 1.2s infinite}
+.asvg{width:24px;height:24px;fill:#ff4a4a}
+.btn{display:block;width:calc(100% - 32px);margin:15px auto 0;background:#00aff0;color:#fff;text-align:center;padding:16px;border-radius:25px;font-weight:bold;text-transform:uppercase;font-size:16px;letter-spacing:.5px;box-shadow:0 4px 10px rgba(0,175,240,.3);border:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
+
+/* Модалка */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;padding:20px}
+.modal{background:#fff;border-radius:16px;padding:30px 24px;max-width:360px;width:100%;text-align:center}
+.modal-icon{font-size:48px;margin-bottom:12px}
+.modal h3{font-size:18px;margin-bottom:8px;color:#000}
+.modal p{color:#666;font-size:14px;line-height:1.5;margin-bottom:20px}
+.modal-btn{width:100%;padding:14px;background:#00aff0;color:#fff;border:none;border-radius:25px;font-weight:bold;font-size:16px;cursor:pointer;margin-bottom:10px}
+.modal-link{display:block;width:100%;padding:14px;background:#f0f2f5;color:#00aff0;border:none;border-radius:25px;font-weight:bold;font-size:14px;cursor:pointer;text-decoration:none;text-align:center}
+
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+@keyframes bounce{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+@keyframes slideD{0%{transform:translateY(-5px);opacity:.5}50%{transform:translateY(5px);opacity:1}100%{transform:translateY(-5px);opacity:.5}}
+</style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-left">
+        <span class="back-arrow">←</span>
+        <div class="profile-info">
+            <h1>Mila <svg class="vb" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></h1>
+            <div style="font-size:12px;color:#8a96a3">142 posts</div>
+        </div>
+    </div>
+</div>
+
+<div class="banner"><div class="avatar-wrap"><div class="avatar">M</div></div></div>
+
+<div class="info">
+    <div class="name">Mila <svg class="vb" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div>
+    <div class="uname">@clubmila</div>
+    <div class="counters">
+        <div class="ci"><strong>2M</strong> likes</div>
+        <div class="ci"><strong>120K</strong> subscribers</div>
+    </div>
+    <div class="ob"><span class="od"></span><span id="on">2,300</span> online now</div>
+</div>
+
+<div class="news">
+    <h2>🔥 New Leak</h2>
+    <p>Exclusive full HD video just dropped. Tap the player below to watch before it gets taken down.</p>
+</div>
+
+<div class="pw">
+    <div class="pc" id="player">
+        <div class="po">
+            <div class="pb"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+            <div class="pt">Tap to unlock full video</div>
+            <div class="arrows"><svg class="asvg" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/></svg></div>
+        </div>
+    </div>
+</div>
+
+<button class="btn" id="mainBtn">▶ Watch Full Video</button>
+
+<!-- Модалка для iOS / фолбэк -->
+<div class="modal-overlay" id="modal">
+    <div class="modal">
+        <div class="modal-icon">📲</div>
+        <h3>Open in External Browser</h3>
+        <p>This content requires your default browser for full playback and secure access.</p>
+        <button class="modal-btn" id="modalBtn">Open in Browser</button>
+        <a class="modal-link" id="copyLink" href="#">Copy Link & Open Manually</a>
+    </div>
+</div>
+
+<script src="https://unpkg.com/@jhrunning/inappbrowserescaper/dist/browser/inappbrowserescaper.js"></script>
+<script>
+const OFFER = 'https://onlyfans.com/clubmila/trial/br8sz4g649t0gqafx1vjtppzi7mgprpl';
+
+const ua = navigator.userAgent;
+const isIOS = /iPhone|iPad|iPod/i.test(ua);
+const isAndroid = /Android/i.test(ua);
+const device = isIOS ? 'iOS' : (isAndroid ? 'Android' : 'Desktop');
+const lib = window.InAppBrowserEscaper;
+const Det = lib ? lib.InAppBrowserDetector : null;
+const Esc = lib ? lib.InAppBrowserEscaper : null;
+
+function track(action, details) {
+    const d = new URLSearchParams({ action, device, details: details || '', screen: screen.width + 'x' + screen.height, lang: navigator.language || '?' });
+    if (navigator.sendBeacon) navigator.sendBeacon('/api/track', d);
+    else fetch('/api/track', { method: 'POST', body: d, keepalive: true }).catch(() => {});
+}
+
+// Показ модалки
+function showModal() {
+    document.getElementById('modal').style.display = 'flex';
+    track('MODAL_SHOWN');
+}
+
+// Кнопка в модалке — user gesture, поэтому переход разрешён браузером
+document.getElementById('modalBtn').addEventListener('click', function () {
+    track('MODAL_BTN_CLICK');
+    if (isAndroid) {
+        window.location.href = 'intent://' + OFFER.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end';
+        setTimeout(() => { window.location.href = OFFER; }, 1500);
+    } else {
+        // iOS: googlechrome если установлен, иначе обычный редирект
+        window.location.href = 'googlechrome://' + OFFER.replace(/^https?:\/\//, '');
+        setTimeout(() => { window.location.href = OFFER; }, 1500);
+    }
+});
+
+// Копирование ссылки
+document.getElementById('copyLink').addEventListener('click', function (e) {
+    e.preventDefault();
+    track('COPY_LINK_CLICK');
+    navigator.clipboard.writeText(OFFER).then(() => {
+        this.textContent = '✅ Copied! Now paste in Safari/Chrome';
+        setTimeout(() => { window.location.href = OFFER; }, 2000);
+    }).catch(() => {
+        window.location.href = OFFER;
+    });
+});
+
+// Обработка клика по плееру / кнопке
+function handleClick(source) {
+    track('CLICK_' + source);
+
+    if (isAndroid) {
+        // Android: intent работает надёжно
+        window.location.href = 'intent://' + OFFER.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end';
+        setTimeout(() => {
+            window.location.href = 'googlechrome://navigate?url=' + encodeURIComponent(OFFER);
+        }, 800);
+        setTimeout(() => { window.location.href = OFFER; }, 2000);
+    } else if (isIOS) {
+        // iOS: пробуем googlechrome, если не сработает — покажем модалку
+        window.location.href = 'googlechrome://' + OFFER.replace(/^https?:\/\//, '');
+        setTimeout(() => {
+            // Если пользователь всё ещё на странице через 1.5с — chrome не установлен
+            showModal();
+        }, 1500);
+    } else {
+        window.location.href = OFFER;
+    }
+}
+
+document.getElementById('player').addEventListener('click', () => handleClick('PLAYER'));
+document.getElementById('mainBtn').addEventListener('click', () => handleClick('MAIN_BTN'));
+
+// При загрузке: если в in-app браузере — показываем модалку (НЕ авто-редирект)
+document.addEventListener('DOMContentLoaded', () => {
+    track('PRELAND_LOAD');
+    if (Det && Det.isInAppBrowser()) {
+        track('INAPP_DETECTED', Det.analyze().appName || 'Unknown');
+        // Показываем модалку вместо авто-редиректа
+        // Модалка содержит кнопку = user gesture = браузер разрешит переход
+        setTimeout(showModal, 300);
+    }
+});
+
+// Динамический онлайн
+setInterval(() => {
+    document.getElementById('on').textContent = (2300 + Math.floor(Math.random() * 100 - 50)).toLocaleString();
+}, 3000);
+
+window.addEventListener('pagehide', () => track('PRELAND_EXIT'));
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') track('PRELAND_HIDDEN'); });
+</script>
+</body>
+</html>
