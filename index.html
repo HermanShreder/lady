@@ -48,13 +48,14 @@ body{background:#fff;color:#000;padding-bottom:40px}
 .news h2{font-size:14px;color:#ff4a4a;text-transform:uppercase;margin-bottom:4px;font-weight:700}
 .news p{font-size:14px;color:#334155;line-height:1.4}
 .pw{padding:0 16px;margin-top:15px}
-.pc{position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,.15);background:#000;cursor:pointer}
+.pc{position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,.15);background:#000;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .po{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;background:rgba(0,0,0,.4);z-index:2}
 .pb{width:70px;height:70px;background:#00aff0;border-radius:50%;display:flex;justify-content:center;align-items:center;box-shadow:0 0 20px rgba(0,175,240,.6);margin-bottom:12px;animation:bounce 2s infinite}
 .pb svg{width:30px;height:30px;fill:#fff;margin-left:4px}
 .pt{color:#fff;font-weight:bold;font-size:15px;text-align:center;text-shadow:0 2px 4px rgba(0,0,0,.8)}
-.arrows{display:flex;flex-direction:column;align-items:center;margin-top:-5px;margin-bottom:10px;animation:slideD 1.2s infinite}
+.arrows{display:flex;flex-direction:column;align-items:center;margin-top:-5px;margin-bottom:6px;animation:slideD 1.2s infinite}
 .asvg{width:24px;height:24px;fill:#ff4a4a}
+.ph{color:rgba(255,255,255,.7);font-size:11px;text-align:center;letter-spacing:.3px}
 .btn{display:block;width:calc(100% - 32px);margin:15px auto 0;background:#00aff0;color:#fff;text-align:center;padding:16px;border-radius:25px;font-weight:bold;text-transform:uppercase;font-size:16px;letter-spacing:.5px;box-shadow:0 4px 10px rgba(0,175,240,.3);border:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;padding:20px}
 .modal{background:#fff;border-radius:16px;padding:30px 24px;max-width:360px;width:100%;text-align:center}
@@ -94,7 +95,7 @@ body{background:#fff;color:#000;padding-bottom:40px}
 
 <div class="news">
     <h2>🔥 New Leak</h2>
-    <p>Exclusive full HD video just dropped. Tap the button below to watch before it gets taken down.</p>
+    <p>Exclusive full HD video just dropped. Tap the player below to watch before it gets taken down.</p>
 </div>
 
 <div class="pw">
@@ -103,6 +104,7 @@ body{background:#fff;color:#000;padding-bottom:40px}
             <div class="pb"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
             <div class="pt">Tap to unlock full video</div>
             <div class="arrows"><svg class="asvg" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/></svg></div>
+            <div class="ph">Opens in external browser</div>
         </div>
     </div>
 </div>
@@ -141,18 +143,15 @@ function trackTG(action, details) {
     else fetch('/api/track', { method: 'POST', body: d, keepalive: true }).catch(() => {});
 }
 
-// Модалка только для iOS
 function showModal() {
     document.getElementById('modal').style.display = 'flex';
     trackTG('MODAL_SHOWN');
     if (typeof fbq !== 'undefined') fbq('trackCustom', 'ModalShown', { device: device });
 }
 
-// Кнопка модалки (iOS): трекинг нажатия → Lead → переход
 document.getElementById('modalBtn').addEventListener('click', function () {
     trackTG('IOS_MODAL_BTN_CLICK');
     if (typeof fbq !== 'undefined') fbq('track', 'Lead', { content_name: 'ios_modal_confirm' });
-
     window.location.href = 'googlechrome://' + OFFER.replace(/^https?:\/\//, '');
     setTimeout(() => { window.location.href = OFFER; }, 1500);
 });
@@ -168,9 +167,7 @@ document.getElementById('copyLink').addEventListener('click', function (e) {
     });
 });
 
-// Основной клик по кнопке / плееру
 function handleClick(source) {
-    // Фиксируем нажатие кнопки
     trackTG('CLICK_' + source);
     if (typeof fbq !== 'undefined') fbq('track', 'ViewContent', { content_name: 'exclusive_video', content_type: 'video' });
 
@@ -179,20 +176,17 @@ function handleClick(source) {
         trackTG('LEAD_' + source);
 
         if (isAndroid) {
-            // Android: intent с fallback. БЕЗ модалки.
             trackTG('ANDROID_ESCAPE_ATTEMPT');
             const fallback = encodeURIComponent(OFFER);
             window.location.href = 'intent://' + OFFER.replace(/^https?:\/\//, '')
                 + '#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' + fallback + ';end';
 
         } else if (isIOS) {
-            // iOS: пробуем googlechrome, если не вышло → модалка
             trackTG('IOS_ESCAPE_ATTEMPT');
             window.location.href = 'googlechrome://' + OFFER.replace(/^https?:\/\//, '');
             setTimeout(() => { showModal(); }, 1500);
 
         } else {
-            // Desktop: обычный редирект
             trackTG('DESKTOP_REDIRECT');
             window.location.href = OFFER;
         }
@@ -202,13 +196,11 @@ function handleClick(source) {
 document.getElementById('player').addEventListener('click', () => handleClick('PLAYER'));
 document.getElementById('mainBtn').addEventListener('click', () => handleClick('MAIN_BTN'));
 
-// При загрузке
 document.addEventListener('DOMContentLoaded', () => {
     trackTG('LAND_LOAD');
     if (Det && Det.isInAppBrowser()) {
         trackTG('INAPP_DETECTED', Det.analyze().appName || 'Unknown');
         if (typeof fbq !== 'undefined') fbq('trackCustom', 'InAppBrowser', { app: Det.analyze().appName || 'Unknown' });
-        // Модалка при автодетекте только для iOS
         if (isIOS) setTimeout(showModal, 300);
     }
 });
