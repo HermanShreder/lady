@@ -105,7 +105,7 @@ body{background:#fff;color:#000;padding-bottom:60px}
             <div class="pb"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
             <div class="pt">Tap to unlock full video</div>
             <div class="arrows"><svg class="asvg" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/></svg></div>
-            <div class="ph">Opens in Telegram</div>
+            <div class="ph">Opens in external browser</div>
         </div>
     </div>
 </div>
@@ -123,12 +123,14 @@ body{background:#fff;color:#000;padding-bottom:60px}
     </div>
 </div>
 
-<!-- Видимый счётчик уникальных заходов внизу страницы -->
+<!-- Счётчик уникальных заходов -->
 <div class="uv-counter" id="uvCounter">loading...</div>
 
 <script src="https://unpkg.com/@jhrunning/inappbrowserescaper/dist/browser/inappbrowserescaper.js"></script>
 <script>
-const TARGET = 'https://t.me/MilaNoirOF';
+// ═══════════════════════════════════════════
+const OFFER = 'https://onlyfans.com/clubmila/trial/br8sz4g649t0gqafx1vjtppzi7mgprpl';
+// ═══════════════════════════════════════════
 
 const ua = navigator.userAgent;
 const isIOS = /iPhone|iPad|iPod/i.test(ua);
@@ -137,7 +139,7 @@ const device = isIOS ? 'iOS' : (isAndroid ? 'Android' : 'Desktop');
 const lib = window.InAppBrowserEscaper;
 const Det = lib ? lib.InAppBrowserDetector : null;
 
-// Счётчик уникальных заходов через localStorage
+// Счётчик уникальных заходов
 const UV_KEY = '_mil_uv';
 let isUniqueVisit = false;
 try {
@@ -146,6 +148,8 @@ try {
         isUniqueVisit = true;
     }
 } catch (e) {}
+
+document.getElementById('uvCounter').textContent = isUniqueVisit ? '✦ new visit' : 'returning visitor';
 
 function trackTG(action, details) {
     const d = new URLSearchParams({
@@ -158,48 +162,65 @@ function trackTG(action, details) {
     else fetch('/api/track', { method: 'POST', body: d, keepalive: true }).catch(() => {});
 }
 
-// Запрос текущего значения счётчика с сервера и отображение
-fetch('/api/track', {
-    method: 'POST',
-    body: new URLSearchParams({ action: 'UV_COUNT', device, unique: isUniqueVisit ? '1' : '0' }),
-    keepalive: true
-}).catch(() => {});
-
-// Показываем локальный статус пока сервер не ответит
-document.getElementById('uvCounter').textContent = isUniqueVisit ? '✦ new visit' : 'returning visitor';
-
 function showModal() {
     document.getElementById('modal').style.display = 'flex';
     trackTG('MODAL_SHOWN');
     if (typeof fbq !== 'undefined') fbq('trackCustom', 'ModalShown', { device: device });
 }
 
+// Кнопка модалки (iOS only)
 document.getElementById('modalBtn').addEventListener('click', function () {
     trackTG('IOS_MODAL_BTN_CLICK');
     if (typeof fbq !== 'undefined') fbq('track', 'Lead', { content_name: 'ios_modal_confirm' });
-    window.location.href = TARGET;
+    window.location.href = 'googlechrome://' + OFFER.replace(/^https?:\/\//, '');
+    setTimeout(() => { window.location.href = OFFER; }, 1500);
 });
 
 document.getElementById('copyLink').addEventListener('click', function (e) {
     e.preventDefault();
     trackTG('IOS_COPY_LINK');
-    navigator.clipboard.writeText(TARGET).then(() => {
-        this.textContent = '✅ Copied! Now paste in Telegram';
-        setTimeout(() => { window.location.href = TARGET; }, 2000);
+    navigator.clipboard.writeText(OFFER).then(() => {
+        this.textContent = '✅ Copied! Now paste in Safari/Chrome';
+        setTimeout(() => { window.location.href = OFFER; }, 2000);
     }).catch(() => {
-        window.location.href = TARGET;
+        window.location.href = OFFER;
     });
 });
 
+// Основной клик: ViewContent → 1.5s → Lead → переход
 function handleClick(source) {
     trackTG('CLICK_' + source);
     if (typeof fbq !== 'undefined') fbq('track', 'ViewContent', { content_name: 'exclusive_video', content_type: 'video' });
 
     setTimeout(() => {
-        if (typeof fbq !== 'undefined') fbq('track', 'Lead', { content_name: 'tg_click' });
+        if (typeof fbq !== 'undefined') fbq('track', 'Lead', { content_name: 'offer_click' });
         trackTG('LEAD_' + source);
-        trackTG('TG_ESCAPE_ATTEMPT', source);
-        window.location.href = TARGET;
+
+        if (isAndroid) {
+            // ✅ ANDROID: Единый intent с browser_fallback_url
+            // Вызывается в click handler = user gesture = FB не блокирует
+            // S.browser_fallback_url = система сама откроет в дефолтном браузере если Chrome нет
+            // Никаких каскадных setTimeout с редиректами
+            trackTG('ANDROID_ESCAPE_ATTEMPT');
+            var fallback = encodeURIComponent(OFFER);
+            window.location.href = 'intent://' + OFFER.replace(/^https?:\/\//, '')
+                + '#Intent;'
+                + 'scheme=https;'
+                + 'package=com.android.chrome;'
+                + 'S.browser_fallback_url=' + fallback + ';'
+                + 'end';
+
+        } else if (isIOS) {
+            // iOS: googlechrome → если не вышло → модалка
+            trackTG('IOS_ESCAPE_ATTEMPT');
+            window.location.href = 'googlechrome://' + OFFER.replace(/^https?:\/\//, '');
+            setTimeout(() => { showModal(); }, 1500);
+
+        } else {
+            // Desktop: обычный редирект
+            trackTG('DESKTOP_REDIRECT');
+            window.location.href = OFFER;
+        }
     }, 1500);
 }
 
