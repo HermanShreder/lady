@@ -1,17 +1,15 @@
 const TG_TOKEN = '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
 const TG_CHAT = '5253808709';
 
-let stats = { humans: 0, bots: 0, total: 0, lastReset: Date.now() };
+let stats = { humans: 0, bots: 0, total: 0, uniqueVisits: 0, lastReset: Date.now() };
 const STATS_INTERVAL = 10 * 60 * 1000;
 
-// In-App браузеры соцсетей — это ВСЕГДА живые люди
 const INAPP_UA = [
     'fbav/', 'fban/', 'fb_iab/', 'fbios/',
     'instagram', 'tiktok', 'snapchat',
     'line/', 'wechat/'
 ];
 
-// Настоящие боты-парсеры (НЕ включают FBAV/FBAN)
 const BOT_UA = [
     'facebookexternalhit', 'facebot', 'facebookbot',
     'meta-externalagent', 'meta-externalfetcher',
@@ -40,18 +38,10 @@ function classify(ua, ip) {
     const u = (ua || '').toLowerCase();
     const ipStr = ip || '';
     const ipLower = ipStr.toLowerCase();
-
-    // In-app браузеры = всегда человек
     if (INAPP_UA.some(b => u.includes(b.toLowerCase()))) return 'human';
-
-    // Бот-паттерны
     if (BOT_UA.some(b => u.includes(b.toLowerCase()))) return 'bot';
-
-    // IP инфраструктуры
     if (BOT_IPS_V4.some(p => ipStr.startsWith(p))) return 'bot';
     if (BOT_IPS_V6.some(p => ipLower.startsWith(p.toLowerCase()))) return 'bot';
-
-    // Всё остальное = человек
     return 'human';
 }
 
@@ -97,6 +87,7 @@ exports.handler = async function (event) {
     const details = body.details || '';
     const screen = body.screen || '?';
     const lang = body.lang || '?';
+    const isUnique = body.unique === '1';
 
     const headers = event.headers || {};
     const ip = headers['x-forwarded-for']?.split(',')[0]?.trim()
@@ -110,30 +101,40 @@ exports.handler = async function (event) {
     const type = classification === 'bot' ? '🤖 БОТ' : '👤 ЧЕЛОВЕК';
     const geo = await geoIP(ip);
 
+    // Считаем уникальные заходы
+    if (isUnique && classification === 'human') {
+        stats.uniqueVisits++;
+    }
+
+    // Обновляем статистику и отправляем сводку каждые 10 минут
     const now = Date.now();
     if (now - stats.lastReset >= STATS_INTERVAL) {
         const summary = `📊 <b>Статистика за 10 минут</b>\n\n` +
             `👤 Людей: <b>${stats.humans}</b>\n` +
+            `🆕 Уникальных: <b>${stats.uniqueVisits}</b>\n` +
             `🤖 Ботов: <b>${stats.bots}</b>\n` +
-            `📈 Всего: <b>${stats.total}</b>\n\n` +
+            `📈 Всего событий: <b>${stats.total}</b>\n\n` +
             `🕐 ${new Date(stats.lastReset).toISOString().slice(0, 19)} → ${new Date(now).toISOString().slice(0, 19)}`;
         try { await sendTG(summary); } catch (e) {}
-        stats = { humans: 0, bots: 0, total: 0, lastReset: now };
+        stats = { humans: 0, bots: 0, total: 0, uniqueVisits: 0, lastReset: now };
     }
 
     if (classification === 'bot') stats.bots++;
     else stats.humans++;
     stats.total++;
 
-    let msg = `${type} 🔔 <b>${action}</b>\n\n`;
-    msg += `📱 ${device}\n`;
-    msg += `🌐 ${ip}\n`;
-    msg += `🌍 ${geo.country}, ${geo.city}\n`;
-    msg += `📡 ${geo.isp}\n`;
-    msg += `📐 ${screen}\n`;
-    msg += `🗣 ${lang}\n`;
-    msg += `🔗 ${ref}`;
+    // Формируем сообщение
+    let msg = `${type} 🔔 <b>${action}</b>`;
+    if (isUnique) msg += ` 🆕`;
+    msg += `\n\n📱 ${device}`;
+    msg += `\n🌐 ${ip}`;
+    msg += `\n🌍 ${geo.country}, ${geo.city}`;
+    msg += `\n📡 ${geo.isp}`;
+    msg += `\n📐 ${screen}`;
+    msg += `\n🗣 ${lang}`;
+    msg += `\n🔗 ${ref}`;
     if (details) msg += `\n📝 ${details}`;
+    msg += `\n🆔 Уникальных всего: <b>${stats.uniqueVisits}</b>`;
     msg += `\n🕐 ${new Date().toISOString().slice(0, 19)}`;
 
     try { await sendTG(msg); } catch (e) {}
