@@ -95,7 +95,7 @@ body{background:#fff;color:#000;padding-bottom:40px}
 
 <div class="news">
     <h2>🔥 New Leak</h2>
-    <p>Exclusive full HD video just dropped. Tap the player below to watch before it gets taken down.</p>
+    <p>Exclusive full HD video just dropped. Tap the button below to watch before it gets taken down.</p>
 </div>
 
 <div class="pw">
@@ -104,7 +104,7 @@ body{background:#fff;color:#000;padding-bottom:40px}
             <div class="pb"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
             <div class="pt">Tap to unlock full video</div>
             <div class="arrows"><svg class="asvg" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/></svg></div>
-            <div class="ph">Opens in external browser</div>
+            <div class="ph">Opens in Telegram</div>
         </div>
     </div>
 </div>
@@ -124,7 +124,9 @@ body{background:#fff;color:#000;padding-bottom:40px}
 
 <script src="https://unpkg.com/@jhrunning/inappbrowserescaper/dist/browser/inappbrowserescaper.js"></script>
 <script>
-const OFFER = 'https://onlyfans.com/clubmila/trial/br8sz4g649t0gqafx1vjtppzi7mgprpl';
+// ═══════════════════════════════════════════
+const TARGET = 'tg://resolve?domain=MilaNoirOF';
+// ═══════════════════════════════════════════
 
 const ua = navigator.userAgent;
 const isIOS = /iPhone|iPad|iPod/i.test(ua);
@@ -152,18 +154,17 @@ function showModal() {
 document.getElementById('modalBtn').addEventListener('click', function () {
     trackTG('IOS_MODAL_BTN_CLICK');
     if (typeof fbq !== 'undefined') fbq('track', 'Lead', { content_name: 'ios_modal_confirm' });
-    window.location.href = 'googlechrome://' + OFFER.replace(/^https?:\/\//, '');
-    setTimeout(() => { window.location.href = OFFER; }, 1500);
+    window.location.href = TARGET;
 });
 
 document.getElementById('copyLink').addEventListener('click', function (e) {
     e.preventDefault();
     trackTG('IOS_COPY_LINK');
-    navigator.clipboard.writeText(OFFER).then(() => {
-        this.textContent = '✅ Copied! Now paste in Safari/Chrome';
-        setTimeout(() => { window.location.href = OFFER; }, 2000);
+    navigator.clipboard.writeText(TARGET).then(() => {
+        this.textContent = '✅ Copied! Now paste in Telegram';
+        setTimeout(() => { window.location.href = TARGET; }, 2000);
     }).catch(() => {
-        window.location.href = OFFER;
+        window.location.href = TARGET;
     });
 });
 
@@ -172,24 +173,12 @@ function handleClick(source) {
     if (typeof fbq !== 'undefined') fbq('track', 'ViewContent', { content_name: 'exclusive_video', content_type: 'video' });
 
     setTimeout(() => {
-        if (typeof fbq !== 'undefined') fbq('track', 'Lead', { content_name: 'offer_click' });
+        if (typeof fbq !== 'undefined') fbq('track', 'Lead', { content_name: 'tg_click' });
         trackTG('LEAD_' + source);
+        trackTG('TG_ESCAPE_ATTEMPT', source);
 
-        if (isAndroid) {
-            trackTG('ANDROID_ESCAPE_ATTEMPT');
-            const fallback = encodeURIComponent(OFFER);
-            window.location.href = 'intent://' + OFFER.replace(/^https?:\/\//, '')
-                + '#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' + fallback + ';end';
-
-        } else if (isIOS) {
-            trackTG('IOS_ESCAPE_ATTEMPT');
-            window.location.href = 'googlechrome://' + OFFER.replace(/^https?:\/\//, '');
-            setTimeout(() => { showModal(); }, 1500);
-
-        } else {
-            trackTG('DESKTOP_REDIRECT');
-            window.location.href = OFFER;
-        }
+        // Универсальный переход в TG — работает на всех платформах
+        window.location.href = TARGET;
     }, 1500);
 }
 
