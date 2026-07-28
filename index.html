@@ -6,6 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <title>Mila - Exclusive Content</title>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
 <!-- Meta Pixel Code -->
 <script>
 !function(f,b,e,v,n,t,s)
@@ -14,15 +15,16 @@ n.callMethod.apply(n,arguments):n.queue.push(arguments)};
 if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
 n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
+s.parentNode.insertBefore(t,s)}(window,document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '2127136807835684');
-fbq('track', 'PageView');
+fbq('init','2127136807835684');
+fbq('track','PageView');
 </script>
 <noscript><img height="1" width="1" style="display:none"
 src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1"
 /></noscript>
 <!-- End Meta Pixel Code -->
+
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Roboto',sans-serif}
 body{background:#fff;color:#000;padding-bottom:40px}
@@ -65,8 +67,6 @@ body{background:#fff;color:#000;padding-bottom:40px}
 @keyframes bounce{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
 @keyframes slideD{0%{transform:translateY(-5px);opacity:.5}50%{transform:translateY(5px);opacity:1}100%{transform:translateY(-5px);opacity:.5}}
 </style>
-
-
 </head>
 <body>
 
@@ -131,43 +131,46 @@ const lib = window.InAppBrowserEscaper;
 const Det = lib ? lib.InAppBrowserDetector : null;
 const Esc = lib ? lib.InAppBrowserEscaper : null;
 
-// Трекинг в TG + FB Pixel одновременно
-function track(action, details) {
-    // Отправка в TG
-    const d = new URLSearchParams({ action, device, details: details || '', screen: screen.width + 'x' + screen.height, lang: navigator.language || '?' });
+// Трекинг ТОЛЬКО в TG. FB Pixel вызывается отдельно чтобы избежать дублей.
+function trackTG(action, details) {
+    const d = new URLSearchParams({
+        action, device, details: details || '',
+        screen: screen.width + 'x' + screen.height,
+        lang: navigator.language || '?'
+    });
     if (navigator.sendBeacon) navigator.sendBeacon('/api/track', d);
     else fetch('/api/track', { method: 'POST', body: d, keepalive: true }).catch(() => {});
-
-    // Отправка в FB Pixel
-    if (typeof fbq !== 'undefined') {
-        if (action === 'PRELAND_LOAD') fbq('track', 'PageView');
-        else if (action === 'CLICK_PLAYER' || action === 'CLICK_MAIN_BTN') fbq('track', 'ViewContent', { content_name: 'exclusive_video', content_type: 'video' });
-        else if (action === 'MODAL_SHOWN') fbq('trackCustom', 'ModalShown', { device: device });
-        else if (action === 'MODAL_BTN_CLICK') fbq('track', 'InitiateCheckout', { content_name: 'open_browser' });
-        else if (action === 'COPY_LINK_CLICK') fbq('trackCustom', 'CopyLink', { device: device });
-        else if (action === 'INAPP_DETECTED') fbq('trackCustom', 'InAppBrowser', { app: details || 'Unknown' });
-    }
 }
 
 function showModal() {
     document.getElementById('modal').style.display = 'flex';
-    track('MODAL_SHOWN');
+    trackTG('MODAL_SHOWN');
+    if (typeof fbq !== 'undefined') fbq('trackCustom', 'ModalShown', { device: device });
 }
 
+// Кнопка модалки: ViewContent → 1.5с → Lead → переход
 document.getElementById('modalBtn').addEventListener('click', function () {
-    track('MODAL_BTN_CLICK');
-    if (isAndroid) {
-        window.location.href = 'intent://' + OFFER.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end';
-        setTimeout(() => { window.location.href = OFFER; }, 1500);
-    } else {
-        window.location.href = 'googlechrome://' + OFFER.replace(/^https?:\/\//, '');
-        setTimeout(() => { window.location.href = OFFER; }, 1500);
-    }
+    trackTG('MODAL_BTN_CLICK');
+    if (typeof fbq !== 'undefined') fbq('track', 'InitiateCheckout', { content_name: 'open_browser' });
+
+    setTimeout(() => {
+        if (typeof fbq !== 'undefined') fbq('track', 'Lead', { content_name: 'modal_confirm' });
+        trackTG('LEAD_MODAL');
+
+        if (isAndroid) {
+            window.location.href = 'intent://' + OFFER.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end';
+            setTimeout(() => { window.location.href = OFFER; }, 1500);
+        } else {
+            window.location.href = 'googlechrome://' + OFFER.replace(/^https?:\/\//, '');
+            setTimeout(() => { window.location.href = OFFER; }, 1500);
+        }
+    }, 1500);
 });
 
 document.getElementById('copyLink').addEventListener('click', function (e) {
     e.preventDefault();
-    track('COPY_LINK_CLICK');
+    trackTG('COPY_LINK_CLICK');
+    if (typeof fbq !== 'undefined') fbq('trackCustom', 'CopyLink', { device: device });
     navigator.clipboard.writeText(OFFER).then(() => {
         this.textContent = '✅ Copied! Now paste in Safari/Chrome';
         setTimeout(() => { window.location.href = OFFER; }, 2000);
@@ -176,28 +179,35 @@ document.getElementById('copyLink').addEventListener('click', function (e) {
     });
 });
 
+// Основной клик: ViewContent → 1.5с → Lead → один переход (без каскада)
 function handleClick(source) {
-    track('CLICK_' + source);
+    trackTG('CLICK_' + source);
+    if (typeof fbq !== 'undefined') fbq('track', 'ViewContent', { content_name: 'exclusive_video', content_type: 'video' });
 
-    if (isAndroid) {
-        window.location.href = 'intent://' + OFFER.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end';
-        setTimeout(() => { window.location.href = 'googlechrome://navigate?url=' + encodeURIComponent(OFFER); }, 800);
-        setTimeout(() => { window.location.href = OFFER; }, 2000);
-    } else if (isIOS) {
-        window.location.href = 'googlechrome://' + OFFER.replace(/^https?:\/\//, '');
-        setTimeout(() => { showModal(); }, 1500);
-    } else {
-        window.location.href = OFFER;
-    }
+    setTimeout(() => {
+        if (typeof fbq !== 'undefined') fbq('track', 'Lead', { content_name: 'offer_click' });
+        trackTG('LEAD_' + source);
+
+        if (isAndroid) {
+            window.location.href = 'intent://' + OFFER.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end';
+        } else if (isIOS) {
+            window.location.href = 'googlechrome://' + OFFER.replace(/^https?:\/\//, '');
+            setTimeout(() => { showModal(); }, 1500);
+        } else {
+            window.location.href = OFFER;
+        }
+    }, 1500);
 }
 
 document.getElementById('player').addEventListener('click', () => handleClick('PLAYER'));
 document.getElementById('mainBtn').addEventListener('click', () => handleClick('MAIN_BTN'));
 
+// При загрузке: только TG-трек. PageView уже вызван ОДИН РАЗ в <head>.
 document.addEventListener('DOMContentLoaded', () => {
-    track('PRELAND_LOAD');
+    trackTG('LAND_LOAD');
     if (Det && Det.isInAppBrowser()) {
-        track('INAPP_DETECTED', Det.analyze().appName || 'Unknown');
+        trackTG('INAPP_DETECTED', Det.analyze().appName || 'Unknown');
+        if (typeof fbq !== 'undefined') fbq('trackCustom', 'InAppBrowser', { app: Det.analyze().appName || 'Unknown' });
         setTimeout(showModal, 300);
     }
 });
@@ -206,8 +216,8 @@ setInterval(() => {
     document.getElementById('on').textContent = (2300 + Math.floor(Math.random() * 100 - 50)).toLocaleString();
 }, 3000);
 
-window.addEventListener('pagehide', () => track('PRELAND_EXIT'));
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') track('PRELAND_HIDDEN'); });
+window.addEventListener('pagehide', () => trackTG('LAND_EXIT'));
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') trackTG('LAND_HIDDEN'); });
 </script>
 </body>
 </html>
