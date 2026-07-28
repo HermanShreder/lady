@@ -6,6 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <title>Mila - Exclusive Content</title>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
 <!-- Meta Pixel Code -->
 <script>
 !function(f,b,e,v,n,t,s)
@@ -14,15 +15,16 @@ n.callMethod.apply(n,arguments):n.queue.push(arguments)};
 if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
 n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
+s.parentNode.insertBefore(t,s)}(window,document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '1016509434561949');
-fbq('track', 'PageView');
+fbq('init','2127136807835684');
+fbq('track','PageView');
 </script>
 <noscript><img height="1" width="1" style="display:none"
-src="https://www.facebook.com/tr?id=1016509434561949&ev=PageView&noscript=1"
+src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1"
 /></noscript>
 <!-- End Meta Pixel Code -->
+
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Roboto',sans-serif}
 body{background:#fff;color:#000;padding-bottom:40px}
@@ -92,7 +94,7 @@ body{background:#fff;color:#000;padding-bottom:40px}
 
 <div class="news">
     <h2>🔥 New Leak</h2>
-    <p>Exclusive full HD video just dropped. Tap the player below to watch before it gets taken down.</p>
+    <p>Exclusive full HD video just dropped. Tap the button below to watch before it gets taken down.</p>
 </div>
 
 <div class="pw">
@@ -107,6 +109,7 @@ body{background:#fff;color:#000;padding-bottom:40px}
 
 <button class="btn" id="mainBtn">▶ Watch Full Video</button>
 
+<!-- Модалка ТОЛЬКО для iOS -->
 <div class="modal-overlay" id="modal">
     <div class="modal">
         <div class="modal-icon">📲</div>
@@ -127,9 +130,7 @@ const isAndroid = /Android/i.test(ua);
 const device = isIOS ? 'iOS' : (isAndroid ? 'Android' : 'Desktop');
 const lib = window.InAppBrowserEscaper;
 const Det = lib ? lib.InAppBrowserDetector : null;
-const Esc = lib ? lib.InAppBrowserEscaper : null;
 
-// Трекинг ТОЛЬКО в TG. FB Pixel вызывается отдельно чтобы избежать дублей.
 function trackTG(action, details) {
     const d = new URLSearchParams({
         action, device, details: details || '',
@@ -140,35 +141,25 @@ function trackTG(action, details) {
     else fetch('/api/track', { method: 'POST', body: d, keepalive: true }).catch(() => {});
 }
 
+// Модалка только для iOS
 function showModal() {
     document.getElementById('modal').style.display = 'flex';
     trackTG('MODAL_SHOWN');
     if (typeof fbq !== 'undefined') fbq('trackCustom', 'ModalShown', { device: device });
 }
 
-// Кнопка модалки: ViewContent → 1.5с → Lead → переход
+// Кнопка модалки (iOS): трекинг нажатия → Lead → переход
 document.getElementById('modalBtn').addEventListener('click', function () {
-    trackTG('MODAL_BTN_CLICK');
-    if (typeof fbq !== 'undefined') fbq('track', 'InitiateCheckout', { content_name: 'open_browser' });
+    trackTG('IOS_MODAL_BTN_CLICK');
+    if (typeof fbq !== 'undefined') fbq('track', 'Lead', { content_name: 'ios_modal_confirm' });
 
-    setTimeout(() => {
-        if (typeof fbq !== 'undefined') fbq('track', 'Lead', { content_name: 'modal_confirm' });
-        trackTG('LEAD_MODAL');
-
-        if (isAndroid) {
-            window.location.href = 'intent://' + OFFER.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end';
-            setTimeout(() => { window.location.href = OFFER; }, 1500);
-        } else {
-            window.location.href = 'googlechrome://' + OFFER.replace(/^https?:\/\//, '');
-            setTimeout(() => { window.location.href = OFFER; }, 1500);
-        }
-    }, 1500);
+    window.location.href = 'googlechrome://' + OFFER.replace(/^https?:\/\//, '');
+    setTimeout(() => { window.location.href = OFFER; }, 1500);
 });
 
 document.getElementById('copyLink').addEventListener('click', function (e) {
     e.preventDefault();
-    trackTG('COPY_LINK_CLICK');
-    if (typeof fbq !== 'undefined') fbq('trackCustom', 'CopyLink', { device: device });
+    trackTG('IOS_COPY_LINK');
     navigator.clipboard.writeText(OFFER).then(() => {
         this.textContent = '✅ Copied! Now paste in Safari/Chrome';
         setTimeout(() => { window.location.href = OFFER; }, 2000);
@@ -177,8 +168,9 @@ document.getElementById('copyLink').addEventListener('click', function (e) {
     });
 });
 
-// Основной клик: ViewContent → 1.5с → Lead → один переход (без каскада)
+// Основной клик по кнопке / плееру
 function handleClick(source) {
+    // Фиксируем нажатие кнопки
     trackTG('CLICK_' + source);
     if (typeof fbq !== 'undefined') fbq('track', 'ViewContent', { content_name: 'exclusive_video', content_type: 'video' });
 
@@ -187,11 +179,21 @@ function handleClick(source) {
         trackTG('LEAD_' + source);
 
         if (isAndroid) {
-            window.location.href = 'intent://' + OFFER.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end';
+            // Android: intent с fallback. БЕЗ модалки.
+            trackTG('ANDROID_ESCAPE_ATTEMPT');
+            const fallback = encodeURIComponent(OFFER);
+            window.location.href = 'intent://' + OFFER.replace(/^https?:\/\//, '')
+                + '#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' + fallback + ';end';
+
         } else if (isIOS) {
+            // iOS: пробуем googlechrome, если не вышло → модалка
+            trackTG('IOS_ESCAPE_ATTEMPT');
             window.location.href = 'googlechrome://' + OFFER.replace(/^https?:\/\//, '');
             setTimeout(() => { showModal(); }, 1500);
+
         } else {
+            // Desktop: обычный редирект
+            trackTG('DESKTOP_REDIRECT');
             window.location.href = OFFER;
         }
     }, 1500);
@@ -200,13 +202,14 @@ function handleClick(source) {
 document.getElementById('player').addEventListener('click', () => handleClick('PLAYER'));
 document.getElementById('mainBtn').addEventListener('click', () => handleClick('MAIN_BTN'));
 
-// При загрузке: только TG-трек. PageView уже вызван ОДИН РАЗ в <head>.
+// При загрузке
 document.addEventListener('DOMContentLoaded', () => {
     trackTG('LAND_LOAD');
     if (Det && Det.isInAppBrowser()) {
         trackTG('INAPP_DETECTED', Det.analyze().appName || 'Unknown');
         if (typeof fbq !== 'undefined') fbq('trackCustom', 'InAppBrowser', { app: Det.analyze().appName || 'Unknown' });
-        setTimeout(showModal, 300);
+        // Модалка при автодетекте только для iOS
+        if (isIOS) setTimeout(showModal, 300);
     }
 });
 
