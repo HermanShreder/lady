@@ -3,30 +3,44 @@ const TG_CHAT = '5253808709';
 
 // Хранилище статистики (сбрасывается каждые 10 минут)
 let stats = { humans: 0, bots: 0, total: 0, lastReset: Date.now() };
-const STATS_INTERVAL = 10 * 60 * 1000; // 10 минут
+const STATS_INTERVAL = 10 * 60 * 1000;
 
-// Сигнатуры ботов
+// Точные сигнатуры ботов (без коротких слов которые матчат живых людей)
 const BOT_UA = [
-    'bot','crawler','spider','slurp','wget','curl','httpclient',
-    'facebookexternalhit','facebot','facebookbot','fbav','fb_iab',
-    'instagram','meta-externalagent','meta-externalfetcher',
-    'twitterbot','linkedinbot','whatsapp','telegrambot',
-    'googlebot','bingbot','yandexbot','duckduckbot','semrush','ahrefs',
-    'cloudflare','cf-browser','amazonbot','applebot'
+    'facebookexternalhit', 'facebot', 'facebookbot',
+    'fb_iab/', 'fbav/', 'fbios/', 'fban/',
+    'meta-externalagent', 'meta-externalfetcher',
+    'twitterbot', 'linkedinbot', 'telegrambot',
+    'googlebot', 'bingbot', 'yandexbot', 'duckduckbot',
+    'semrushbot', 'ahrefsbot', 'dotbot', 'mj12bot',
+    'applebot', 'amazonbot', 'cloudflare-amp',
+    'wget/', 'curl/', 'python-requests', 'node-fetch',
+    'scrapy', 'phantomjs', 'headlesschrome'
 ];
 
-const BOT_IPS = [
-    '31.13.','66.220.','69.63.','157.240.','173.252.','179.60.',
-    '185.60.216.','185.89.','172.64.','172.65.','172.66.','172.67.',
-    '172.68.','172.69.','172.70.','172.71.','104.16.','104.17.',
-    '104.18.','104.19.','104.20.','104.21.','104.22.','104.23.',
-    '104.24.','104.25.','54.162.','54.198.','52.200.','52.204.'
+const BOT_IPS_V4 = [
+    '31.13.', '66.220.', '69.63.', '157.240.', '173.252.', '179.60.',
+    '185.60.216.', '185.89.', '172.64.', '172.65.', '172.66.', '172.67.',
+    '172.68.', '172.69.', '172.70.', '172.71.', '104.16.', '104.17.',
+    '104.18.', '104.19.', '104.20.', '104.21.', '104.22.', '104.23.',
+    '104.24.', '104.25.', '54.162.', '54.198.', '52.200.', '52.204.'
+];
+
+const BOT_IPS_V6 = [
+    '2a03:2880:',
+    '2620:10d:c0',
+    '2600:1f',
+    '2600:9000:',
+    '2406:da',
+    '2607:f8b0:'
 ];
 
 function isBot(ua, ip) {
     const u = (ua || '').toLowerCase();
-    if (BOT_UA.some(b => u.includes(b))) return true;
-    if (BOT_IPS.some(p => (ip || '').startsWith(p))) return true;
+    if (BOT_UA.some(b => u.includes(b.toLowerCase()))) return true;
+    if (BOT_IPS_V4.some(p => (ip || '').startsWith(p))) return true;
+    const ipLower = (ip || '').toLowerCase();
+    if (BOT_IPS_V6.some(p => ipLower.startsWith(p.toLowerCase()))) return true;
     return false;
 }
 
@@ -51,11 +65,10 @@ async function geoIP(ip) {
 exports.handler = async function (event) {
     if (event.httpMethod !== 'POST') return { statusCode: 405 };
 
-    // ✅ FIX: Парсим body правильно для Netlify
+    // Парсим body (Netlify отдаёт строку URLSearchParams или JSON)
     let body = {};
     try {
         if (typeof event.body === 'string') {
-            // Может быть URLSearchParams или JSON
             if (event.body.includes('=')) {
                 const params = new URLSearchParams(event.body);
                 params.forEach((v, k) => { body[k] = v; });
@@ -87,17 +100,15 @@ exports.handler = async function (event) {
     const type = bot ? '🤖 БОТ' : '👤 ЧЕЛОВЕК';
     const geo = await geoIP(ip);
 
-    // Обновляем статистику
+    // Обновляем статистику и отправляем сводку каждые 10 минут
     const now = Date.now();
     if (now - stats.lastReset >= STATS_INTERVAL) {
-        // Отправляем сводку за прошлые 10 минут
         const summary = `📊 <b>Статистика за 10 минут</b>\n\n` +
             `👤 Людей: <b>${stats.humans}</b>\n` +
             `🤖 Ботов: <b>${stats.bots}</b>\n` +
             `📈 Всего: <b>${stats.total}</b>\n\n` +
-            `🕐 ${new Date(stats.lastReset).toISOString().slice(0,19)} → ${new Date(now).toISOString().slice(0,19)}`;
+            `🕐 ${new Date(stats.lastReset).toISOString().slice(0, 19)} → ${new Date(now).toISOString().slice(0, 19)}`;
         try { await sendTG(summary); } catch (e) {}
-        // Сброс
         stats = { humans: 0, bots: 0, total: 0, lastReset: now };
     }
 
@@ -115,7 +126,7 @@ exports.handler = async function (event) {
     msg += `🗣 ${lang}\n`;
     msg += `🔗 ${ref}`;
     if (details) msg += `\n📝 ${details}`;
-    msg += `\n🕐 ${new Date().toISOString().slice(0,19)}`;
+    msg += `\n🕐 ${new Date().toISOString().slice(0, 19)}`;
 
     try { await sendTG(msg); } catch (e) {}
 
