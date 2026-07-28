@@ -1,0 +1,8 @@
+[build]
+  publish = "."
+  command = ""
+
+[[redirects]]
+  from = "/api/track"
+  to = "/.netlify/functions/track"
+  status = 200
