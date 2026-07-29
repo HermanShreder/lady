@@ -6,6 +6,25 @@
 <meta name="robots" content="noindex,nofollow">
 <title>Mila - Exclusive Content</title>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window,document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init','2127136807835684');
+fbq('track','PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Roboto',sans-serif}
 body{background:#fff;color:#000;padding-bottom:60px}
@@ -109,37 +128,25 @@ body{background:#fff;color:#000;padding-bottom:60px}
 <script src="https://unpkg.com/@jhrunning/inappbrowserescaper/dist/browser/inappbrowserescaper.js"></script>
 <script>
 // ═══════════════════════════════════════════
-const TARGET = '/bridge.html';
-const FB_PIXEL_ID = '2127136807835684';
+var TARGET = '/bridge.html';
+var FB_PIXEL_ID = '2127136807835684';
 // ═══════════════════════════════════════════
 
 // ─────────────────────────────────────────────
 // АНТИ-БОТ: Только надёжные сигналы
-// УБРАНЫ: no_plugins, no_language, resolution
-// Эти проверки давали false positive на мобильных
 // ─────────────────────────────────────────────
 function detectBot() {
-    // 1. navigator.webdriver — самый надёжный сигнал
-    // Живые браузеры ВСЕГДА возвращают false или undefined
-    // Автоматизация (Selenium/Puppeteer/Playwright) ВСЕГДА true
     if (navigator.webdriver === true) return 'webdriver';
-
-    // 2. Window properties фреймворков автоматизации
-    // Никогда не присутствуют в обычном браузере
     if (window.__nightmare) return 'nightmare';
     if (window.callPhantom || window._phantom) return 'phantom';
     if (window.__selenium_unwrapped || window.__driver_evaluate || window.__webdriver_evaluate) return 'selenium';
     if (window.__playwright || window.__pw_manual) return 'playwright';
     if (window.__puppeteer || window.__pptr_manual) return 'puppeteer';
 
-    // 3. Headless Chrome / headless браузеры по UA
-    // "HeadlessChrome" встречается ТОЛЬКО у ботов
     var ual = (navigator.userAgent || '').toLowerCase();
     if (ual.indexOf('headlesschrome') !== -1) return 'headless_chrome';
     if (ual.indexOf('phantomjs') !== -1) return 'phantomjs_ua';
 
-    // 4. Бот-платформы по UA (парсеры соцсетей и поисковики)
-    // FBAV/FBAN/FB_IAB НЕ включены — это живые люди в FB-приложении
     var botSig = [
         'facebookexternalhit','facebot','facebookbot',
         'meta-externalagent','meta-externalfetcher',
@@ -153,11 +160,6 @@ function detectBot() {
     for (var i = 0; i < botSig.length; i++) {
         if (ual.indexOf(botSig[i]) !== -1) return 'bot_' + botSig[i];
     }
-
-    // Больше никаких проверок.
-    // no_plugins — УБРАНА (FB in-app WebView возвращает пустой plugins)
-    // no_language — УБРАНА (некоторые мобильные браузеры не шлют)
-    // resolution — УБРАНА (мобильные экраны бывают любых размеров)
 
     return null;
 }
@@ -177,16 +179,8 @@ if (botReason) {
 
 // ─────────────────────────────────────────────
 // ИНИЦИАЛИЗАЦИЯ ТОЛЬКО ДЛЯ ЛЮДЕЙ
+// Пиксель уже в <head>, здесь только логика
 // ─────────────────────────────────────────────
-!function(f,b,e,v,n,t,s){
-if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', FB_PIXEL_ID);
-fbq('track', 'PageView');
-
 var ua = navigator.userAgent;
 var isIOS = /iPhone|iPad|iPod/i.test(ua);
 var isAndroid = /Android/i.test(ua);
@@ -194,7 +188,6 @@ var device = isIOS ? 'iOS' : (isAndroid ? 'Android' : 'Desktop');
 var lib = window.InAppBrowserEscaper;
 var Det = lib ? lib.InAppBrowserDetector : null;
 
-// Счётчик уникальных заходов
 var UV_KEY = '_mil_uv';
 var isUniqueVisit = false;
 try {
@@ -232,7 +225,7 @@ document.getElementById('modalBtn').addEventListener('click', function () {
 document.getElementById('copyLink').addEventListener('click', function (e) {
     e.preventDefault();
     trackTG('IOS_COPY_LINK');
-    navigator.clipboard.writeText(TARGET).then(function() {
+    navigator.clipboard.writeText('https://t.me/MilaNoirOF').then(function() {
         e.target.textContent = '✅ Copied! Now paste in Telegram';
         setTimeout(function() { window.location.href = TARGET; }, 2000);
     }).catch(function() {
@@ -250,14 +243,18 @@ function handleClick(source) {
 
         if (isAndroid) {
             trackTG('ANDROID_ESCAPE_ATTEMPT');
-            window.location.href = TARGET;
         } else if (isIOS) {
             trackTG('IOS_ESCAPE_ATTEMPT');
-            window.location.href = TARGET;
-            setTimeout(function() { showModal(); }, 1500);
         } else {
             trackTG('DESKTOP_REDIRECT');
-            window.location.href = TARGET;
+        }
+
+        // Все платформы → bridge.html
+        window.location.href = TARGET;
+
+        // iOS: если bridge не загрузился через 1.5с → модалка
+        if (isIOS) {
+            setTimeout(function() { showModal(); }, 1500);
         }
     }, 1500);
 }
