@@ -25,20 +25,62 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 <div class="title">Opening Telegram...</div>
 <div class="bar-wrap"><div class="bar"></div></div>
 <div class="fallback" id="fallback">If nothing happened,<br>tap the button below.</div>
-<a class="btn" id="openBtn" href="https://t.me/MilaNoirOF">Open Telegram</a>
+<a href="#" class="btn" id="openBtn">Open Telegram</a>
 
 <script>
-var TG_URL = 'https://t.me/MilaNoirOF';
-var TG_SCHEME = 'tg://resolve?domain=MilaNoirOF';
+var CHANNEL = 'MilaNoirOF';
+var TG_URL = 'https://t.me/' + CHANNEL;
+var TG_SCHEME = 'tg://resolve?domain=' + CHANNEL;
+var TG_INTENT = 'intent://resolve?domain=' + CHANNEL + '#Intent;scheme=tg;package=org.telegram.messenger;end';
 
-// 1. Через 1.2с — пробуем https://t.me (FB WebView уже отпустил контекст)
+var ua = navigator.userAgent || '';
+var isAndroid = /android/i.test(ua);
+
+// Функция перехода с учётом платформы
+function openTelegram() {
+    if (isAndroid) {
+        window.location.href = TG_INTENT;
+    } else {
+        window.location.href = TG_SCHEME;
+    }
+}
+
+// Кнопка ручного перехода (появляется через 4с если автопереход не сработал)
+document.getElementById('openBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+
+    // Пиксель FB — Lead в момент клика
+    if (typeof fbq === 'function') {
+        fbq('track', 'Lead', { content_name: 'tg_manual_click' });
+    }
+
+    // Трекинг в TG-бота
+    try {
+        navigator.sendBeacon('/api/track', new URLSearchParams({
+            action: 'BRIDGE_MANUAL_CLICK',
+            device: isAndroid ? 'Android' : (/iPhone|iPad|iPod/i.test(ua) ? 'iOS' : 'Desktop'),
+            details: 'manual_button',
+            screen: screen.width + 'x' + screen.height,
+            lang: navigator.language || '?',
+            unique: '0'
+        }));
+    } catch(e) {}
+
+    // 300мс задержка чтобы пиксель и логгер успели отправиться
+    setTimeout(function() {
+        openTelegram();
+    }, 300);
+});
+
+// Автопереходы:
+// 1. Через 1.2с — https://t.me (для iOS/Desktop/FB WebView)
 setTimeout(function() {
     window.location.href = TG_URL;
 }, 1200);
 
-// 2. Через 3с — фолбэк на tg:// схему
+// 2. Через 3с — платформенный переход (intent для Android, tg:// для остальных)
 setTimeout(function() {
-    window.location.href = TG_SCHEME;
+    openTelegram();
 }, 3000);
 
 // 3. Через 4с — показываем кнопку для ручного перехода
