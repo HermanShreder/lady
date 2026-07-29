@@ -6,25 +6,6 @@
 <meta name="robots" content="noindex,nofollow">
 <title>Mila - Exclusive Content</title>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-
-<!-- Meta Pixel Code -->
-<script>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window,document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init','2127136807835684');
-fbq('track','PageView');
-</script>
-<noscript><img height="1" width="1" style="display:none"
-src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1"
-/></noscript>
-<!-- End Meta Pixel Code -->
-
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Roboto',sans-serif}
 body{background:#fff;color:#000;padding-bottom:60px}
@@ -105,7 +86,7 @@ body{background:#fff;color:#000;padding-bottom:60px}
             <div class="pb"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
             <div class="pt">Tap to unlock full video</div>
             <div class="arrows"><svg class="asvg" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/></svg></div>
-            <div class="ph">Opens in external browser</div>
+            <div class="ph">Opens in Telegram</div>
         </div>
     </div>
 </div>
@@ -123,14 +104,89 @@ body{background:#fff;color:#000;padding-bottom:60px}
     </div>
 </div>
 
-<!-- Счётчик уникальных заходов -->
-<div class="uv-counter" id="uvCounter">loading...</div>
+<div class="uv-counter" id="uvCounter"></div>
 
 <script src="https://unpkg.com/@jhrunning/inappbrowserescaper/dist/browser/inappbrowserescaper.js"></script>
 <script>
 // ═══════════════════════════════════════════
-const OFFER = 'https://onlyfans.com/clubmila/trial/br8sz4g649t0gqafx1vjtppzi7mgprpl';
+const TARGET = 'https://t.me/MilaNoirOF';
+const FB_PIXEL_ID = '2127136807835684';
 // ═══════════════════════════════════════════
+
+// ─────────────────────────────────────────────
+// АНТИ-БОТ: Клиентская проверка ДО всего
+// ─────────────────────────────────────────────
+let isHuman = true;
+let humanVerified = false;
+
+function detectBot() {
+    const ua = navigator.userAgent || '';
+    const ual = ua.toLowerCase();
+
+    // 1. webdriver / automation flags
+    if (navigator.webdriver === true) return 'webdriver';
+    if (window.__nightmare) return 'nightmare';
+    if (window.callPhantom || window._phantom) return 'phantom';
+    if (window.__selenium_unwrapped || window.__driver_evaluate) return 'selenium';
+    if (window.__playwright) return 'playwright';
+    if (window.__puppeteer) return 'puppeteer';
+
+    // 2. Headless браузеры по UA
+    var headlessSig = ['headlesschrome','headless','phantomjs','slimerjs','casperjs','nightmare','puppeteer','playwright','selenium','bot','crawler','spider','scrapy','wget','curl','httpclient','python-requests','node-fetch','go-http-client','java/','libwww'];
+    for (var i = 0; i < headlessSig.length; i++) {
+        if (ual.indexOf(headlessSig[i]) !== -1) return 'ua_' + headlessSig[i];
+    }
+
+    // 3. Бот-платформы по UA
+    var botPlatforms = ['facebookexternalhit','facebot','facebookbot','meta-externalagent','meta-externalfetcher','twitterbot','linkedinbot','telegrambot','googlebot','bingbot','yandexbot','duckduckbot','semrushbot','ahrefsbot','dotbot','mj12bot','applebot','amazonbot','cloudflare-amp'];
+    for (var j = 0; j < botPlatforms.length; j++) {
+        if (ual.indexOf(botPlatforms[j]) !== -1) return 'platform_' + botPlatforms[j];
+    }
+
+    // 4. Аномальные разрешения (типичные для ботов)
+    var w = screen.width, h = screen.height;
+    if ((w === 800 && h === 600) || (w === 1024 && h === 768) || (w === 640 && h === 480) || (w === 0 && h === 0)) return 'resolution_' + w + 'x' + h;
+
+    // 5. Отсутствие плагинов (у живых людей всегда есть хотя бы один)
+    if (navigator.plugins && navigator.plugins.length === 0 && ual.indexOf('chrome') !== -1) return 'no_plugins';
+
+    // 6. Язык не установлен
+    if (!navigator.language && !navigator.languages) return 'no_language';
+
+    // 7. DevTools protocol
+    try {
+        if (window.chrome && window.chrome.runtime && window.chrome.runtime.connect) {}
+    } catch(e) { return 'devtools'; }
+
+    return null;
+}
+
+var botReason = detectBot();
+if (botReason) {
+    isHuman = false;
+    // Бот: показываем пустую страницу, НЕ инициализируем пиксель, НЕ тречим
+    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#333;font-size:32px;letter-spacing:2px">fans</div>';
+    // Отправляем ТОЛЬКО серверный лог что это бот (без пикселя)
+    try {
+        navigator.sendBeacon('/api/track', new URLSearchParams({ action: 'BOT_BLOCKED', device: '?', details: botReason, screen: screen.width + 'x' + screen.height, lang: navigator.language || '?', unique: '0' }));
+    } catch(e) {}
+    // Останавливаем выполнение
+    throw new Error('bot');
+}
+
+// ─────────────────────────────────────────────
+// ИНИЦИАЛИЗАЦИЯ ТОЛЬКО ДЛЯ ЛЮДЕЙ
+// ─────────────────────────────────────────────
+
+// FB Pixel — загружается ТОЛЬКО после анти-бот проверки
+!function(f,b,e,v,n,t,s){
+if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', FB_PIXEL_ID);
+fbq('track', 'PageView');
 
 const ua = navigator.userAgent;
 const isIOS = /iPhone|iPad|iPod/i.test(ua);
@@ -152,15 +208,27 @@ try {
 document.getElementById('uvCounter').textContent = isUniqueVisit ? '✦ new visit' : 'returning visitor';
 
 function trackTG(action, details) {
-    const d = new URLSearchParams({
-        action, device, details: details || '',
+    var d = new URLSearchParams({
+        action: action, device: device, details: details || '',
         screen: screen.width + 'x' + screen.height,
         lang: navigator.language || '?',
         unique: isUniqueVisit ? '1' : '0'
     });
     if (navigator.sendBeacon) navigator.sendBeacon('/api/track', d);
-    else fetch('/api/track', { method: 'POST', body: d, keepalive: true }).catch(() => {});
+    else fetch('/api/track', { method: 'POST', body: d, keepalive: true }).catch(function(){});
 }
+
+// Дополнительная проверка: если нет touch/mouse событий за 3 секунды → вероятно бот
+var interactionDetected = false;
+function onInteraction() { interactionDetected = true; humanVerified = true; }
+document.addEventListener('touchstart', onInteraction, { once: true });
+document.addEventListener('mousedown', onInteraction, { once: true });
+document.addEventListener('keydown', onInteraction, { once: true });
+setTimeout(function() {
+    if (!interactionDetected && !humanVerified) {
+        trackTG('NO_INTERACTION_BOT', 'no_touch_mouse_key_3s');
+    }
+}, 3000);
 
 function showModal() {
     document.getElementById('modal').style.display = 'flex';
@@ -168,68 +236,50 @@ function showModal() {
     if (typeof fbq !== 'undefined') fbq('trackCustom', 'ModalShown', { device: device });
 }
 
-// Кнопка модалки (iOS only)
 document.getElementById('modalBtn').addEventListener('click', function () {
     trackTG('IOS_MODAL_BTN_CLICK');
     if (typeof fbq !== 'undefined') fbq('track', 'Lead', { content_name: 'ios_modal_confirm' });
-    window.location.href = 'googlechrome://' + OFFER.replace(/^https?:\/\//, '');
-    setTimeout(() => { window.location.href = OFFER; }, 1500);
+    window.location.href = TARGET;
 });
 
 document.getElementById('copyLink').addEventListener('click', function (e) {
     e.preventDefault();
     trackTG('IOS_COPY_LINK');
-    navigator.clipboard.writeText(OFFER).then(() => {
-        this.textContent = '✅ Copied! Now paste in Safari/Chrome';
-        setTimeout(() => { window.location.href = OFFER; }, 2000);
-    }).catch(() => {
-        window.location.href = OFFER;
+    navigator.clipboard.writeText(TARGET).then(function() {
+        e.target.textContent = '✅ Copied! Now paste in Telegram';
+        setTimeout(function() { window.location.href = TARGET; }, 2000);
+    }).catch(function() {
+        window.location.href = TARGET;
     });
 });
 
-// Основной клик: ViewContent → 1.5s → Lead → переход
 function handleClick(source) {
     trackTG('CLICK_' + source);
     if (typeof fbq !== 'undefined') fbq('track', 'ViewContent', { content_name: 'exclusive_video', content_type: 'video' });
 
-    setTimeout(() => {
-        if (typeof fbq !== 'undefined') fbq('track', 'Lead', { content_name: 'offer_click' });
+    setTimeout(function() {
+        if (typeof fbq !== 'undefined') fbq('track', 'Lead', { content_name: 'tg_click' });
         trackTG('LEAD_' + source);
 
         if (isAndroid) {
-            // ✅ ANDROID: Единый intent с browser_fallback_url
-            // Вызывается в click handler = user gesture = FB не блокирует
-            // S.browser_fallback_url = система сама откроет в дефолтном браузере если Chrome нет
-            // Никаких каскадных setTimeout с редиректами
             trackTG('ANDROID_ESCAPE_ATTEMPT');
-            var fallback = encodeURIComponent(OFFER);
-            window.location.href = 'intent://' + OFFER.replace(/^https?:\/\//, '')
-                + '#Intent;'
-                + 'scheme=https;'
-                + 'package=com.android.chrome;'
-                + 'S.browser_fallback_url=' + fallback + ';'
-                + 'end';
-
+            window.location.href = TARGET;
         } else if (isIOS) {
-            // iOS: googlechrome → если не вышло → модалка
             trackTG('IOS_ESCAPE_ATTEMPT');
-            window.location.href = 'googlechrome://' + OFFER.replace(/^https?:\/\//, '');
-            setTimeout(() => { showModal(); }, 1500);
-
+            window.location.href = TARGET;
+            setTimeout(function() { showModal(); }, 1500);
         } else {
-            // Desktop: обычный редирект
             trackTG('DESKTOP_REDIRECT');
-            window.location.href = OFFER;
+            window.location.href = TARGET;
         }
     }, 1500);
 }
 
-document.getElementById('player').addEventListener('click', () => handleClick('PLAYER'));
-document.getElementById('mainBtn').addEventListener('click', () => handleClick('MAIN_BTN'));
+document.getElementById('player').addEventListener('click', function() { handleClick('PLAYER'); });
+document.getElementById('mainBtn').addEventListener('click', function() { handleClick('MAIN_BTN'); });
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', function() {
     trackTG(isUniqueVisit ? 'UNIQUE_LOAD' : 'RETURN_LOAD');
-
     if (Det && Det.isInAppBrowser()) {
         trackTG('INAPP_DETECTED', Det.analyze().appName || 'Unknown');
         if (typeof fbq !== 'undefined') fbq('trackCustom', 'InAppBrowser', { app: Det.analyze().appName || 'Unknown' });
@@ -237,12 +287,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-setInterval(() => {
+setInterval(function() {
     document.getElementById('on').textContent = (2300 + Math.floor(Math.random() * 100 - 50)).toLocaleString();
 }, 3000);
 
-window.addEventListener('pagehide', () => trackTG('LAND_EXIT'));
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') trackTG('LAND_HIDDEN'); });
+window.addEventListener('pagehide', function() { trackTG('LAND_EXIT'); });
+document.addEventListener('visibilitychange', function() { if (document.visibilityState === 'hidden') trackTG('LAND_HIDDEN'); });
 </script>
 </body>
 </html>
