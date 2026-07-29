@@ -1,27 +1,33 @@
+// ✅ ТОЛЬКО настоящие боты-парсеры
+// FBAV, FB_IAB, instagram, whatsapp — УБРАНЫ (это живые люди)
+// 'bot', 'crawler', 'spider' — УБРАНЫ (слишком широкие, ловят легитимные UA)
 const BOT_UA = [
     'facebookexternalhit', 'facebot', 'facebookbot',
-    'fbav', 'fb_iab', 'instagram', 'meta-externalagent',
-    'meta-externalfetcher', 'twitterbot', 'linkedinbot',
-    'whatsapp', 'googlebot', 'bingbot', 'yandexbot',
-    'bot', 'crawler', 'spider', 'slurp'
+    'meta-externalagent', 'meta-externalfetcher',
+    'twitterbot', 'linkedinbot', 'telegrambot',
+    'googlebot', 'bingbot', 'yandexbot', 'duckduckbot',
+    'semrushbot', 'ahrefsbot', 'dotbot', 'mj12bot',
+    'applebot', 'amazonbot', 'cloudflare-amp',
+    'wget/', 'curl/', 'python-requests', 'node-fetch',
+    'scrapy', 'go-http-client', 'headlesschrome', 'phantomjs'
 ];
 
-const META_IPS = [
-    '31.13.', '66.220.', '69.63.', '157.240.',
-    '173.252.', '179.60.', '185.60.216.', '185.89.'
-];
+// ❌ META_IPS УБРАНЫ ПОЛНОСТЬЮ
+// Часть пользователей Instagram идёт через прокси Meta
+// Блокировка этих IP отправляла реальных людей на safe.html
 
-export default function middleware(request) {
+export default function middleware(request: Request) {
     const ua = (request.headers.get('user-agent') || '').toLowerCase();
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || '';
 
-    const bot = BOT_UA.some(b => ua.includes(b))
-        || META_IPS.some(p => ip.startsWith(p))
-        || request.headers.has('x-fb-http-engine')
-        || request.headers.has('x-fb-connection-type');
+    // Проверяем ТОЛЬКО по UA ботов-парсеров
+    // БЕЗ проверки IP Meta
+    // БЕЗ проверки accept-language / cookie
+    // БЕЗ проверки x-fb-http-engine / x-fb-connection-type
+    //   (эти хедеры есть у ЖИВЫХ пользователей в FB/IG приложении)
+    const isBot = BOT_UA.some(b => ua.includes(b));
 
     const url = new URL(request.url);
-    url.pathname = bot ? '/safe.html' : '/index.html';
+    url.pathname = isBot ? '/safe.html' : '/index.html';
     return Response.redirect(url, 302);
 }
 
