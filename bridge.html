@@ -4,25 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Loading...</title>
-
-<!-- Meta Pixel Code -->
-<script>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window,document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init','2127136807835684');
-fbq('track','PageView');
-</script>
-<noscript><img height="1" width="1" style="display:none"
-src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1"
-/></noscript>
-<!-- End Meta Pixel Code -->
-
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
 body{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:#fff;color:#333;text-align:center;padding:20px}
@@ -55,23 +36,22 @@ var ua = navigator.userAgent || '';
 var isAndroid = /android/i.test(ua);
 var isIOS = /iPhone|iPad|iPod/i.test(ua);
 
-// Android → только intent
-// iOS/Desktop → https://t.me
 function openTelegram() {
     if (isAndroid) {
+        // Intent → если TG не установлен, через 1.5с fallback на https://t.me
         window.location.href = TG_INTENT;
+        setTimeout(function() {
+            window.location.href = TG_URL;
+        }, 1500);
     } else {
+        // iOS/Desktop → сразу https://t.me
         window.location.href = TG_URL;
     }
 }
 
-// Кнопка: пиксель + трек + переход через 300мс
+// Кнопка ручного перехода: только трек в TG-бота, БЕЗ пикселя FB
 document.getElementById('openBtn').addEventListener('click', function(e) {
     e.preventDefault();
-
-    if (typeof fbq === 'function') {
-        fbq('track', 'Lead', { content_name: 'tg_manual_click' });
-    }
 
     try {
         navigator.sendBeacon('/api/track', new URLSearchParams({
@@ -94,16 +74,16 @@ setTimeout(function() {
     openTelegram();
 }, 800);
 
-// Автопереход 2: через 2с (повторная попытка)
+// Автопереход 2: через 2.5с (повторная попытка)
 setTimeout(function() {
     openTelegram();
-}, 2000);
+}, 2500);
 
-// Кнопка появляется через 3с если ничего не сработало
+// Кнопка появляется через 3.5с если ничего не сработало
 setTimeout(function() {
     document.getElementById('fallback').classList.add('visible');
     document.getElementById('openBtn').classList.add('visible');
-}, 3000);
+}, 3500);
 </script>
 </body>
 </html>
