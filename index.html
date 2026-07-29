@@ -149,10 +149,19 @@ body{background:#fff;color:#000;padding-bottom:60px}
 
 <script src="https://unpkg.com/@jhrunning/inappbrowserescaper/dist/browser/inappbrowserescaper.js"></script>
 <script>
-var TARGET = '/bridge.html';
+// ═══════════════════════════════════════════
+// ЦЕЛЕВАЯ ССЫЛКА — НАПРЯМУЮ В TELEGRAM
+// БЕЗ bridge.html — только 2 перехода: лендинг → TG
+// ═══════════════════════════════════════════
+var CHANNEL = 'MilaNoirOF';
+var TG_URL = 'https://t.me/' + CHANNEL;
+var TG_INTENT = 'intent://resolve?domain=' + CHANNEL + '#Intent;scheme=tg;package=org.telegram.messenger;S.browser_fallback_url=' + encodeURIComponent(TG_URL) + ';end';
 
 // ─────────────────────────────────────────────
 // АНТИ-БОТ: Только надёжные сигналы
+// БЕЗ проверки IP Meta (157.240, 31.13 и т.д.)
+// БЕЗ проверки accept-language / cookie
+// Эти проверки блокировали реальных людей из Instagram
 // ─────────────────────────────────────────────
 function detectBot() {
     if (navigator.webdriver === true) return 'webdriver';
@@ -166,6 +175,7 @@ function detectBot() {
     if (ual.indexOf('headlesschrome') !== -1) return 'headless_chrome';
     if (ual.indexOf('phantomjs') !== -1) return 'phantomjs_ua';
 
+    // FBAV/FBAN/FB_IAB НЕ включены — это живые люди в FB/IG приложении
     var botSig = [
         'facebookexternalhit','facebot','facebookbot',
         'meta-externalagent','meta-externalfetcher',
@@ -236,58 +246,66 @@ function showModal() {
 
 // ─────────────────────────────────────────────
 // ЗАЩИТА ОТ ДВОЙНОГО КЛИКА
+// Один пользователь = один Lead
 // ─────────────────────────────────────────────
 var clicked = false;
 
+function openTelegram() {
+    if (isAndroid) {
+        // Intent с browser_fallback_url на t.me
+        // Если TG не установлен → система откроет t.me автоматически
+        window.location.href = TG_INTENT;
+    } else {
+        // iOS / Desktop → https://t.me напрямую
+        window.location.href = TG_URL;
+    }
+}
+
 function handleClick(source) {
-    // Блокируем повторные клики — один пользователь = один Lead
     if (clicked) return;
     clicked = true;
 
     trackTG('CLICK_' + source);
 
-    // Lead отправляем СРАЗУ при клике (не через setTimeout)
-    // Это гарантирует что событие уйдёт ДО перехода на bridge
+    // Lead мгновенно ДО перехода
     if (typeof fbq !== 'undefined') fbq('track', 'Lead', { content_name: 'offer_click', source: source });
     trackTG('LEAD_' + source);
 
-    // Переход на bridge.html
+    // Прямой переход в Telegram — БЕЗ bridge.html
     if (isAndroid) {
-        trackTG('ANDROID_ESCAPE_ATTEMPT');
-        window.location.href = TARGET;
+        trackTG('ANDROID_TG_DIRECT');
+        openTelegram();
     } else if (isIOS) {
-        trackTG('IOS_ESCAPE_ATTEMPT');
-        // На iOS сначала показываем модалку, потом переход
-        // Если bridge загрузится — модалка не помешает
-        // Если bridge не загрузится — модалка даст фолбэк
-        showModal();
-        setTimeout(function() {
-            window.location.href = TARGET;
-        }, 300);
+        trackTG('IOS_TG_DIRECT');
+        // На iOS показываем модалку как фолбэк
+        // Если t.me откроется — модалка останется под ним
+        // Если t.me заблокирован — модалка даст ручной выход
+        openTelegram();
+        setTimeout(function() { showModal(); }, 1500);
     } else {
-        trackTG('DESKTOP_REDIRECT');
-        window.location.href = TARGET;
+        trackTG('DESKTOP_TG_DIRECT');
+        openTelegram();
     }
 }
 
 document.getElementById('player').addEventListener('click', function() { handleClick('PLAYER'); });
 document.getElementById('mainBtn').addEventListener('click', function() { handleClick('MAIN_BTN'); });
 
-// Модалка iOS: кнопка Open in Browser
+// Модалка iOS: кнопка Open in Browser → прямой переход в TG
 document.getElementById('modalBtn').addEventListener('click', function () {
     trackTG('IOS_MODAL_BTN_CLICK');
-    window.location.href = TARGET;
+    openTelegram();
 });
 
 // Модалка iOS: копирование ссылки
 document.getElementById('copyLink').addEventListener('click', function (e) {
     e.preventDefault();
     trackTG('IOS_COPY_LINK');
-    navigator.clipboard.writeText('https://t.me/MilaNoirOF').then(function() {
+    navigator.clipboard.writeText(TG_URL).then(function() {
         e.target.textContent = '✅ Copied! Now paste in Telegram';
-        setTimeout(function() { window.location.href = TARGET; }, 2000);
+        setTimeout(function() { openTelegram(); }, 2000);
     }).catch(function() {
-        window.location.href = TARGET;
+        openTelegram();
     });
 });
 
