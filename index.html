@@ -114,71 +114,70 @@ const FB_PIXEL_ID = '2127136807835684';
 // ═══════════════════════════════════════════
 
 // ─────────────────────────────────────────────
-// АНТИ-БОТ: Клиентская проверка ДО всего
+// АНТИ-БОТ: Только надёжные сигналы
+// УБРАНЫ: no_plugins, no_language, resolution
+// Эти проверки давали false positive на мобильных
 // ─────────────────────────────────────────────
-let isHuman = true;
-let humanVerified = false;
-
 function detectBot() {
-    const ua = navigator.userAgent || '';
-    const ual = ua.toLowerCase();
-
-    // 1. webdriver / automation flags
+    // 1. navigator.webdriver — самый надёжный сигнал
+    // Живые браузеры ВСЕГДА возвращают false или undefined
+    // Автоматизация (Selenium/Puppeteer/Playwright) ВСЕГДА true
     if (navigator.webdriver === true) return 'webdriver';
+
+    // 2. Window properties фреймворков автоматизации
+    // Никогда не присутствуют в обычном браузере
     if (window.__nightmare) return 'nightmare';
     if (window.callPhantom || window._phantom) return 'phantom';
-    if (window.__selenium_unwrapped || window.__driver_evaluate) return 'selenium';
-    if (window.__playwright) return 'playwright';
-    if (window.__puppeteer) return 'puppeteer';
+    if (window.__selenium_unwrapped || window.__driver_evaluate || window.__webdriver_evaluate) return 'selenium';
+    if (window.__playwright || window.__pw_manual) return 'playwright';
+    if (window.__puppeteer || window.__pptr_manual) return 'puppeteer';
 
-    // 2. Headless браузеры по UA
-    var headlessSig = ['headlesschrome','headless','phantomjs','slimerjs','casperjs','nightmare','puppeteer','playwright','selenium','bot','crawler','spider','scrapy','wget','curl','httpclient','python-requests','node-fetch','go-http-client','java/','libwww'];
-    for (var i = 0; i < headlessSig.length; i++) {
-        if (ual.indexOf(headlessSig[i]) !== -1) return 'ua_' + headlessSig[i];
+    // 3. Headless Chrome / headless браузеры по UA
+    // "HeadlessChrome" встречается ТОЛЬКО у ботов
+    var ual = (navigator.userAgent || '').toLowerCase();
+    if (ual.indexOf('headlesschrome') !== -1) return 'headless_chrome';
+    if (ual.indexOf('phantomjs') !== -1) return 'phantomjs_ua';
+
+    // 4. Бот-платформы по UA (парсеры соцсетей и поисковики)
+    // FBAV/FBAN/FB_IAB НЕ включены — это живые люди в FB-приложении
+    var botSig = [
+        'facebookexternalhit','facebot','facebookbot',
+        'meta-externalagent','meta-externalfetcher',
+        'twitterbot','linkedinbot','telegrambot',
+        'googlebot','bingbot','yandexbot','duckduckbot',
+        'semrushbot','ahrefsbot','dotbot','mj12bot',
+        'applebot','amazonbot','cloudflare-amp',
+        'wget/','curl/','python-requests','node-fetch',
+        'scrapy','go-http-client'
+    ];
+    for (var i = 0; i < botSig.length; i++) {
+        if (ual.indexOf(botSig[i]) !== -1) return 'bot_' + botSig[i];
     }
 
-    // 3. Бот-платформы по UA
-    var botPlatforms = ['facebookexternalhit','facebot','facebookbot','meta-externalagent','meta-externalfetcher','twitterbot','linkedinbot','telegrambot','googlebot','bingbot','yandexbot','duckduckbot','semrushbot','ahrefsbot','dotbot','mj12bot','applebot','amazonbot','cloudflare-amp'];
-    for (var j = 0; j < botPlatforms.length; j++) {
-        if (ual.indexOf(botPlatforms[j]) !== -1) return 'platform_' + botPlatforms[j];
-    }
-
-    // 4. Аномальные разрешения (типичные для ботов)
-    var w = screen.width, h = screen.height;
-    if ((w === 800 && h === 600) || (w === 1024 && h === 768) || (w === 640 && h === 480) || (w === 0 && h === 0)) return 'resolution_' + w + 'x' + h;
-
-    // 5. Отсутствие плагинов (у живых людей всегда есть хотя бы один)
-    if (navigator.plugins && navigator.plugins.length === 0 && ual.indexOf('chrome') !== -1) return 'no_plugins';
-
-    // 6. Язык не установлен
-    if (!navigator.language && !navigator.languages) return 'no_language';
-
-    // 7. DevTools protocol
-    try {
-        if (window.chrome && window.chrome.runtime && window.chrome.runtime.connect) {}
-    } catch(e) { return 'devtools'; }
+    // Больше никаких проверок.
+    // no_plugins — УБРАНА (FB in-app WebView возвращает пустой plugins)
+    // no_language — УБРАНА (некоторые мобильные браузеры не шлют)
+    // resolution — УБРАНА (мобильные экраны бывают любых размеров)
 
     return null;
 }
 
 var botReason = detectBot();
 if (botReason) {
-    isHuman = false;
-    // Бот: показываем пустую страницу, НЕ инициализируем пиксель, НЕ тречим
     document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#333;font-size:32px;letter-spacing:2px">fans</div>';
-    // Отправляем ТОЛЬКО серверный лог что это бот (без пикселя)
     try {
-        navigator.sendBeacon('/api/track', new URLSearchParams({ action: 'BOT_BLOCKED', device: '?', details: botReason, screen: screen.width + 'x' + screen.height, lang: navigator.language || '?', unique: '0' }));
+        navigator.sendBeacon('/api/track', new URLSearchParams({
+            action: 'BOT_BLOCKED', device: '?', details: botReason,
+            screen: screen.width + 'x' + screen.height,
+            lang: navigator.language || '?', unique: '0'
+        }));
     } catch(e) {}
-    // Останавливаем выполнение
     throw new Error('bot');
 }
 
 // ─────────────────────────────────────────────
 // ИНИЦИАЛИЗАЦИЯ ТОЛЬКО ДЛЯ ЛЮДЕЙ
 // ─────────────────────────────────────────────
-
-// FB Pixel — загружается ТОЛЬКО после анти-бот проверки
 !function(f,b,e,v,n,t,s){
 if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
 if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
@@ -188,16 +187,16 @@ s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebo
 fbq('init', FB_PIXEL_ID);
 fbq('track', 'PageView');
 
-const ua = navigator.userAgent;
-const isIOS = /iPhone|iPad|iPod/i.test(ua);
-const isAndroid = /Android/i.test(ua);
-const device = isIOS ? 'iOS' : (isAndroid ? 'Android' : 'Desktop');
-const lib = window.InAppBrowserEscaper;
-const Det = lib ? lib.InAppBrowserDetector : null;
+var ua = navigator.userAgent;
+var isIOS = /iPhone|iPad|iPod/i.test(ua);
+var isAndroid = /Android/i.test(ua);
+var device = isIOS ? 'iOS' : (isAndroid ? 'Android' : 'Desktop');
+var lib = window.InAppBrowserEscaper;
+var Det = lib ? lib.InAppBrowserDetector : null;
 
 // Счётчик уникальных заходов
-const UV_KEY = '_mil_uv';
-let isUniqueVisit = false;
+var UV_KEY = '_mil_uv';
+var isUniqueVisit = false;
 try {
     if (!localStorage.getItem(UV_KEY)) {
         localStorage.setItem(UV_KEY, '1');
@@ -217,18 +216,6 @@ function trackTG(action, details) {
     if (navigator.sendBeacon) navigator.sendBeacon('/api/track', d);
     else fetch('/api/track', { method: 'POST', body: d, keepalive: true }).catch(function(){});
 }
-
-// Дополнительная проверка: если нет touch/mouse событий за 3 секунды → вероятно бот
-var interactionDetected = false;
-function onInteraction() { interactionDetected = true; humanVerified = true; }
-document.addEventListener('touchstart', onInteraction, { once: true });
-document.addEventListener('mousedown', onInteraction, { once: true });
-document.addEventListener('keydown', onInteraction, { once: true });
-setTimeout(function() {
-    if (!interactionDetected && !humanVerified) {
-        trackTG('NO_INTERACTION_BOT', 'no_touch_mouse_key_3s');
-    }
-}, 3000);
 
 function showModal() {
     document.getElementById('modal').style.display = 'flex';
