@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Loading...</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:#fff;color:#333;text-align:center;padding:20px}
+.spinner{width:36px;height:36px;border:3px solid #e0e0e0;border-top:3px solid #00aff0;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:20px}
+.title{font-size:16px;font-weight:600;margin-bottom:12px}
+.bar-wrap{width:200px;height:4px;background:#e0e0e0;border-radius:2px;overflow:hidden;margin-bottom:24px}
+.bar{height:100%;background:#00aff0;border-radius:2px;animation:load 2.5s ease-in-out forwards}
+.fallback{opacity:0;transition:opacity .3s;font-size:13px;color:#888;line-height:1.5;margin-bottom:16px}
+.fallback.visible{opacity:1}
+.btn{display:inline-block;padding:14px 32px;background:#00aff0;color:#fff;border:none;border-radius:25px;font-size:15px;font-weight:600;cursor:pointer;text-decoration:none;opacity:0;transition:opacity .3s;-webkit-tap-highlight-color:transparent}
+.btn.visible{opacity:1}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes load{0%{width:0}60%{width:70%}100%{width:100%}}
+</style>
+</head>
+<body>
+
+<div class="spinner"></div>
+<div class="title">Opening Telegram...</div>
+<div class="bar-wrap"><div class="bar"></div></div>
+<div class="fallback" id="fallback">If nothing happened,<br>tap the button below.</div>
+<a class="btn" id="openBtn" href="https://t.me/MilaNoirOF">Open Telegram</a>
+
+<script>
+var TG_URL = 'https://t.me/MilaNoirOF';
+var TG_SCHEME = 'tg://resolve?domain=MilaNoirOF';
+
+// 1. Через 1.2с — пробуем https://t.me (FB WebView уже отпустил контекст)
+setTimeout(function() {
+    window.location.href = TG_URL;
+}, 1200);
+
+// 2. Через 3с — фолбэк на tg:// схему
+setTimeout(function() {
+    window.location.href = TG_SCHEME;
+}, 3000);
+
+// 3. Через 4с — показываем кнопку для ручного перехода
+setTimeout(function() {
+    document.getElementById('fallback').classList.add('visible');
+    document.getElementById('openBtn').classList.add('visible');
+}, 4000);
+</script>
+</body>
+</html>
