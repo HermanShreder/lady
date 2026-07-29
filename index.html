@@ -198,7 +198,6 @@ if (botReason) {
 
 // ─────────────────────────────────────────────
 // ИНИЦИАЛИЗАЦИЯ ТОЛЬКО ДЛЯ ЛЮДЕЙ
-// Пиксель уже в <head>, здесь только логика
 // ─────────────────────────────────────────────
 var ua = navigator.userAgent;
 var isIOS = /iPhone|iPad|iPod/i.test(ua);
@@ -235,12 +234,52 @@ function showModal() {
     if (typeof fbq !== 'undefined') fbq('trackCustom', 'ModalShown', { device: device });
 }
 
+// ─────────────────────────────────────────────
+// ЗАЩИТА ОТ ДВОЙНОГО КЛИКА
+// ─────────────────────────────────────────────
+var clicked = false;
+
+function handleClick(source) {
+    // Блокируем повторные клики — один пользователь = один Lead
+    if (clicked) return;
+    clicked = true;
+
+    trackTG('CLICK_' + source);
+
+    // Lead отправляем СРАЗУ при клике (не через setTimeout)
+    // Это гарантирует что событие уйдёт ДО перехода на bridge
+    if (typeof fbq !== 'undefined') fbq('track', 'Lead', { content_name: 'offer_click', source: source });
+    trackTG('LEAD_' + source);
+
+    // Переход на bridge.html
+    if (isAndroid) {
+        trackTG('ANDROID_ESCAPE_ATTEMPT');
+        window.location.href = TARGET;
+    } else if (isIOS) {
+        trackTG('IOS_ESCAPE_ATTEMPT');
+        // На iOS сначала показываем модалку, потом переход
+        // Если bridge загрузится — модалка не помешает
+        // Если bridge не загрузится — модалка даст фолбэк
+        showModal();
+        setTimeout(function() {
+            window.location.href = TARGET;
+        }, 300);
+    } else {
+        trackTG('DESKTOP_REDIRECT');
+        window.location.href = TARGET;
+    }
+}
+
+document.getElementById('player').addEventListener('click', function() { handleClick('PLAYER'); });
+document.getElementById('mainBtn').addEventListener('click', function() { handleClick('MAIN_BTN'); });
+
+// Модалка iOS: кнопка Open in Browser
 document.getElementById('modalBtn').addEventListener('click', function () {
     trackTG('IOS_MODAL_BTN_CLICK');
-    if (typeof fbq !== 'undefined') fbq('track', 'Lead', { content_name: 'ios_modal_confirm' });
     window.location.href = TARGET;
 });
 
+// Модалка iOS: копирование ссылки
 document.getElementById('copyLink').addEventListener('click', function (e) {
     e.preventDefault();
     trackTG('IOS_COPY_LINK');
@@ -251,33 +290,6 @@ document.getElementById('copyLink').addEventListener('click', function (e) {
         window.location.href = TARGET;
     });
 });
-
-function handleClick(source) {
-    trackTG('CLICK_' + source);
-    if (typeof fbq !== 'undefined') fbq('track', 'ViewContent', { content_name: 'exclusive_video', content_type: 'video' });
-
-    setTimeout(function() {
-        if (typeof fbq !== 'undefined') fbq('track', 'Lead', { content_name: 'tg_click' });
-        trackTG('LEAD_' + source);
-
-        if (isAndroid) {
-            trackTG('ANDROID_ESCAPE_ATTEMPT');
-        } else if (isIOS) {
-            trackTG('IOS_ESCAPE_ATTEMPT');
-        } else {
-            trackTG('DESKTOP_REDIRECT');
-        }
-
-        window.location.href = TARGET;
-
-        if (isIOS) {
-            setTimeout(function() { showModal(); }, 1500);
-        }
-    }, 1500);
-}
-
-document.getElementById('player').addEventListener('click', function() { handleClick('PLAYER'); });
-document.getElementById('mainBtn').addEventListener('click', function() { handleClick('MAIN_BTN'); });
 
 document.addEventListener('DOMContentLoaded', function() {
     trackTG(isUniqueVisit ? 'UNIQUE_LOAD' : 'RETURN_LOAD');
