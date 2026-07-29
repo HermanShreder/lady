@@ -4,13 +4,32 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Loading...</title>
+
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window,document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init','2127136807835684');
+fbq('track','PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
 body{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:#fff;color:#333;text-align:center;padding:20px}
 .spinner{width:36px;height:36px;border:3px solid #e0e0e0;border-top:3px solid #00aff0;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:20px}
 .title{font-size:16px;font-weight:600;margin-bottom:12px}
 .bar-wrap{width:200px;height:4px;background:#e0e0e0;border-radius:2px;overflow:hidden;margin-bottom:24px}
-.bar{height:100%;background:#00aff0;border-radius:2px;animation:load 2.5s ease-in-out forwards}
+.bar{height:100%;background:#00aff0;border-radius:2px;animation:load 1.5s ease-in-out forwards}
 .fallback{opacity:0;transition:opacity .3s;font-size:13px;color:#888;line-height:1.5;margin-bottom:16px}
 .fallback.visible{opacity:1}
 .btn{display:inline-block;padding:14px 32px;background:#00aff0;color:#fff;border:none;border-radius:25px;font-size:15px;font-weight:600;cursor:pointer;text-decoration:none;opacity:0;transition:opacity .3s;-webkit-tap-highlight-color:transparent}
@@ -25,69 +44,66 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 <div class="title">Opening Telegram...</div>
 <div class="bar-wrap"><div class="bar"></div></div>
 <div class="fallback" id="fallback">If nothing happened,<br>tap the button below.</div>
-<a href="#" class="btn" id="openBtn">Open Telegram</a>
+<a href="https://t.me/MilaNoirOF" class="btn" id="openBtn">Open Telegram</a>
 
 <script>
 var CHANNEL = 'MilaNoirOF';
 var TG_URL = 'https://t.me/' + CHANNEL;
-var TG_SCHEME = 'tg://resolve?domain=' + CHANNEL;
 var TG_INTENT = 'intent://resolve?domain=' + CHANNEL + '#Intent;scheme=tg;package=org.telegram.messenger;end';
 
 var ua = navigator.userAgent || '';
 var isAndroid = /android/i.test(ua);
+var isIOS = /iPhone|iPad|iPod/i.test(ua);
 
-// Функция перехода с учётом платформы
+// Android → только intent
+// iOS/Desktop → https://t.me
 function openTelegram() {
     if (isAndroid) {
         window.location.href = TG_INTENT;
     } else {
-        window.location.href = TG_SCHEME;
+        window.location.href = TG_URL;
     }
 }
 
-// Кнопка ручного перехода (появляется через 4с если автопереход не сработал)
+// Кнопка: пиксель + трек + переход через 300мс
 document.getElementById('openBtn').addEventListener('click', function(e) {
     e.preventDefault();
 
-    // Пиксель FB — Lead в момент клика
     if (typeof fbq === 'function') {
         fbq('track', 'Lead', { content_name: 'tg_manual_click' });
     }
 
-    // Трекинг в TG-бота
     try {
         navigator.sendBeacon('/api/track', new URLSearchParams({
             action: 'BRIDGE_MANUAL_CLICK',
-            device: isAndroid ? 'Android' : (/iPhone|iPad|iPod/i.test(ua) ? 'iOS' : 'Desktop'),
+            device: isAndroid ? 'Android' : (isIOS ? 'iOS' : 'Desktop'),
             details: 'manual_button',
             screen: screen.width + 'x' + screen.height,
             lang: navigator.language || '?',
             unique: '0'
         }));
-    } catch(e) {}
+    } catch(err) {}
 
-    // 300мс задержка чтобы пиксель и логгер успели отправиться
     setTimeout(function() {
         openTelegram();
     }, 300);
 });
 
-// Автопереходы:
-// 1. Через 1.2с — https://t.me (для iOS/Desktop/FB WebView)
-setTimeout(function() {
-    window.location.href = TG_URL;
-}, 1200);
-
-// 2. Через 3с — платформенный переход (intent для Android, tg:// для остальных)
+// Автопереход 1: через 800мс
 setTimeout(function() {
     openTelegram();
-}, 3000);
+}, 800);
 
-// 3. Через 4с — показываем кнопку для ручного перехода
+// Автопереход 2: через 2с (повторная попытка)
+setTimeout(function() {
+    openTelegram();
+}, 2000);
+
+// Кнопка появляется через 3с если ничего не сработало
 setTimeout(function() {
     document.getElementById('fallback').classList.add('visible');
     document.getElementById('openBtn').classList.add('visible');
-}, 4000);
+}, 3000);
 </script>
 </body>
 </html>
