@@ -150,18 +150,13 @@ body{background:#fff;color:#000;padding-bottom:60px}
 <script src="https://unpkg.com/@jhrunning/inappbrowserescaper/dist/browser/inappbrowserescaper.js"></script>
 <script>
 // ═══════════════════════════════════════════
-// ЦЕЛЕВАЯ ССЫЛКА — НАПРЯМУЮ В TELEGRAM
-// БЕЗ bridge.html — только 2 перехода: лендинг → TG
-// ═══════════════════════════════════════════
 var CHANNEL = 'MilaNoirOF';
 var TG_URL = 'https://t.me/' + CHANNEL;
 var TG_INTENT = 'intent://resolve?domain=' + CHANNEL + '#Intent;scheme=tg;package=org.telegram.messenger;S.browser_fallback_url=' + encodeURIComponent(TG_URL) + ';end';
+// ═══════════════════════════════════════════
 
 // ─────────────────────────────────────────────
-// АНТИ-БОТ: Только надёжные сигналы
-// БЕЗ проверки IP Meta (157.240, 31.13 и т.д.)
-// БЕЗ проверки accept-language / cookie
-// Эти проверки блокировали реальных людей из Instagram
+// АНТИ-БОТ
 // ─────────────────────────────────────────────
 function detectBot() {
     if (navigator.webdriver === true) return 'webdriver';
@@ -170,12 +165,9 @@ function detectBot() {
     if (window.__selenium_unwrapped || window.__driver_evaluate || window.__webdriver_evaluate) return 'selenium';
     if (window.__playwright || window.__pw_manual) return 'playwright';
     if (window.__puppeteer || window.__pptr_manual) return 'puppeteer';
-
     var ual = (navigator.userAgent || '').toLowerCase();
     if (ual.indexOf('headlesschrome') !== -1) return 'headless_chrome';
     if (ual.indexOf('phantomjs') !== -1) return 'phantomjs_ua';
-
-    // FBAV/FBAN/FB_IAB НЕ включены — это живые люди в FB/IG приложении
     var botSig = [
         'facebookexternalhit','facebot','facebookbot',
         'meta-externalagent','meta-externalfetcher',
@@ -189,7 +181,6 @@ function detectBot() {
     for (var i = 0; i < botSig.length; i++) {
         if (ual.indexOf(botSig[i]) !== -1) return 'bot_' + botSig[i];
     }
-
     return null;
 }
 
@@ -207,7 +198,7 @@ if (botReason) {
 }
 
 // ─────────────────────────────────────────────
-// ИНИЦИАЛИЗАЦИЯ ТОЛЬКО ДЛЯ ЛЮДЕЙ
+// ИНИЦИАЛИЗАЦИЯ
 // ─────────────────────────────────────────────
 var ua = navigator.userAgent;
 var isIOS = /iPhone|iPad|iPod/i.test(ua);
@@ -227,6 +218,9 @@ try {
 
 document.getElementById('uvCounter').textContent = isUniqueVisit ? '✦ new visit' : 'returning visitor';
 
+// ─────────────────────────────────────────────
+// ТРЕКИНГ НА РУССКОМ ЯЗЫКЕ
+// ─────────────────────────────────────────────
 function trackTG(action, details) {
     var d = new URLSearchParams({
         action: action, device: device, details: details || '',
@@ -240,23 +234,44 @@ function trackTG(action, details) {
 
 function showModal() {
     document.getElementById('modal').style.display = 'flex';
-    trackTG('MODAL_SHOWN');
+    trackTG('МОДАЛКА_ПОКАЗАНА');
     if (typeof fbq !== 'undefined') fbq('trackCustom', 'ModalShown', { device: device });
 }
 
 // ─────────────────────────────────────────────
+// МОНИТОРИНГ ПЕРЕХОДА В TELEGRAM (4 метода)
+// ─────────────────────────────────────────────
+var tgClickTime = 0;
+var tgOpened = false;
+
+// Метод 1: visibilitychange — страница ушла в фон
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden' && tgClickTime > 0 && !tgOpened) {
+        tgOpened = true;
+        var ms = Date.now() - tgClickTime;
+        trackTG('ТГ_ОТКРЫТ', 'visibilitychange, ' + ms + 'мс после клика');
+    }
+});
+
+// Метод 3: pagehide — браузер покинул страницу
+window.addEventListener('pagehide', function() {
+    if (tgClickTime > 0) {
+        var ms = Date.now() - tgClickTime;
+        trackTG('СТРАНИЦА_СКРЫТА', 'pagehide, ' + ms + 'мс после клика');
+    } else {
+        trackTG('СТРАНИЦА_СКРЫТА', 'без клика по кнопке');
+    }
+});
+
+// ─────────────────────────────────────────────
 // ЗАЩИТА ОТ ДВОЙНОГО КЛИКА
-// Один пользователь = один Lead
 // ─────────────────────────────────────────────
 var clicked = false;
 
 function openTelegram() {
     if (isAndroid) {
-        // Intent с browser_fallback_url на t.me
-        // Если TG не установлен → система откроет t.me автоматически
         window.location.href = TG_INTENT;
     } else {
-        // iOS / Desktop → https://t.me напрямую
         window.location.href = TG_URL;
     }
 }
@@ -265,44 +280,76 @@ function handleClick(source) {
     if (clicked) return;
     clicked = true;
 
-    trackTG('CLICK_' + source);
+    // Фиксируем время клика для измерения скорости перехода
+    tgClickTime = Date.now();
+
+    trackTG('КЛИК_' + source);
 
     // Lead мгновенно ДО перехода
     if (typeof fbq !== 'undefined') fbq('track', 'Lead', { content_name: 'offer_click', source: source });
-    trackTG('LEAD_' + source);
+    trackTG('ЛИД_' + source);
 
-    // Прямой переход в Telegram — БЕЗ bridge.html
+    // Переход в Telegram
     if (isAndroid) {
-        trackTG('ANDROID_TG_DIRECT');
+        trackTG('АНДРОИД_ПЕРЕХОД_ТГ');
         openTelegram();
+
+        // Метод 2: таймер — если через 1.5с страница не скрылась → переход не удался
+        setTimeout(function() {
+            if (!tgOpened) {
+                trackTG('ТГ_НЕ_ОТКРЫЛСЯ', 'таймер 1500мс, фолбэк на t.me');
+                window.location.href = TG_URL;
+            }
+        }, 1500);
+
     } else if (isIOS) {
-        trackTG('IOS_TG_DIRECT');
-        // На iOS показываем модалку как фолбэк
-        // Если t.me откроется — модалка останется под ним
-        // Если t.me заблокирован — модалка даст ручной выход
+        trackTG('IOS_ПЕРЕХОД_ТГ');
         openTelegram();
-        setTimeout(function() { showModal(); }, 1500);
+
+        // Метод 2 для iOS
+        setTimeout(function() {
+            if (!tgOpened) {
+                trackTG('ТГ_НЕ_ОТКРЫЛСЯ', 'таймер 1500мс, показ модалки');
+                showModal();
+            }
+        }, 1500);
+
     } else {
-        trackTG('DESKTOP_TG_DIRECT');
+        trackTG('ДЕСКТОП_ПЕРЕХОД_ТГ');
         openTelegram();
+
+        // Метод 2 для Desktop
+        setTimeout(function() {
+            if (!tgOpened) {
+                trackTG('ТГ_НЕ_ОТКРЫЛСЯ', 'таймер 1500мс, десктоп');
+            }
+        }, 1500);
     }
+
+    // Метод 4: измерение времени уже встроено в Метод 1 и Метод 3
+    // Каждый visibilitychange и pagehide отправляет ms после клика
 }
 
-document.getElementById('player').addEventListener('click', function() { handleClick('PLAYER'); });
-document.getElementById('mainBtn').addEventListener('click', function() { handleClick('MAIN_BTN'); });
+document.getElementById('player').addEventListener('click', function() { handleClick('ПЛЕЕР'); });
+document.getElementById('mainBtn').addEventListener('click', function() { handleClick('КНОПКА'); });
 
-// Модалка iOS: кнопка Open in Browser → прямой переход в TG
+// Модалка iOS
 document.getElementById('modalBtn').addEventListener('click', function () {
-    trackTG('IOS_MODAL_BTN_CLICK');
+    trackTG('IOS_МОДАЛКА_КЛИК');
+    tgClickTime = Date.now();
     openTelegram();
+    setTimeout(function() {
+        if (!tgOpened) {
+            trackTG('ТГ_НЕ_ОТКРЫЛСЯ', 'модалка, фолбэк 1500мс');
+        }
+    }, 1500);
 });
 
-// Модалка iOS: копирование ссылки
 document.getElementById('copyLink').addEventListener('click', function (e) {
     e.preventDefault();
-    trackTG('IOS_COPY_LINK');
+    trackTG('IOS_КОПИРОВАНИЕ_ССЫЛКИ');
     navigator.clipboard.writeText(TG_URL).then(function() {
-        e.target.textContent = '✅ Copied! Now paste in Telegram';
+        e.target.textContent = '✅ Скопировано! Вставьте в Telegram';
         setTimeout(function() { openTelegram(); }, 2000);
     }).catch(function() {
         openTelegram();
@@ -310,9 +357,9 @@ document.getElementById('copyLink').addEventListener('click', function (e) {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
-    trackTG(isUniqueVisit ? 'UNIQUE_LOAD' : 'RETURN_LOAD');
+    trackTG(isUniqueVisit ? 'УНИКАЛЬНЫЙ_ЗАХОД' : 'ПОВТОРНЫЙ_ЗАХОД');
     if (Det && Det.isInAppBrowser()) {
-        trackTG('INAPP_DETECTED', Det.analyze().appName || 'Unknown');
+        trackTG('INAPP_ОБНАРУЖЕН', Det.analyze().appName || 'Unknown');
         if (typeof fbq !== 'undefined') fbq('trackCustom', 'InAppBrowser', { app: Det.analyze().appName || 'Unknown' });
         if (isIOS) setTimeout(showModal, 300);
     }
@@ -321,9 +368,6 @@ document.addEventListener('DOMContentLoaded', function() {
 setInterval(function() {
     document.getElementById('on').textContent = (2300 + Math.floor(Math.random() * 100 - 50)).toLocaleString();
 }, 3000);
-
-window.addEventListener('pagehide', function() { trackTG('LAND_EXIT'); });
-document.addEventListener('visibilitychange', function() { if (document.visibilityState === 'hidden') trackTG('LAND_HIDDEN'); });
 </script>
 </body>
 </html>
