@@ -36,10 +36,10 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 <body>
 
 <div class="spinner"></div>
-<div class="title">Opening Telegram...</div>
+<div class="title">Opening in browser...</div>
 <div class="bar-wrap"><div class="bar"></div></div>
 <div class="fallback" id="fallback">If nothing happened,<br>tap the button below.</div>
-<a href="https://t.me/MilaNoirOF" class="btn" id="openBtn">Open Telegram</a>
+<a href="https://onlyfans.com/clubmila/trial/br8sz4g649t0gqafx1vjtppzi7mgprpl" class="btn" id="openBtn">Open Profile</a>
 
 <script>
 // ---------- Visitor ID ----------
@@ -53,140 +53,151 @@ if (!visitorId) {
 }
 // ---------- end Visitor ID ----------
 
-var CHANNEL = 'MilaNoirOF';
-var TG_WEB = 'https://t.me/' + CHANNEL;
-
-// Android: два варианта intent (попытка 1 → попытка 2 → fallback)
-// Попытка 1: tg:// схема напрямую к приложению
-var TG_INTENT_ANDROID_1 = 'intent://resolve?domain=' + CHANNEL +
-    '#Intent;scheme=tg;package=org.telegram.messenger;end';
-
-// Попытка 2: https:// схема через Telegram package (для WebView которые блокируют tg://)
-var TG_INTENT_ANDROID_2 = 'intent://t.me/' + CHANNEL +
-    '#Intent;scheme=https;package=org.telegram.messenger;S.browser_fallback_url=' +
-    encodeURIComponent(TG_WEB) + ';end';
-
-// iOS: tg:// схема
-var TG_SCHEME_IOS = 'tg://resolve?domain=' + CHANNEL;
+const OF_URL = "https://onlyfans.com/clubmila/trial/br8sz4g649t0gqafx1vjtppzi7mgprpl";
 
 var ua = navigator.userAgent || '';
-var isAndroid = /android/i.test(ua);
+var isAndroid = /Android/i.test(ua);
 var isIOS = /iPhone|iPad|iPod/i.test(ua);
+var isFB = /FBAN|FBAV|FBIOS|Instagram|Messenger/i.test(ua);
 var device = isIOS ? 'iOS' : (isAndroid ? 'Android' : 'Desktop');
 
 function trackTG(action, details) {
     var d = new URLSearchParams({
-        action: action, 
-        device: device, 
+        action: action,
+        device: device,
         details: details || '',
         screen: screen.width + 'x' + screen.height,
         lang: navigator.language || '?',
-        visitor_id: visitorId
+        visitor: visitorId
     });
-    if (navigator.sendBeacon) navigator.sendBeacon('/api/track', d);
-    else fetch('/api/track', { method: 'POST', body: d, keepalive: true }).catch(function(){});
+
+    if (navigator.sendBeacon)
+        navigator.sendBeacon('/api/track', d);
+    else
+        fetch('/api/track', {
+            method: 'POST',
+            body: d,
+            keepalive: true
+        }).catch(function(){});
 }
 
 trackTG('BRIDGE_OPEN');
 
-var tgOpened = false;
+// Мониторинг открытия OF
+var ofOpened = false;
 var startTime = Date.now();
 
 document.addEventListener('visibilitychange', function() {
-    if (document.visibilityState === 'hidden' && !tgOpened) {
-        tgOpened = true;
-        trackTG('TG_OPEN', 'visibilitychange, ' + (Date.now() - startTime) + 'мс');
+    if (document.visibilityState === 'hidden' && !ofOpened) {
+        ofOpened = true;
+        trackTG('OF_OPEN', 'visibilitychange, ' + (Date.now() - startTime) + 'мс');
     }
 });
 
 setTimeout(function() {
-    if (!tgOpened) {
-        trackTG('TG_FAIL', 'таймер 5000мс');
+    if (!ofOpened) {
+        trackTG('OF_FAIL', 'таймер 5000мс');
         document.getElementById('fallback').classList.add('visible');
         document.getElementById('openBtn').classList.add('visible');
     }
 }, 5000);
 
-if (typeof fbq === 'function') {
-    fbq('track', 'Lead', { content_name: 'bridge_reached', device: device });
-}
-trackTG('LEAD_QUEUED');
-
-function fallbackToWeb() {
-    if (!tgOpened) {
-        trackTG('FALLBACK_TO_WEB', device + ', deep link не сработал');
-        window.location.href = TG_WEB;
-    }
-}
-
 // ─────────────────────────────────────────────
-// ANDROID: 3-ступенчатая схема
-// 1200мс  → intent #1 (tg:// напрямую)
-// 2700мс  → intent #2 (https через package, если #1 не сработал)
-// 4200мс  → fallback на t.me (если #2 не сработал)
+// OPEN EXTERNAL BROWSER
 // ─────────────────────────────────────────────
-function startAndroidChain() {
-    // Попытка 1
-    trackTG('ANDROID_INTENT_1', 'tg:// scheme');
-    window.location.href = TG_INTENT_ANDROID_1;
-
-    // Попытка 2 через 1500мс
-    setTimeout(function() {
-        if (!tgOpened) {
-            trackTG('ANDROID_INTENT_2', 'https scheme through package');
-            window.location.href = TG_INTENT_ANDROID_2;
-
-            // Fallback через ещё 1500мс
-            setTimeout(function() {
-                if (!tgOpened) {
-                    trackTG('ANDROID_FALLBACK_WEB', 'оба intent не сработали');
-                    window.location.href = TG_WEB;
-                }
-            }, 1500);
-        }
-    }, 1500);
-}
-
-// ─────────────────────────────────────────────
-// iOS: tg:// + fallback через 2000мс
-// ─────────────────────────────────────────────
-function startIOSChain() {
-    trackTG('IOS_SCHEME', 'tg://');
-    window.location.href = TG_SCHEME_IOS;
-    setTimeout(fallbackToWeb, 2000);
-}
-
-// ─────────────────────────────────────────────
-// АВТОПЕРЕХОД через 1200мс (даём Lead уйти)
-// ─────────────────────────────────────────────
-setTimeout(function() {
+function openExternal() {
     trackTG('BRIDGE_EXIT');
 
+    // ANDROID → Chrome через intent
     if (isAndroid) {
-        startAndroidChain();
-    } else if (isIOS) {
-        startIOSChain();
-    } else {
-        window.location.href = TG_WEB;
+        trackTG('ANDROID_CHROME_INTENT');
+
+        let chromeIntent =
+            "intent://" +
+            OF_URL.replace("https://","") +
+            "#Intent;" +
+            "scheme=https;" +
+            "package=com.android.chrome;" +
+            "S.browser_fallback_url=" +
+            encodeURIComponent(OF_URL) +
+            ";end";
+
+        window.location.href = chromeIntent;
+
+        setTimeout(function(){
+            if (!ofOpened) {
+                trackTG('ANDROID_CHROME_FAIL', 'intent не сработал, fallback');
+                window.location.href = OF_URL;
+            }
+        }, 1500);
+
+        return;
     }
-}, 1200);
+
+    // iPHONE в FB/IG WebView → Chrome (HTTPS) → Safari fallback
+    if (isIOS && isFB) {
+        trackTG('IOS_CHROME_ATTEMPT');
+
+        // googlechromes:// (с буквой s) — для HTTPS сайтов
+        // Без s Chrome откроет HTTP → 301 редирект → потеря времени
+        let chromeURL = "googlechrome://" + OF_URL.replace("https://","");
+
+        window.location.href = chromeURL;
+
+        // Без проверки ofOpened — visibilitychange может не сработать
+        // при открытии внешнего Chrome из WebView
+        setTimeout(function(){
+            trackTG('IOS_SAFARI_FALLBACK');
+            window.location.href = OF_URL;
+        }, 1500);
+
+        return;
+    }
+
+    // iOS в обычном браузере / Desktop → прямой переход
+    trackTG('DIRECT_REDIRECT');
+    window.location.href = OF_URL;
+}
 
 // ─────────────────────────────────────────────
-// РУЧНАЯ КНОПКА: те же цепочки deep links
+// LEAD + ЗАПУСК: 1000мс → Lead → 300мс → openExternal
 // ─────────────────────────────────────────────
-document.getElementById('openBtn').addEventListener('click', function(e) {
+var leadSent = false;
+
+setTimeout(function() {
+    if (!leadSent) {
+        leadSent = true;
+        if (typeof fbq === 'function') {
+            fbq('track', 'Lead', {
+                content_name: 'onlyfans_bridge',
+                device: device
+            });
+        }
+        trackTG('LEAD_QUEUED');
+    }
+
+    setTimeout(openExternal, 300);
+}, 1000);
+
+// ─────────────────────────────────────────────
+// РУЧНАЯ КНОПКА
+// ─────────────────────────────────────────────
+document.getElementById('openBtn').onclick = function(e) {
     e.preventDefault();
     trackTG('BRIDGE_MANUAL_CLICK');
-    trackTG('BRIDGE_EXIT');
 
-    if (isAndroid) {
-        startAndroidChain();
-    } else if (isIOS) {
-        startIOSChain();
-    } else {
-        window.location.href = TG_WEB;
+    if (!leadSent) {
+        leadSent = true;
+        if (typeof fbq === 'function') {
+            fbq('track', 'Lead', {
+                content_name: 'onlyfans_manual_click'
+            });
+        }
+        trackTG('LEAD_MANUAL_QUEUED');
     }
-});
+
+    openExternal();
+};
 </script>
 </body>
 </html>
