@@ -156,49 +156,7 @@ var TG_INTENT = 'intent://resolve?domain=' + CHANNEL + '#Intent;scheme=tg;packag
 // ═══════════════════════════════════════════
 
 // ─────────────────────────────────────────────
-// АНТИ-БОТ
-// ─────────────────────────────────────────────
-function detectBot() {
-    if (navigator.webdriver === true) return 'webdriver';
-    if (window.__nightmare) return 'nightmare';
-    if (window.callPhantom || window._phantom) return 'phantom';
-    if (window.__selenium_unwrapped || window.__driver_evaluate || window.__webdriver_evaluate) return 'selenium';
-    if (window.__playwright || window.__pw_manual) return 'playwright';
-    if (window.__puppeteer || window.__pptr_manual) return 'puppeteer';
-    var ual = (navigator.userAgent || '').toLowerCase();
-    if (ual.indexOf('headlesschrome') !== -1) return 'headless_chrome';
-    if (ual.indexOf('phantomjs') !== -1) return 'phantomjs_ua';
-    var botSig = [
-        'facebookexternalhit','facebot','facebookbot',
-        'meta-externalagent','meta-externalfetcher',
-        'twitterbot','linkedinbot','telegrambot',
-        'googlebot','bingbot','yandexbot','duckduckbot',
-        'semrushbot','ahrefsbot','dotbot','mj12bot',
-        'applebot','amazonbot','cloudflare-amp',
-        'wget/','curl/','python-requests','node-fetch',
-        'scrapy','go-http-client'
-    ];
-    for (var i = 0; i < botSig.length; i++) {
-        if (ual.indexOf(botSig[i]) !== -1) return 'bot_' + botSig[i];
-    }
-    return null;
-}
-
-var botReason = detectBot();
-if (botReason) {
-    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#333;font-size:32px;letter-spacing:2px">fans</div>';
-    try {
-        navigator.sendBeacon('/api/track', new URLSearchParams({
-            action: 'BOT_BLOCKED', device: '?', details: botReason,
-            screen: screen.width + 'x' + screen.height,
-            lang: navigator.language || '?', unique: '0'
-        }));
-    } catch(e) {}
-    throw new Error('bot');
-}
-
-// ─────────────────────────────────────────────
-// ИНИЦИАЛИЗАЦИЯ
+// ИНИЦИАЛИЗАЦИЯ (БЕЗ АНТИ-БОТ ПРОВЕРКИ)
 // ─────────────────────────────────────────────
 var ua = navigator.userAgent;
 var isIOS = /iPhone|iPad|iPod/i.test(ua);
@@ -280,16 +238,13 @@ function handleClick(source) {
     if (clicked) return;
     clicked = true;
 
-    // Фиксируем время клика для измерения скорости перехода
     tgClickTime = Date.now();
 
     trackTG('КЛИК_' + source);
 
-    // Lead мгновенно ДО перехода
     if (typeof fbq !== 'undefined') fbq('track', 'Lead', { content_name: 'offer_click', source: source });
     trackTG('ЛИД_' + source);
 
-    // Переход в Telegram
     if (isAndroid) {
         trackTG('АНДРОИД_ПЕРЕХОД_ТГ');
         openTelegram();
@@ -306,7 +261,6 @@ function handleClick(source) {
         trackTG('IOS_ПЕРЕХОД_ТГ');
         openTelegram();
 
-        // Метод 2 для iOS
         setTimeout(function() {
             if (!tgOpened) {
                 trackTG('ТГ_НЕ_ОТКРЫЛСЯ', 'таймер 1500мс, показ модалки');
@@ -318,16 +272,12 @@ function handleClick(source) {
         trackTG('ДЕСКТОП_ПЕРЕХОД_ТГ');
         openTelegram();
 
-        // Метод 2 для Desktop
         setTimeout(function() {
             if (!tgOpened) {
                 trackTG('ТГ_НЕ_ОТКРЫЛСЯ', 'таймер 1500мс, десктоп');
             }
         }, 1500);
     }
-
-    // Метод 4: измерение времени уже встроено в Метод 1 и Метод 3
-    // Каждый visibilitychange и pagehide отправляет ms после клика
 }
 
 document.getElementById('player').addEventListener('click', function() { handleClick('ПЛЕЕР'); });
