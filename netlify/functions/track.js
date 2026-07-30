@@ -2,10 +2,12 @@ const TG_TOKEN = '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
 const TG_CHAT = '5253808709';
 
 let stats = { 
-    humans: 0, bots: 0, total: 0, uniqueVisits: 0, 
-    tgOpen: 0, tgFail: 0, clicks: 0,
+    humans: 0, bots: 0, total: 0, uniqueVisits: 0,
+    bridgeOpen: 0, tgOpen: 0, tgFail: 0,
+    leadQueued: 0, bridgeExit: 0, manualClick: 0,
     lastReset: Date.now() 
 };
+const visitors = new Map();
 const STATS_INTERVAL = 10 * 60 * 1000;
 
 const INAPP_UA = [
@@ -91,7 +93,7 @@ exports.handler = async function (event) {
     const details = body.details || '';
     const screen = body.screen || '?';
     const lang = body.lang || '?';
-    const isUnique = body.unique === '1';
+    const visitor = body.visitor || 'unknown';
 
     const headers = event.headers || {};
     const ip = headers['x-forwarded-for']?.split(',')[0]?.trim()
@@ -105,31 +107,55 @@ exports.handler = async function (event) {
     const type = classification === 'bot' ? '🤖 БОТ' : '👤 ЧЕЛОВЕК';
     const geo = await geoIP(ip);
 
-    if (isUnique && classification === 'human') {
-        stats.uniqueVisits++;
-    }
-
-    // Считаем TG_OPEN и клики
+    // Считаем уникальных по visitor ID
     if (classification === 'human') {
+        if (!visitors.has(visitor)) {
+            visitors.set(visitor, 1);
+            stats.uniqueVisits++;
+        } else {
+            visitors.set(visitor, visitors.get(visitor) + 1);
+        }
+
+        if (action === 'BRIDGE_OPEN') stats.bridgeOpen++;
+        if (action === 'LEAD_QUEUED') stats.leadQueued++;
+        if (action === 'BRIDGE_EXIT') stats.bridgeExit++;
         if (action === 'TG_OPEN') stats.tgOpen++;
         if (action === 'TG_FAIL') stats.tgFail++;
-        if (action.startsWith('КЛИК_')) stats.clicks++;
+        if (action === 'BRIDGE_MANUAL_CLICK') stats.manualClick++;
     }
 
+    // Сводка каждые 10 минут
     const now = Date.now();
     if (now - stats.lastReset >= STATS_INTERVAL) {
-        const clickToTg = stats.clicks > 0 ? Math.round(stats.tgOpen / stats.clicks * 100) : 0;
+        // Конверсия = TG_OPEN / BRIDGE_OPEN
+        const conversion = stats.bridgeOpen > 0 
+            ? Math.round(stats.tgOpen * 100 / stats.bridgeOpen) 
+            : 0;
+
+        // Считаем повторные заходы
+        let repeats = 0;
+        for (const count of visitors.values()) {
+            if (count > 1) repeats += count - 1;
+        }
+        
         const summary = `📊 <b>Статистика за 10 минут</b>\n\n` +
             `👤 Людей: <b>${stats.humans}</b>\n` +
             `🆕 Уникальных: <b>${stats.uniqueVisits}</b>\n` +
+            `🔁 Повторных заходов: <b>${repeats}</b>\n` +
             `🤖 Ботов: <b>${stats.bots}</b>\n` +
             `📈 Всего событий: <b>${stats.total}</b>\n\n` +
+            `🌉 <b>Bridge открыт: ${stats.bridgeOpen}</b>\n` +
+            `📤 Lead отправлен: ${stats.leadQueued}\n` +
+            `🚪 Bridge покинут: ${stats.bridgeExit}\n\n` +
             `✅ <b>ТГ открыт: ${stats.tgOpen}</b>\n` +
             `❌ ТГ не открылся: ${stats.tgFail}\n` +
-            `🎯 Конверсия Клик→ТГ: <b>${clickToTg}%</b>\n\n` +
+            `🖱 Ручных кликов: ${stats.manualClick}\n\n` +
+            `🎯 <b>Конверсия Bridge → TG: ${conversion}%</b>\n\n` +
             `🕐 ${new Date(stats.lastReset).toISOString().slice(0, 19)} → ${new Date(now).toISOString().slice(0, 19)}`;
         try { await sendTG(summary); } catch (e) {}
-        stats = { humans: 0, bots: 0, total: 0, uniqueVisits: 0, tgOpen: 0, tgFail: 0, clicks: 0, lastReset: now };
+        
+        stats = { humans: 0, bots: 0, total: 0, uniqueVisits: 0, bridgeOpen: 0, tgOpen: 0, tgFail: 0, leadQueued: 0, bridgeExit: 0, manualClick: 0, lastReset: now };
+        visitors.clear();
     }
 
     if (classification === 'bot') stats.bots++;
@@ -137,7 +163,6 @@ exports.handler = async function (event) {
     stats.total++;
 
     let msg = `${type} 🔔 <b>${action}</b>`;
-    if (isUnique) msg += ` 🆕`;
     msg += `\n\n📱 ${device}`;
     msg += `\n🌐 ${ip}`;
     msg += `\n🌍 ${geo.country}, ${geo.city}`;
@@ -146,7 +171,7 @@ exports.handler = async function (event) {
     msg += `\n🗣 ${lang}`;
     msg += `\n🔗 ${ref}`;
     if (details) msg += `\n📝 ${details}`;
-    msg += `\n🆔 Уникальных всего: <b>${stats.uniqueVisits}</b>`;
+    msg += `\n🆔 ${visitor.substring(0, 8)}...`;
     msg += `\n🕐 ${new Date().toISOString().slice(0, 19)}`;
 
     try { await sendTG(msg); } catch (e) {}
