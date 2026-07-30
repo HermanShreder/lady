@@ -44,7 +44,18 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 <script>
 var CHANNEL = 'MilaNoirOF';
 var TG_WEB = 'https://t.me/' + CHANNEL;
-var TG_INTENT_ANDROID = 'intent://resolve?domain=' + CHANNEL + '#Intent;scheme=tg;package=org.telegram.messenger;S.browser_fallback_url=' + encodeURIComponent(TG_WEB) + ';end';
+
+// Android: два варианта intent (попытка 1 → попытка 2 → fallback)
+// Попытка 1: tg:// схема напрямую к приложению
+var TG_INTENT_ANDROID_1 = 'intent://resolve?domain=' + CHANNEL +
+    '#Intent;scheme=tg;package=org.telegram.messenger;end';
+
+// Попытка 2: https:// схема через Telegram package (для WebView которые блокируют tg://)
+var TG_INTENT_ANDROID_2 = 'intent://t.me/' + CHANNEL +
+    '#Intent;scheme=https;package=org.telegram.messenger;S.browser_fallback_url=' +
+    encodeURIComponent(TG_WEB) + ';end';
+
+// iOS: tg:// схема
 var TG_SCHEME_IOS = 'tg://resolve?domain=' + CHANNEL;
 
 var ua = navigator.userAgent || '';
@@ -76,13 +87,12 @@ document.addEventListener('visibilitychange', function() {
 
 setTimeout(function() {
     if (!tgOpened) {
-        trackTG('TG_FAIL', 'таймер 3000мс');
+        trackTG('TG_FAIL', 'таймер 5000мс');
         document.getElementById('fallback').classList.add('visible');
         document.getElementById('openBtn').classList.add('visible');
     }
-}, 3000);
+}, 5000);
 
-// Защита от отсутствия Pixel (AdBlock, Brave, блокировка fbevents.js)
 if (typeof fbq === 'function') {
     fbq('track', 'Lead', { content_name: 'bridge_reached', device: device });
 }
@@ -95,30 +105,70 @@ function fallbackToWeb() {
     }
 }
 
+// ─────────────────────────────────────────────
+// ANDROID: 3-ступенчатая схема
+// 1200мс  → intent #1 (tg:// напрямую)
+// 2700мс  → intent #2 (https через package, если #1 не сработал)
+// 4200мс  → fallback на t.me (если #2 не сработал)
+// ─────────────────────────────────────────────
+function startAndroidChain() {
+    // Попытка 1
+    trackTG('ANDROID_INTENT_1', 'tg:// scheme');
+    window.location.href = TG_INTENT_ANDROID_1;
+
+    // Попытка 2 через 1500мс
+    setTimeout(function() {
+        if (!tgOpened) {
+            trackTG('ANDROID_INTENT_2', 'https scheme through package');
+            window.location.href = TG_INTENT_ANDROID_2;
+
+            // Fallback через ещё 1500мс
+            setTimeout(function() {
+                if (!tgOpened) {
+                    trackTG('ANDROID_FALLBACK_WEB', 'оба intent не сработали');
+                    window.location.href = TG_WEB;
+                }
+            }, 1500);
+        }
+    }, 1500);
+}
+
+// ─────────────────────────────────────────────
+// iOS: tg:// + fallback через 2000мс
+// ─────────────────────────────────────────────
+function startIOSChain() {
+    trackTG('IOS_SCHEME', 'tg://');
+    window.location.href = TG_SCHEME_IOS;
+    setTimeout(fallbackToWeb, 2000);
+}
+
+// ─────────────────────────────────────────────
+// АВТОПЕРЕХОД через 1200мс (даём Lead уйти)
+// ─────────────────────────────────────────────
 setTimeout(function() {
     trackTG('BRIDGE_EXIT');
 
     if (isAndroid) {
-        window.location.href = TG_INTENT_ANDROID;
+        startAndroidChain();
     } else if (isIOS) {
-        window.location.href = TG_SCHEME_IOS;
-        setTimeout(fallbackToWeb, 2000);
+        startIOSChain();
     } else {
         window.location.href = TG_WEB;
     }
 }, 1200);
 
-// Ручная кнопка: user gesture разрешает кастомные схемы
+// ─────────────────────────────────────────────
+// РУЧНАЯ КНОПКА: те же цепочки deep links
+// ─────────────────────────────────────────────
 document.getElementById('openBtn').addEventListener('click', function(e) {
     e.preventDefault();
     trackTG('BRIDGE_MANUAL_CLICK');
     trackTG('BRIDGE_EXIT');
 
     if (isAndroid) {
-        window.location.href = TG_INTENT_ANDROID;
+        startAndroidChain();
     } else if (isIOS) {
-        window.location.href = TG_SCHEME_IOS;
-        setTimeout(fallbackToWeb, 2000);
+        startIOSChain();
     } else {
         window.location.href = TG_WEB;
     }
