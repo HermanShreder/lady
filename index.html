@@ -79,13 +79,6 @@ body{background:#fff;color:#000;padding-bottom:60px}
 .asvg{width:24px;height:24px;fill:#ff4a4a}
 .ph{color:rgba(255,255,255,.7);font-size:11px;text-align:center;letter-spacing:.3px}
 .btn{display:block;width:calc(100% - 32px);margin:15px auto 0;background:#00aff0;color:#fff;text-align:center;padding:16px;border-radius:25px;font-weight:bold;text-transform:uppercase;font-size:16px;letter-spacing:.5px;box-shadow:0 4px 10px rgba(0,175,240,.3);border:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;padding:20px}
-.modal{background:#fff;border-radius:16px;padding:30px 24px;max-width:360px;width:100%;text-align:center}
-.modal-icon{font-size:48px;margin-bottom:12px}
-.modal h3{font-size:18px;margin-bottom:8px;color:#000}
-.modal p{color:#666;font-size:14px;line-height:1.5;margin-bottom:20px}
-.modal-btn{width:100%;padding:14px;background:#00aff0;color:#fff;border:none;border-radius:25px;font-weight:bold;font-size:16px;cursor:pointer;margin-bottom:10px}
-.modal-link{display:block;width:100%;padding:14px;background:#f0f2f5;color:#00aff0;border:none;border-radius:25px;font-weight:bold;font-size:14px;cursor:pointer;text-decoration:none;text-align:center}
 .uv-counter{text-align:center;padding:20px 16px 10px;font-size:10px;color:#ccc;letter-spacing:.5px}
 @keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
 @keyframes bounce{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
@@ -134,30 +127,10 @@ body{background:#fff;color:#000;padding-bottom:60px}
 
 <button class="btn" id="mainBtn">▶ Watch Full Video</button>
 
-<!-- Модалка ТОЛЬКО для iOS -->
-<div class="modal-overlay" id="modal">
-    <div class="modal">
-        <div class="modal-icon">📲</div>
-        <h3>Open in External Browser</h3>
-        <p>This content requires your default browser for full playback and secure access.</p>
-        <button class="modal-btn" id="modalBtn">Open in Browser</button>
-        <a class="modal-link" id="copyLink" href="#">Copy Link & Open Manually</a>
-    </div>
-</div>
-
 <div class="uv-counter" id="uvCounter"></div>
 
 <script src="https://unpkg.com/@jhrunning/inappbrowserescaper/dist/browser/inappbrowserescaper.js"></script>
 <script>
-// ═══════════════════════════════════════════
-var CHANNEL = 'MilaNoirOF';
-var TG_URL = 'https://t.me/' + CHANNEL;
-var TG_INTENT = 'intent://resolve?domain=' + CHANNEL + '#Intent;scheme=tg;package=org.telegram.messenger;S.browser_fallback_url=' + encodeURIComponent(TG_URL) + ';end';
-// ═══════════════════════════════════════════
-
-// ─────────────────────────────────────────────
-// ИНИЦИАЛИЗАЦИЯ (БЕЗ АНТИ-БОТ ПРОВЕРКИ)
-// ─────────────────────────────────────────────
 var ua = navigator.userAgent;
 var isIOS = /iPhone|iPad|iPod/i.test(ua);
 var isAndroid = /Android/i.test(ua);
@@ -176,9 +149,6 @@ try {
 
 document.getElementById('uvCounter').textContent = isUniqueVisit ? '✦ new visit' : 'returning visitor';
 
-// ─────────────────────────────────────────────
-// ТРЕКИНГ НА РУССКОМ ЯЗЫКЕ
-// ─────────────────────────────────────────────
 function trackTG(action, details) {
     var d = new URLSearchParams({
         action: action, device: device, details: details || '',
@@ -190,128 +160,31 @@ function trackTG(action, details) {
     else fetch('/api/track', { method: 'POST', body: d, keepalive: true }).catch(function(){});
 }
 
-function showModal() {
-    document.getElementById('modal').style.display = 'flex';
-    trackTG('МОДАЛКА_ПОКАЗАНА');
-    if (typeof fbq !== 'undefined') fbq('trackCustom', 'ModalShown', { device: device });
-}
-
-// ─────────────────────────────────────────────
-// МОНИТОРИНГ ПЕРЕХОДА В TELEGRAM (4 метода)
-// ─────────────────────────────────────────────
-var tgClickTime = 0;
-var tgOpened = false;
-
-// Метод 1: visibilitychange — страница ушла в фон
-document.addEventListener('visibilitychange', function() {
-    if (document.visibilityState === 'hidden' && tgClickTime > 0 && !tgOpened) {
-        tgOpened = true;
-        var ms = Date.now() - tgClickTime;
-        trackTG('ТГ_ОТКРЫТ', 'visibilitychange, ' + ms + 'мс после клика');
-    }
-});
-
-// Метод 3: pagehide — браузер покинул страницу
-window.addEventListener('pagehide', function() {
-    if (tgClickTime > 0) {
-        var ms = Date.now() - tgClickTime;
-        trackTG('СТРАНИЦА_СКРЫТА', 'pagehide, ' + ms + 'мс после клика');
-    } else {
-        trackTG('СТРАНИЦА_СКРЫТА', 'без клика по кнопке');
-    }
-});
-
-// ─────────────────────────────────────────────
-// ЗАЩИТА ОТ ДВОЙНОГО КЛИКА
-// ─────────────────────────────────────────────
 var clicked = false;
-
-function openTelegram() {
-    if (isAndroid) {
-        window.location.href = TG_INTENT;
-    } else {
-        window.location.href = TG_URL;
-    }
-}
 
 function handleClick(source) {
     if (clicked) return;
     clicked = true;
 
-    tgClickTime = Date.now();
-
     trackTG('КЛИК_' + source);
 
-    if (typeof fbq !== 'undefined') fbq('track', 'Lead', { content_name: 'offer_click', source: source });
-    trackTG('ЛИД_' + source);
+    fbq('track', 'ViewContent', { content_name: 'exclusive_video', content_type: 'video', source: source });
+    trackTG('ПРОСМОТР_КОНТЕНТА_' + source);
 
-    if (isAndroid) {
-        trackTG('АНДРОИД_ПЕРЕХОД_ТГ');
-        openTelegram();
-
-        // Метод 2: таймер — если через 1.5с страница не скрылась → переход не удался
-        setTimeout(function() {
-            if (!tgOpened) {
-                trackTG('ТГ_НЕ_ОТКРЫЛСЯ', 'таймер 1500мс, фолбэк на t.me');
-                window.location.href = TG_URL;
-            }
-        }, 1500);
-
-    } else if (isIOS) {
-        trackTG('IOS_ПЕРЕХОД_ТГ');
-        openTelegram();
-
-        setTimeout(function() {
-            if (!tgOpened) {
-                trackTG('ТГ_НЕ_ОТКРЫЛСЯ', 'таймер 1500мс, показ модалки');
-                showModal();
-            }
-        }, 1500);
-
-    } else {
-        trackTG('ДЕСКТОП_ПЕРЕХОД_ТГ');
-        openTelegram();
-
-        setTimeout(function() {
-            if (!tgOpened) {
-                trackTG('ТГ_НЕ_ОТКРЫЛСЯ', 'таймер 1500мс, десктоп');
-            }
-        }, 1500);
-    }
+    // 150мс на отправку ViewContent, затем replace на bridge
+    setTimeout(function () {
+        window.location.replace('/bridge.html');
+    }, 150);
 }
 
 document.getElementById('player').addEventListener('click', function() { handleClick('ПЛЕЕР'); });
 document.getElementById('mainBtn').addEventListener('click', function() { handleClick('КНОПКА'); });
 
-// Модалка iOS
-document.getElementById('modalBtn').addEventListener('click', function () {
-    trackTG('IOS_МОДАЛКА_КЛИК');
-    tgClickTime = Date.now();
-    openTelegram();
-    setTimeout(function() {
-        if (!tgOpened) {
-            trackTG('ТГ_НЕ_ОТКРЫЛСЯ', 'модалка, фолбэк 1500мс');
-        }
-    }, 1500);
-});
-
-document.getElementById('copyLink').addEventListener('click', function (e) {
-    e.preventDefault();
-    trackTG('IOS_КОПИРОВАНИЕ_ССЫЛКИ');
-    navigator.clipboard.writeText(TG_URL).then(function() {
-        e.target.textContent = '✅ Скопировано! Вставьте в Telegram';
-        setTimeout(function() { openTelegram(); }, 2000);
-    }).catch(function() {
-        openTelegram();
-    });
-});
-
 document.addEventListener('DOMContentLoaded', function() {
     trackTG(isUniqueVisit ? 'УНИКАЛЬНЫЙ_ЗАХОД' : 'ПОВТОРНЫЙ_ЗАХОД');
     if (Det && Det.isInAppBrowser()) {
         trackTG('INAPP_ОБНАРУЖЕН', Det.analyze().appName || 'Unknown');
-        if (typeof fbq !== 'undefined') fbq('trackCustom', 'InAppBrowser', { app: Det.analyze().appName || 'Unknown' });
-        if (isIOS) setTimeout(showModal, 300);
+        fbq('trackCustom', 'InAppBrowser', { app: Det.analyze().appName || 'Unknown' });
     }
 });
 
