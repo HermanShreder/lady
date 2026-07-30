@@ -1,20 +1,32 @@
 const https = require('https');
+const { getStore } = require('@netlify/blobs');
 
 const TG_TOKEN = '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
 const TG_CHAT = '5253808709';
-
-// ═══════════════════════════════════════════
-// СЧЁТЧИКИ
-// ═══════════════════════════════════════════
-let stats = {
-    landing: 0, clicks: 0, viewContent: 0,
-    bridgeOpen: 0, leadQueued: 0, bridgeExit: 0,
-    tgOpen: 0, tgFail: 0, manualClick: 0,
-    humans: 0, bots: 0, total: 0, uniqueVisits: 0,
-    totalRequests: 0, lastReset: Date.now()
-};
-
 const STATS_INTERVAL = 10 * 60 * 1000;
+
+// ═══════════════════════════════════════════
+// ПЕРСИСТЕНТНЫЕ СЧЁТЧИКИ (Netlify Blobs)
+// ═══════════════════════════════════════════
+const store = getStore('funnel-stats');
+
+async function loadStats() {
+    try {
+        const data = await store.get('stats', { type: 'json' });
+        if (data) return data;
+    } catch (e) {}
+    return {
+        landing: 0, clicks: 0, viewContent: 0,
+        bridgeOpen: 0, leadQueued: 0, bridgeExit: 0,
+        tgOpen: 0, tgFail: 0, manualClick: 0,
+        humans: 0, bots: 0, total: 0, uniqueVisits: 0,
+        totalRequests: 0, lastReset: Date.now()
+    };
+}
+
+async function saveStats(s) {
+    try { await store.setJSON('stats', s); } catch (e) { console.error('saveStats error:', e.message); }
+}
 
 // ═══════════════════════════════════════════
 // КЛАССИФИКАЦИЯ
@@ -30,7 +42,7 @@ function classify(ua, ip) {
 }
 
 // ═══════════════════════════════════════════
-// TELEGRAM API (через https, НЕ fetch)
+// TELEGRAM API
 // ═══════════════════════════════════════════
 function tgApi(method, payload) {
     return new Promise((resolve, reject) => {
@@ -90,8 +102,7 @@ function geoIP(ip) {
 // ═══════════════════════════════════════════
 // СТАТИСТИКА
 // ═══════════════════════════════════════════
-function buildStats() {
-    const s = stats;
+function buildStats(s) {
     const clickRate = s.landing > 0 ? Math.round(s.clicks / s.landing * 100) : 0;
     const bridgeToTg = s.bridgeOpen > 0 ? Math.round(s.tgOpen / s.bridgeOpen * 100) : 0;
     const clickToTg = s.clicks > 0 ? Math.round(s.tgOpen / s.clicks * 100) : 0;
@@ -123,31 +134,19 @@ function buildStats() {
 const statsKB = { inline_keyboard: [[{ text: '🔄 Обновить', callback_data: 'refresh_stats' }]] };
 
 // ═══════════════════════════════════════════
-// ПАРСИНГ BODY (поддержка base64 + URLSearchParams + JSON)
+// ПАРСИНГ BODY
 // ═══════════════════════════════════════════
 function parseBody(event) {
     let raw = event.body || '';
-    
-    // Декодируем base64 если нужно
-    if (event.isBase64Encoded && raw) {
-        raw = Buffer.from(raw, 'base64').toString('utf-8');
-    }
-    
+    if (event.isBase64Encoded && raw) raw = Buffer.from(raw, 'base64').toString('utf-8');
     if (!raw) return {};
-    
-    // Пробуем JSON
-    try {
-        return JSON.parse(raw);
-    } catch (e) {}
-    
-    // URLSearchParams (от sendBeacon)
+    try { return JSON.parse(raw); } catch (e) {}
     if (raw.includes('=')) {
         const body = {};
         const params = new URLSearchParams(raw);
         params.forEach((v, k) => { body[k] = v; });
         return body;
     }
-    
     return {};
 }
 
@@ -160,21 +159,19 @@ exports.handler = async function (event) {
     const body = parseBody(event);
 
     // ─────────────────────────────────────────
-    // TELEGRAM WEBHOOK (есть update_id)
+    // TELEGRAM WEBHOOK
     // ─────────────────────────────────────────
     if (body.update_id !== undefined) {
-        // /start или /stats
+        const s = await loadStats();
+
         if (body.message && body.message.text) {
             const text = body.message.text.trim();
             if (text === '/start' || text === '/stats') {
-                await sendTG(buildStats(), statsKB);
+                await sendTG(buildStats(s), statsKB);
             }
         }
-        // Нажатие кнопки "Обновить"
         if (body.callback_query && body.callback_query.data === 'refresh_stats') {
-            const chatId = body.callback_query.message.chat.id;
-            const msgId = body.callback_query.message.message_id;
-            await editTG(chatId, msgId, buildStats(), statsKB);
+            await editTG(body.callback_query.message.chat.id, body.callback_query.message.message_id, buildStats(s), statsKB);
             await answerCB(body.callback_query.id);
         }
         return { statusCode: 200, body: 'OK' };
@@ -183,6 +180,8 @@ exports.handler = async function (event) {
     // ─────────────────────────────────────────
     // ТРЕКИНГ ОТ САЙТА
     // ─────────────────────────────────────────
+    const s = await loadStats();
+
     const action = body.action || '';
     const device = body.device || '?';
     const details = body.details || '';
@@ -191,8 +190,7 @@ exports.handler = async function (event) {
     const isUnique = body.unique === '1';
 
     const headers = event.headers || {};
-    const ip = (headers['x-forwarded-for'] || '').split(',')[0]?.trim()
-            || headers['x-real-ip'] || headers['client-ip'] || '?';
+    const ip = (headers['x-forwarded-for'] || '').split(',')[0]?.trim() || headers['x-real-ip'] || headers['client-ip'] || '?';
     const ua = headers['user-agent'] || '';
     const ref = headers.referer || headers.referrer || 'Direct';
 
@@ -200,53 +198,54 @@ exports.handler = async function (event) {
     const typeLabel = type === 'bot' ? '🤖 БОТ' : '👤 ЧЕЛОВЕК';
     const geo = await geoIP(ip);
 
-    // Обновляем счётчики (только для людей)
+    // Обновляем счётчики
     if (type === 'human') {
-        if (action === 'УНИКАЛЬНЫЙ_ЗАХОД' || action === 'ПОВТОРНЫЙ_ЗАХОД') stats.landing++;
-        if (action.startsWith('КЛИК_')) stats.clicks++;
-        if (action.startsWith('ПРОСМОТР_КОНТЕНТА_')) stats.viewContent++;
-        if (action === 'BRIDGE_OPEN') stats.bridgeOpen++;
-        if (action === 'LEAD_QUEUED') stats.leadQueued++;
-        if (action === 'BRIDGE_EXIT') stats.bridgeExit++;
-        if (action === 'TG_OPEN') stats.tgOpen++;
-        if (action === 'TG_FAIL') stats.tgFail++;
-        if (action === 'BRIDGE_MANUAL_CLICK') stats.manualClick++;
+        if (action === 'УНИКАЛЬНЫЙ_ЗАХОД' || action === 'ПОВТОРНЫЙ_ЗАХОД') s.landing++;
+        if (action.startsWith('КЛИК_')) s.clicks++;
+        if (action.startsWith('ПРОСМОТР_КОНТЕНТА_')) s.viewContent++;
+        if (action === 'BRIDGE_OPEN') s.bridgeOpen++;
+        if (action === 'LEAD_QUEUED') s.leadQueued++;
+        if (action === 'BRIDGE_EXIT') s.bridgeExit++;
+        if (action === 'TG_OPEN') s.tgOpen++;
+        if (action === 'TG_FAIL') s.tgFail++;
+        if (action === 'BRIDGE_MANUAL_CLICK') s.manualClick++;
     }
 
-    if (isUnique && type === 'human') stats.uniqueVisits++;
-    if (type === 'bot') stats.bots++; else stats.humans++;
-    stats.total++;
-    stats.totalRequests++;
+    if (isUnique && type === 'human') s.uniqueVisits++;
+    if (type === 'bot') s.bots++; else s.humans++;
+    s.total++;
+    s.totalRequests++;
 
     // Сводка каждые 10 минут
     const now = Date.now();
-    if (now - stats.lastReset >= STATS_INTERVAL) {
-        const clickToTg = stats.clicks > 0 ? Math.round(stats.tgOpen / stats.clicks * 100) : 0;
+    if (now - s.lastReset >= STATS_INTERVAL) {
+        const clickToTg = s.clicks > 0 ? Math.round(s.tgOpen / s.clicks * 100) : 0;
         const summary = `📊 <b>Сводка за 10 минут</b>\n\n` +
-            `👤 Людей: <b>${stats.humans}</b>\n🆕 Уникальных: <b>${stats.uniqueVisits}</b>\n🤖 Ботов: <b>${stats.bots}</b>\n\n` +
-            `🔹 Лендинг: ${stats.landing} → кликов ${stats.clicks}\n` +
-            `🔸 Bridge: ${stats.bridgeOpen} (lead ${stats.leadQueued})\n` +
-            `🔹 Telegram: ✅ ${stats.tgOpen} | ❌ ${stats.tgFail}\n\n` +
+            `👤 Людей: <b>${s.humans}</b>\n🆕 Уникальных: <b>${s.uniqueVisits}</b>\n🤖 Ботов: <b>${s.bots}</b>\n\n` +
+            `🔹 Лендинг: ${s.landing} → кликов ${s.clicks}\n` +
+            `🔸 Bridge: ${s.bridgeOpen} (lead ${s.leadQueued})\n` +
+            `🔹 Telegram: ✅ ${s.tgOpen} | ❌ ${s.tgFail}\n\n` +
             `🎯 <b>Конверсия Клик → TG: ${clickToTg}%</b>\n\n` +
-            `🕐 ${new Date(stats.lastReset).toISOString().slice(0, 19)} → ${new Date(now).toISOString().slice(0, 19)}`;
+            `🕐 ${new Date(s.lastReset).toISOString().slice(0, 19)} → ${new Date(now).toISOString().slice(0, 19)}`;
         await sendTG(summary);
-        stats = { landing: 0, clicks: 0, viewContent: 0, bridgeOpen: 0, leadQueued: 0, bridgeExit: 0, tgOpen: 0, tgFail: 0, manualClick: 0, humans: 0, bots: 0, total: 0, uniqueVisits: 0, totalRequests: 0, lastReset: now };
+        s.landing = 0; s.clicks = 0; s.viewContent = 0;
+        s.bridgeOpen = 0; s.leadQueued = 0; s.bridgeExit = 0;
+        s.tgOpen = 0; s.tgFail = 0; s.manualClick = 0;
+        s.humans = 0; s.bots = 0; s.total = 0; s.uniqueVisits = 0;
+        s.totalRequests = 0; s.lastReset = now;
     }
+
+    // Сохраняем счётчики
+    await saveStats(s);
 
     // Отправляем лог
     let msg = `${typeLabel} 🔔 <b>${action}</b>`;
     if (isUnique) msg += ` 🆕`;
-    msg += `\n\n📱 ${device}`;
-    msg += `\n🌐 ${ip}`;
-    msg += `\n🌍 ${geo.country}, ${geo.city}`;
-    msg += `\n📡 ${geo.isp}`;
-    msg += `\n📐 ${screen}`;
-    msg += `\n🗣 ${lang}`;
-    msg += `\n🔗 ${ref}`;
+    msg += `\n\n📱 ${device}\n🌐 ${ip}\n🌍 ${geo.country}, ${geo.city}\n📡 ${geo.isp}\n📐 ${screen}\n🗣 ${lang}\n🔗 ${ref}`;
     if (details) msg += `\n📝 ${details}`;
-    msg += `\n\n<b>📊 Воронка:</b> Ленд ${stats.landing} → Клик ${stats.clicks} → TG ${stats.tgOpen}`;
-    msg += `\n🎯 Конверсия: <b>${stats.clicks > 0 ? Math.round(stats.tgOpen / stats.clicks * 100) : 0}%</b>`;
-    msg += `\n🆔 Уникальных: <b>${stats.uniqueVisits}</b>`;
+    msg += `\n\n<b>📊 Воронка:</b> Ленд ${s.landing} → Клик ${s.clicks} → TG ${s.tgOpen}`;
+    msg += `\n🎯 Конверсия: <b>${s.clicks > 0 ? Math.round(s.tgOpen / s.clicks * 100) : 0}%</b>`;
+    msg += `\n🆔 Уникальных: <b>${s.uniqueVisits}</b>`;
     msg += `\n🕐 ${new Date().toISOString().slice(0, 19)}`;
 
     await sendTG(msg);
