@@ -42,6 +42,17 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 <a href="https://t.me/MilaNoirOF" class="btn" id="openBtn">Open Telegram</a>
 
 <script>
+// ---------- Visitor ID ----------
+let visitorId = localStorage.getItem('visitor_id');
+
+if (!visitorId) {
+    visitorId = (typeof crypto !== 'undefined' && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : 'v-' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+    localStorage.setItem('visitor_id', visitorId);
+}
+// ---------- end Visitor ID ----------
+
 var CHANNEL = 'MilaNoirOF';
 var TG_WEB = 'https://t.me/' + CHANNEL;
 
@@ -65,9 +76,12 @@ var device = isIOS ? 'iOS' : (isAndroid ? 'Android' : 'Desktop');
 
 function trackTG(action, details) {
     var d = new URLSearchParams({
-        action: action, device: device, details: details || '',
+        action: action, 
+        device: device, 
+        details: details || '',
         screen: screen.width + 'x' + screen.height,
-        lang: navigator.language || '?'
+        lang: navigator.language || '?',
+        visitor_id: visitorId
     });
     if (navigator.sendBeacon) navigator.sendBeacon('/api/track', d);
     else fetch('/api/track', { method: 'POST', body: d, keepalive: true }).catch(function(){});
