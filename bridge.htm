@@ -17,7 +17,6 @@ s.parentNode.insertBefore(t,s)}(window,document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
 fbq('init','2127136807835684');
 </script>
-<!-- End Meta Pixel Code -->
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
@@ -43,8 +42,10 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 <a href="https://t.me/MilaNoirOF" class="btn" id="openBtn">Open Telegram</a>
 
 <script>
-var CHANNEL = 'MilaNoirOF/2';
-var TG_URL = 'https://t.me/' + CHANNEL;
+var CHANNEL = 'MilaNoirOF';
+var TG_WEB = 'https://t.me/' + CHANNEL;
+var TG_INTENT_ANDROID = 'intent://resolve?domain=' + CHANNEL + '#Intent;scheme=tg;package=org.telegram.messenger;S.browser_fallback_url=' + encodeURIComponent(TG_WEB) + ';end';
+var TG_SCHEME_IOS = 'tg://resolve?domain=' + CHANNEL;
 
 var ua = navigator.userAgent || '';
 var isAndroid = /android/i.test(ua);
@@ -73,13 +74,6 @@ document.addEventListener('visibilitychange', function() {
     }
 });
 
-window.addEventListener('pagehide', function() {
-    if (!tgOpened) {
-        tgOpened = true;
-        trackTG('TG_OPEN', 'pagehide, ' + (Date.now() - startTime) + 'мс');
-    }
-});
-
 setTimeout(function() {
     if (!tgOpened) {
         trackTG('TG_FAIL', 'таймер 3000мс');
@@ -88,24 +82,46 @@ setTimeout(function() {
     }
 }, 3000);
 
-var leadQueued = false;
-
-if (!leadQueued) {
-    leadQueued = true;
+// Защита от отсутствия Pixel (AdBlock, Brave, блокировка fbevents.js)
+if (typeof fbq === 'function') {
     fbq('track', 'Lead', { content_name: 'bridge_reached', device: device });
-    trackTG('LEAD_QUEUED');
+}
+trackTG('LEAD_QUEUED');
+
+function fallbackToWeb() {
+    if (!tgOpened) {
+        trackTG('FALLBACK_TO_WEB', device + ', deep link не сработал');
+        window.location.href = TG_WEB;
+    }
 }
 
 setTimeout(function() {
     trackTG('BRIDGE_EXIT');
-    window.location.replace(TG_URL);
-}, 1000);
 
+    if (isAndroid) {
+        window.location.href = TG_INTENT_ANDROID;
+    } else if (isIOS) {
+        window.location.href = TG_SCHEME_IOS;
+        setTimeout(fallbackToWeb, 2000);
+    } else {
+        window.location.href = TG_WEB;
+    }
+}, 1200);
+
+// Ручная кнопка: user gesture разрешает кастомные схемы
 document.getElementById('openBtn').addEventListener('click', function(e) {
     e.preventDefault();
     trackTG('BRIDGE_MANUAL_CLICK');
     trackTG('BRIDGE_EXIT');
-    window.location.href = TG_URL;
+
+    if (isAndroid) {
+        window.location.href = TG_INTENT_ANDROID;
+    } else if (isIOS) {
+        window.location.href = TG_SCHEME_IOS;
+        setTimeout(fallbackToWeb, 2000);
+    } else {
+        window.location.href = TG_WEB;
+    }
 });
 </script>
 </body>
