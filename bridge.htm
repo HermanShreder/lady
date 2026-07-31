@@ -39,7 +39,7 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 <div class="title">Opening in browser...</div>
 <div class="bar-wrap"><div class="bar"></div></div>
 <div class="fallback" id="fallback">If nothing happened,<br>tap the button below.</div>
-<a href="https://onlyfans.com/clubmila/trial/br8sz4g649t0gqafx1vjtppzi7mgprpl" class="btn" id="openBtn">Open Profile</a>
+<a href="/onlyfans-open.html" class="btn" id="openBtn">Open Profile</a>
 
 <script>
 // ---------- Visitor ID ----------
@@ -53,7 +53,8 @@ if (!visitorId) {
 }
 // ---------- end Visitor ID ----------
 
-const OF_URL = "https://onlyfans.com/clubmila/trial/br8sz4g649t0gqafx1vjtppzi7mgprpl";
+const BRIDGE_VERSION = 'v2';
+const OF_OPEN_URL = "/onlyfans-open.html?v=" + encodeURIComponent(visitorId);
 
 var ua = navigator.userAgent || '';
 var isAndroid = /Android/i.test(ua);
@@ -68,7 +69,9 @@ function trackTG(action, details) {
         details: details || '',
         screen: screen.width + 'x' + screen.height,
         lang: navigator.language || '?',
-        visitor: visitorId
+        visitor: visitorId,
+        page: 'bridge',
+        bridge: BRIDGE_VERSION
     });
 
     if (navigator.sendBeacon)
@@ -83,85 +86,71 @@ function trackTG(action, details) {
 
 trackTG('BRIDGE_OPEN');
 
-// Мониторинг открытия OF
-var ofOpened = false;
+var leavingBridge = false;
 var startTime = Date.now();
 
 document.addEventListener('visibilitychange', function() {
-    if (document.visibilityState === 'hidden' && !ofOpened) {
-        ofOpened = true;
-        trackTG('OF_OPEN', 'visibilitychange, ' + (Date.now() - startTime) + 'мс');
+    if (document.visibilityState === 'hidden' && !leavingBridge) {
+        leavingBridge = true;
+        trackTG('LEAVING_BRIDGE', 'visibilitychange, ' + (Date.now() - startTime) + 'мс');
     }
 });
 
 setTimeout(function() {
-    if (!ofOpened) {
-        trackTG('OF_FAIL', 'таймер 5000мс');
+    if (!leavingBridge) {
+        trackTG('BRIDGE_TIMEOUT', 'таймер 5000мс');
         document.getElementById('fallback').classList.add('visible');
         document.getElementById('openBtn').classList.add('visible');
     }
 }, 5000);
 
-// ─────────────────────────────────────────────
-// OPEN EXTERNAL BROWSER
-// ─────────────────────────────────────────────
 function openExternal() {
     trackTG('BRIDGE_EXIT');
 
-    // ANDROID → Chrome через intent
     if (isAndroid) {
         trackTG('ANDROID_CHROME_INTENT');
 
         let chromeIntent =
             "intent://" +
-            OF_URL.replace("https://","") +
+            location.host + "/onlyfans-open.html?v=" + encodeURIComponent(visitorId) +
             "#Intent;" +
             "scheme=https;" +
             "package=com.android.chrome;" +
             "S.browser_fallback_url=" +
-            encodeURIComponent(OF_URL) +
+            encodeURIComponent(OF_OPEN_URL) +
             ";end";
 
         window.location.href = chromeIntent;
 
         setTimeout(function(){
-            if (!ofOpened) {
+            if (!leavingBridge) {
                 trackTG('ANDROID_CHROME_FAIL', 'intent не сработал, fallback');
-                window.location.href = OF_URL;
+                window.location.replace(OF_OPEN_URL);
             }
         }, 1500);
 
         return;
     }
 
-    // iPHONE в FB/IG WebView → Chrome (HTTPS) → Safari fallback
     if (isIOS && isFB) {
         trackTG('IOS_CHROME_ATTEMPT');
 
-        // googlechromes:// (с буквой s) — для HTTPS сайтов
-        // Без s Chrome откроет HTTP → 301 редирект → потеря времени
-        let chromeURL = "googlechrome://" + OF_URL.replace("https://","");
+        let chromeURL = "googlechromes://" + location.host + "/onlyfans-open.html?v=" + encodeURIComponent(visitorId);
 
         window.location.href = chromeURL;
 
-        // Без проверки ofOpened — visibilitychange может не сработать
-        // при открытии внешнего Chrome из WebView
         setTimeout(function(){
             trackTG('IOS_SAFARI_FALLBACK');
-            window.location.href = OF_URL;
+            window.location.replace(OF_OPEN_URL);
         }, 1500);
 
         return;
     }
 
-    // iOS в обычном браузере / Desktop → прямой переход
     trackTG('DIRECT_REDIRECT');
-    window.location.href = OF_URL;
+    window.location.replace(OF_OPEN_URL);
 }
 
-// ─────────────────────────────────────────────
-// LEAD + ЗАПУСК: 1000мс → Lead → 300мс → openExternal
-// ─────────────────────────────────────────────
 var leadSent = false;
 
 setTimeout(function() {
@@ -179,9 +168,6 @@ setTimeout(function() {
     setTimeout(openExternal, 300);
 }, 1000);
 
-// ─────────────────────────────────────────────
-// РУЧНАЯ КНОПКА
-// ─────────────────────────────────────────────
 document.getElementById('openBtn').onclick = function(e) {
     e.preventDefault();
     trackTG('BRIDGE_MANUAL_CLICK');
