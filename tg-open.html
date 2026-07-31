@@ -6,7 +6,7 @@
 <title>Opening...</title>
 <style>
 body{margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#333}
-.spinner{width:30px;height:30px;border:3px solid #e0e0e0;border-top:3px solid #00aff0;border-radius:50%;animation:spin .8s linear infinite}
+.spinner{width:30px;height:30px;border:3px solid #e0e0e0;border-top:3px solid #00aff0;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:20px}
 @keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
@@ -15,8 +15,7 @@ body{margin:0;display:flex;flex-direction:column;align-items:center;justify-cont
 
 <a id="openBtn"
    href="#"
-   style="display:none;
-          margin-top:30px;
+   style="margin-top:30px;
           padding:16px 28px;
           background:#0088cc;
           color:#fff;
@@ -48,8 +47,6 @@ const hasFBUA =
 const hasAndroidWebViewBrand = 
     navigator.userAgentData?.brands?.some(b => b.brand === "Android WebView");
 
-const isMetaWebView = hasFBUA;
-
 function trackTG(action, detail) {
     const body = new URLSearchParams({
         action: action,
@@ -60,7 +57,7 @@ function trackTG(action, detail) {
         visitor: visitorId,
         page: 'tg-open',
         version: VERSION,
-        browser: isMetaWebView ? 'meta_webview' : (device === 'iOS' ? 'ios' : 'external_chrome')
+        browser: hasFBUA ? 'meta_webview' : (device === 'iOS' ? 'ios' : 'external_chrome')
     });
 
     if (navigator.sendBeacon) {
@@ -70,17 +67,7 @@ function trackTG(action, detail) {
     }
 }
 
-// Функция для открытия схемы через эмуляцию клика
-function openScheme(url) {
-    const a = document.createElement("a");
-    a.href = url;
-    a.style.display = "none";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-}
-
-// 1. Детальное логирование окружения
+// 1. Детальное логирование окружения при загрузке
 trackTG('TG_PAGE_OPEN', JSON.stringify({
     ua: navigator.userAgent,
     brands: navigator.userAgentData?.brands || null,
@@ -89,102 +76,33 @@ trackTG('TG_PAGE_OPEN', JSON.stringify({
     platform: navigator.platform,
     url: location.href,
     visibility: document.visibilityState,
-    isMetaWebView: isMetaWebView,
     hasFBUA: hasFBUA,
     hasAndroidWebViewBrand: hasAndroidWebViewBrand
 }));
 
-// 2. Логика автоматического редиректа
-function redirectTelegram() {
-    trackTG('TG_REDIRECT');
+// 2. Логируем показ кнопки
+trackTG('SHOW_MANUAL_BUTTON');
 
-    if (device === 'Android') {
-        if (!isMetaWebView) {
-            // Мы во внешнем браузере → используем Intent
-            const intent =
-                "intent://resolve?domain=MilaNoirOF#Intent;" +
-                "scheme=https;" +
-                "package=org.telegram.messenger;" +
-                "S.browser_fallback_url=" +
-                encodeURIComponent(TG_URL) +
-                ";end";
+// 3. Логика кнопки
+const btn = document.getElementById('openBtn');
 
-            trackTG('ANDROID_INTENT_START');
-            location.replace(intent);
+btn.onclick = function (e) {
+    e.preventDefault();
 
-            setTimeout(function(){
-                if(document.visibilityState === 'visible'){
-                    trackTG('ANDROID_INTENT_FAILED');
-                    location.replace(TG_URL);
-                }
-            }, 1500);
+    trackTG('MANUAL_BUTTON_CLICK');
+    trackTG('TG_OPEN_ATTEMPT');
+    trackTG('TG_SCHEME_START_MANUAL');
 
-        } else {
-            // Мы всё еще в Meta WebView → пробуем схему через клик
-            trackTG('TG_SCHEME_START_IN_WEBVIEW');
-            openScheme("tg://resolve?domain=MilaNoirOF");
-            
-            setTimeout(function () {
-                if (document.visibilityState === 'visible') {
-                    trackTG('TG_SCHEME_FAILED');
-                    location.replace(TG_URL);
-                }
-            }, 1200);
+    // Открываем Telegram по пользовательскому действию
+    location.href = "tg://resolve?domain=MilaNoirOF";
+
+    setTimeout(function () {
+        if (document.visibilityState === 'visible') {
+            trackTG('TG_SCHEME_FAILED_MANUAL');
+            location.replace(TG_URL);
         }
-
-    } else if (device === 'iOS') {
-        // iOS → пробуем схему через клик
-        trackTG('IOS_SCHEME_START');
-        openScheme("tg://resolve?domain=MilaNoirOF");
-
-        setTimeout(function () {
-            if (document.visibilityState === 'visible') {
-                trackTG('IOS_SCHEME_FAILED');
-                location.replace(TG_URL);
-            }
-        }, 1200);
-
-    } else {
-        location.replace(TG_URL);
-    }
-}
-
-let manualTimer;
-
-document.addEventListener("visibilitychange", function () {
-    if (document.visibilityState === "hidden") {
-        clearTimeout(manualTimer);
-    }
-});
-
-setTimeout(redirectTelegram, 700);
-
-// 3. Логика кнопки ручного перехода
-manualTimer = setTimeout(function () {
-    if (document.visibilityState !== 'visible') return;
-
-    trackTG('SHOW_MANUAL_BUTTON');
-
-    const btn = document.getElementById('openBtn');
-    btn.style.display = 'inline-block';
-
-    btn.onclick = function (e) {
-        e.preventDefault();
-        trackTG('MANUAL_BUTTON_CLICK');
-        trackTG('TG_SCHEME_START');
-        
-        // Клик по кнопке также использует эмуляцию ссылки
-        openScheme("tg://resolve?domain=MilaNoirOF");
-
-        setTimeout(function () {
-            if (document.visibilityState === 'visible') {
-                trackTG('TG_SCHEME_FAILED');
-                location.replace(TG_URL);
-            }
-        }, 1200);
-    };
-
-}, 2000);
+    }, 1200);
+};
 </script>
 </body>
 </html>
