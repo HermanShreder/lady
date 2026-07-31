@@ -51,11 +51,19 @@ if (!visitorId) {
 }
 
 const VERSION = '2026-07-31-WORKER';
-// Ссылка на твой Cloudflare Worker с передачей visitor ID
 const WORKER_URL = "https://tg-open.edvard7789.workers.dev/?v=" + encodeURIComponent(visitorId);
 
 var ua = navigator.userAgent || '';
 var device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
+
+// Определение типа браузера (In-App или внешний)
+var isFB = 
+    ua.includes("FBAN") || 
+    ua.includes("FBAV") || 
+    ua.includes("FB_IAB") || 
+    ua.includes("FBIOS") || 
+    ua.includes("Instagram") || 
+    ua.includes("Messenger");
 
 function trackTG(action, details) {
     var d = new URLSearchParams({
@@ -66,7 +74,8 @@ function trackTG(action, details) {
         lang: navigator.language || '?',
         visitor: visitorId,
         page: 'bridge',
-        version: VERSION
+        version: VERSION,
+        browser: isFB ? 'inapp' : 'external'
     });
 
     if (navigator.sendBeacon)
@@ -81,14 +90,39 @@ function trackTG(action, details) {
 
 trackTG('BRIDGE_OPEN');
 
+// ─────────────────────────────────────────────
+// УЛУЧШЕННЫЙ ДЕТЕКТОР УХОДА
+// ─────────────────────────────────────────────
 var leavingBridge = false;
 var startTime = Date.now();
 
-document.addEventListener('visibilitychange', function() {
-    if (document.visibilityState === 'hidden' && !leavingBridge) {
+function markLeaving(source) {
+    if (!leavingBridge) {
         leavingBridge = true;
-        trackTG('LEAVING_BRIDGE', 'visibilitychange, ' + (Date.now() - startTime) + 'мс');
+        trackTG(
+            'LEAVING_BRIDGE',
+            source + ', ' + (Date.now() - startTime) + 'ms'
+        );
     }
+}
+
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') {
+        markLeaving('visibilitychange');
+    }
+});
+
+window.addEventListener('pagehide', function() {
+    markLeaving('pagehide');
+});
+
+// Защита от ложных blur: проверяем visibilityState через 300мс
+window.addEventListener('blur', function() {
+    setTimeout(function(){
+        if (document.visibilityState === 'hidden') {
+            markLeaving('blur');
+        }
+    }, 300);
 });
 
 setTimeout(function() {
@@ -100,17 +134,15 @@ setTimeout(function() {
 }, 5000);
 
 // ─────────────────────────────────────────────
-// ПРОСТОЙ ПЕРЕХОД НА WORKER
-// Вся логика обхода блокировок теперь на сервере
+// ПЕРЕХОД НА WORKER
 // ─────────────────────────────────────────────
 function openExternal() {
-    trackTG('BRIDGE_EXIT');
+    trackTG('BRIDGE_EXIT', 'redirect_to_worker');
     window.location.replace(WORKER_URL);
 }
 
 var leadSent = false;
 
-// Ждем 1000мс, отправляем Lead и сразу уходим на Worker
 setTimeout(function() {
     if (!leadSent) {
         leadSent = true;
