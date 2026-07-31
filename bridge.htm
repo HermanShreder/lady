@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Loading...</title>
+<title>Open Telegram</title>
 
 <!-- Meta Pixel Code -->
 <script>
 !function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f(fbq=function(){n.callMethod?
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};
 if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
 n.queue=[];t=b.createElement(e);t.async=!0;
@@ -21,25 +21,15 @@ fbq('init','2127136807835684');
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
 body{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:#fff;color:#333;text-align:center;padding:20px}
-.spinner{width:36px;height:36px;border:3px solid #e0e0e0;border-top:3px solid #00aff0;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:20px}
-.title{font-size:16px;font-weight:600;margin-bottom:12px}
-.bar-wrap{width:200px;height:4px;background:#e0e0e0;border-radius:2px;overflow:hidden;margin-bottom:24px}
-.bar{height:100%;background:#00aff0;border-radius:2px;animation:load 2s ease-in-out forwards}
-.fallback{opacity:0;transition:opacity .3s;font-size:13px;color:#888;line-height:1.5;margin-bottom:16px}
-.fallback.visible{opacity:1}
-.btn{display:inline-block;padding:14px 32px;background:#00aff0;color:#fff;border:none;border-radius:25px;font-size:15px;font-weight:600;cursor:pointer;text-decoration:none;opacity:0;transition:opacity .3s;-webkit-tap-highlight-color:transparent}
-.btn.visible{opacity:1}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes load{0%{width:0}60%{width:70%}100%{width:100%}}
+.title{font-size:18px;font-weight:600;margin-bottom:24px}
+.btn{display:inline-block;padding:16px 32px;background:#00aff0;color:#fff;border:none;border-radius:25px;font-size:16px;font-weight:600;cursor:pointer;text-decoration:none;-webkit-tap-highlight-color:transparent;box-shadow:0 4px 12px rgba(0,175,240,0.3)}
+.btn:active{transform:scale(0.98)}
 </style>
 </head>
 <body>
 
-<div class="spinner"></div>
-<div class="title">Connecting to Telegram...</div>
-<div class="bar-wrap"><div class="bar"></div></div>
-<div class="fallback" id="fallback">If nothing happened,<br>tap the button below.</div>
-<a href="#" class="btn" id="openBtn">Open Telegram</a>
+<div class="title">Tap the button to continue</div>
+<a id="openBtn" class="btn" href="#">Open Telegram</a>
 
 <script>
 let visitorId = localStorage.getItem('visitor_id');
@@ -53,16 +43,12 @@ if (!visitorId) {
 const VERSION = '2026-07-31-BRIDGE';
 const TG_OPEN_URL = "/tg-open.html?v=" + encodeURIComponent(visitorId);
 
+// Устанавливаем нативную ссылку для кнопки сразу при загрузке
+document.getElementById('openBtn').href = TG_OPEN_URL;
+
 var ua = navigator.userAgent || '';
 var device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
-
-var isFB = 
-    ua.includes("FBAN") || 
-    ua.includes("FBAV") || 
-    ua.includes("FB_IAB") || 
-    ua.includes("FBIOS") || 
-    ua.includes("Instagram") || 
-    ua.includes("Messenger");
+var isFB = ua.includes("FBAN") || ua.includes("FBAV") || ua.includes("FB_IAB") || ua.includes("FBIOS") || ua.includes("Instagram") || ua.includes("Messenger");
 
 function trackTG(action, details) {
     var d = new URLSearchParams({
@@ -77,19 +63,15 @@ function trackTG(action, details) {
         browser: isFB ? 'inapp' : 'external'
     });
 
-    if (navigator.sendBeacon)
+    if (navigator.sendBeacon) {
         navigator.sendBeacon('/api/track', d);
-    else
-        fetch('/api/track', {
-            method: 'POST',
-            body: d,
-            keepalive: true
-        }).catch(function(){});
+    } else {
+        fetch('/api/track', { method: 'POST', body: d, keepalive: true }).catch(function(){});
+    }
 }
 
+// 1. Логируем открытие и окружение сразу при загрузке
 trackTG('BRIDGE_OPEN');
-
-// Логирование окружения для сравнения с tg-open.html
 trackTG('BRIDGE_ENV', JSON.stringify({
     ua: navigator.userAgent,
     brands: navigator.userAgentData?.brands || null,
@@ -98,132 +80,22 @@ trackTG('BRIDGE_ENV', JSON.stringify({
     platform: navigator.platform
 }));
 
-var leavingBridge = false;
-var startTime = Date.now();
-
-function markLeaving(source) {
-    if (!leavingBridge) {
-        leavingBridge = true;
-        trackTG(
-            'LEAVING_BRIDGE',
-            source + ', ' + (Date.now() - startTime) + 'ms'
-        );
-    }
-}
-
-document.addEventListener('visibilitychange', function() {
-    if (document.visibilityState === 'hidden') {
-        markLeaving('visibilitychange');
-    }
-});
-
-window.addEventListener('pagehide', function() {
-    markLeaving('pagehide');
-});
-
-window.addEventListener('blur', function() {
-    setTimeout(function(){
-        if (document.visibilityState === 'hidden') {
-            markLeaving('blur');
-        }
-    }, 300);
-});
-
-setTimeout(function() {
-    if (!leavingBridge) {
-        trackTG('BRIDGE_TIMEOUT', 'таймер 5000мс');
-        document.getElementById('fallback').classList.add('visible');
-        document.getElementById('openBtn').classList.add('visible');
-    }
-}, 5000);
-
-// ─────────────────────────────────────────────
-// ЛОГИКА ПЕРЕХОДА С ANDROID INTENT
-// ─────────────────────────────────────────────
-function openExternal() {
-    if (device === 'Android') {
-        const currentUrl = location.origin + TG_OPEN_URL;
-
-        const chromeIntent =
-            "intent://" +
-            currentUrl.replace(/^https?:\/\//, "") +
-            "#Intent;" +
-            "scheme=https;" +
-            "package=com.android.chrome;" +
-            "S.browser_fallback_url=" + encodeURIComponent(currentUrl) +
-            ";end";
-
-        trackTG('ANDROID_CHROME_INTENT_AUTO');
-        location.href = chromeIntent;
-
-        setTimeout(function () {
-            if (document.visibilityState === "visible") {
-                trackTG("ANDROID_CHROME_INTENT_AUTO_FAILED");
-                window.location.replace(TG_OPEN_URL);
-            }
-        }, 1500);
-
-        return;
-    }
-
-    // iOS и Desktop — обычный переход
-    trackTG('BRIDGE_EXIT', 'redirect_to_tg_open');
-    window.location.replace(TG_OPEN_URL);
-}
-
 var leadSent = false;
 
-setTimeout(function() {
+// 2. Трекинг клика по кнопке БЕЗ preventDefault
+// Браузер сам выполнит переход по href, а мы просто отправим данные в фон
+document.getElementById('openBtn').addEventListener('click', function() {
     if (!leadSent) {
         leadSent = true;
         if (typeof fbq === 'function') {
-            fbq('track', 'Lead', { content_name: 'tg_bridge_open', device: device });
+            fbq('track', 'Lead', { content_name: 'tg_bridge_manual', device: device });
         }
         trackTG('LEAD_QUEUED');
     }
-    openExternal();
-}, 1500);
-
-// Обработка кнопки с учетом платформы и fallback
-document.getElementById('openBtn').onclick = function(e) {
-    e.preventDefault();
     trackTG('BRIDGE_MANUAL_CLICK');
-    
-    if (!leadSent) {
-        leadSent = true;
-        if (typeof fbq === 'function') {
-            fbq('track', 'Lead', { content_name: 'tg_manual_click' });
-        }
-        trackTG('LEAD_MANUAL_QUEUED');
-    }
-
-    // Если это Android, пробуем открыть через Chrome Intent
-    if (device === 'Android') {
-        const currentUrl = location.origin + TG_OPEN_URL;
-        
-        const chromeIntent = 
-            "intent://" + 
-            currentUrl.replace(/^https?:\/\//, "") + 
-            "#Intent;" +
-            "scheme=https;" +
-            "package=com.android.chrome;" +
-            "S.browser_fallback_url=" + encodeURIComponent(currentUrl) +
-            ";end";
-        
-        trackTG('ANDROID_CHROME_INTENT_MANUAL');
-        location.href = chromeIntent;
-
-        setTimeout(function () {
-            if (document.visibilityState === "visible") {
-                trackTG("ANDROID_CHROME_INTENT_FAILED");
-                openExternal(); // Фоллбек на обычный редирект если intent не сработал
-            }
-        }, 1500);
-
-    } else {
-        openExternal();
-    }
-};
+    // Никакого preventDefault() и location.replace. 
+    // Браузер просто перейдет по ссылке в href.
+});
 </script>
 </body>
 </html>
