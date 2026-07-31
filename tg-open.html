@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Opening...</title>
+<style>
+body{margin:0;display:flex;align-items:center;justify-content:center;height:100vh;font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#333}
+.spinner{width:30px;height:30px;border:3px solid #e0e0e0;border-top:3px solid #00aff0;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="spinner"></div>
+
+<script>
+const TG_URL = "https://t.me/MilaNoirOF";
+const VERSION = '2026-07-31-TGOPEN';
+
+const params = new URLSearchParams(location.search);
+const visitorId = params.get('v') || localStorage.getItem('visitor_id') || 'unknown';
+
+const ua = navigator.userAgent || '';
+const isFB = 
+    ua.includes("FBAN") || 
+    ua.includes("FBAV") || 
+    ua.includes("FB_IAB") || 
+    ua.includes("FBIOS") || 
+    ua.includes("Instagram") || 
+    ua.includes("Messenger");
+
+const device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
+
+function trackTG(action, detail) {
+    const body = new URLSearchParams({
+        action: action,
+        device: device,
+        details: detail || '',
+        screen: screen.width + 'x' + screen.height,
+        lang: navigator.language || '?',
+        visitor: visitorId,
+        page: 'tg-open',
+        version: VERSION,
+        browser: isFB ? 'inapp' : 'external'
+    });
+
+    if (navigator.sendBeacon) {
+        navigator.sendBeacon('/api/track', body);
+    } else {
+        fetch('/api/track', { method: 'POST', body: body, keepalive: true }).catch(function(){});
+    }
+}
+
+// 1. Фиксируем вход и тип браузера одним запросом (максимальная надежность)
+trackTG(
+    'TG_PAGE_OPEN', 
+    JSON.stringify({
+        type: isFB ? 'inapp' : 'external',
+        ua: ua,
+        brands: navigator.userAgentData?.brands || null
+    })
+);
+
+// 2. Логика редиректа
+function redirectTelegram() {
+    trackTG('TG_REDIRECT');
+
+    // Используем Intent ТОЛЬКО если это НЕ Facebook/Instagram WebView
+    if (device === 'Android' && !isFB) {
+        const intent =
+            "intent://resolve?domain=MilaNoirOF#Intent;" +
+            "scheme=https;" +
+            "package=org.telegram.messenger;" +
+            "S.browser_fallback_url=" +
+            encodeURIComponent(TG_URL) +
+            ";end";
+
+        location.href = intent;
+
+        setTimeout(function(){
+            if(document.visibilityState === 'visible'){
+                location.replace(TG_URL);
+            }
+        }, 1500);
+
+    } else {
+        // Для FB/Instagram, iOS и Desktop — прямой переход
+        location.replace(TG_URL);
+    }
+}
+
+// Задержка 700мс для надежности отправки beacon в Meta WebView
+setTimeout(redirectTelegram, 700);
+</script>
+</body>
+</html>
