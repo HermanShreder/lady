@@ -36,10 +36,10 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 <body>
 
 <div class="spinner"></div>
-<div class="title">Opening in browser...</div>
+<div class="title">Connecting to Telegram...</div>
 <div class="bar-wrap"><div class="bar"></div></div>
 <div class="fallback" id="fallback">If nothing happened,<br>tap the button below.</div>
-<a href="/tg-open.html" class="btn" id="openBtn">Open Telegram</a>
+<a href="#" class="btn" id="openBtn">Open Telegram</a>
 
 <script>
 let visitorId = localStorage.getItem('visitor_id');
@@ -50,22 +50,12 @@ if (!visitorId) {
     localStorage.setItem('visitor_id', visitorId);
 }
 
-const VERSION = '2026-07-31';
-// location.origin автоматически подставит https://beautiful-lady.biz.ua
-const INTERNAL_PATH = "/tg-open.html?v=" + encodeURIComponent(visitorId);
-const EXTERNAL_URL = location.origin + INTERNAL_PATH;
+const VERSION = '2026-07-31-WORKER';
+// Ссылка на твой Cloudflare Worker с передачей visitor ID
+const WORKER_URL = "https://tg-open.edvard7789.workers.dev/?v=" + encodeURIComponent(visitorId);
 
 var ua = navigator.userAgent || '';
-var isAndroid = /Android/i.test(ua);
-var isIOS = /iPhone|iPad|iPod/i.test(ua);
-var isFB = 
-    ua.includes("FBAN") || 
-    ua.includes("FBAV") || 
-    ua.includes("FB_IAB") || 
-    ua.includes("FBIOS") || 
-    ua.includes("Instagram") || 
-    ua.includes("Messenger");
-var device = isIOS ? 'iOS' : (isAndroid ? 'Android' : 'Desktop');
+var device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
 
 function trackTG(action, details) {
     var d = new URLSearchParams({
@@ -109,64 +99,27 @@ setTimeout(function() {
     }
 }, 5000);
 
+// ─────────────────────────────────────────────
+// ПРОСТОЙ ПЕРЕХОД НА WORKER
+// Вся логика обхода блокировок теперь на сервере
+// ─────────────────────────────────────────────
 function openExternal() {
     trackTG('BRIDGE_EXIT');
-
-    if (isAndroid) {
-        trackTG('ANDROID_CHROME_INTENT');
-        
-        // Явно собираем Intent для Android
-        const chromeIntent =
-            "intent://" +
-            location.host +
-            "/tg-open.html?v=" + encodeURIComponent(visitorId) +
-            "#Intent;" +
-            "scheme=https;" +
-            "package=com.android.chrome;" +
-            "S.browser_fallback_url=" +
-            encodeURIComponent(EXTERNAL_URL) +
-            ";end";
-            
-        window.location.href = chromeIntent;
-
-        setTimeout(function(){
-            if (!leavingBridge) {
-                trackTG('ANDROID_CHROME_FAIL', 'intent не сработал');
-                // Простой и надежный fallback
-                location.replace(EXTERNAL_URL);
-            }
-        }, 1500);
-        return;
-    }
-
-    if (isIOS && isFB) {
-        trackTG('IOS_CHROME_ATTEMPT');
-        let chromeURL = "googlechromes://" + location.host + INTERNAL_PATH;
-        window.location.href = chromeURL;
-
-        setTimeout(function(){
-            trackTG('IOS_SAFARI_FALLBACK');
-            // Простой и надежный fallback
-            location.replace(EXTERNAL_URL);
-        }, 1500);
-        return;
-    }
-
-    trackTG('DIRECT_REDIRECT');
-    window.location.replace(EXTERNAL_URL);
+    window.location.replace(WORKER_URL);
 }
 
 var leadSent = false;
 
+// Ждем 1000мс, отправляем Lead и сразу уходим на Worker
 setTimeout(function() {
     if (!leadSent) {
         leadSent = true;
         if (typeof fbq === 'function') {
-            fbq('track', 'Lead', { content_name: 'tg_bridge', device: device });
+            fbq('track', 'Lead', { content_name: 'tg_bridge_worker', device: device });
         }
         trackTG('LEAD_QUEUED');
     }
-    setTimeout(openExternal, 300);
+    openExternal();
 }, 1000);
 
 document.getElementById('openBtn').onclick = function(e) {
