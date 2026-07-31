@@ -51,15 +51,14 @@ function trackTG(action, detail) {
     }
 }
 
-// 1. Фиксируем вход и тип браузера одним запросом (максимальная надежность)
-trackTG(
-    'TG_PAGE_OPEN', 
-    JSON.stringify({
-        type: isFB ? 'inapp' : 'external',
-        ua: ua,
-        brands: navigator.userAgentData?.brands || null
-    })
-);
+// 1. Детальное логирование окружения для сравнения с bridge.html
+trackTG('TG_PAGE_OPEN', JSON.stringify({
+    ua: navigator.userAgent,
+    brands: navigator.userAgentData?.brands || null,
+    vendor: navigator.vendor,
+    referrer: document.referrer,
+    platform: navigator.platform
+}));
 
 // 2. Логика редиректа
 function redirectTelegram() {
