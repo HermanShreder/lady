@@ -35,15 +35,20 @@ const params = new URLSearchParams(location.search);
 const visitorId = params.get('v') || localStorage.getItem('visitor_id') || 'unknown';
 
 const ua = navigator.userAgent || '';
-const isFB = 
+const device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
+
+// Определяем Meta WebView ТОЛЬКО по маркерам User-Agent
+const hasFBUA = 
     ua.includes("FBAN") || 
     ua.includes("FBAV") || 
     ua.includes("FB_IAB") || 
-    ua.includes("FBIOS") || 
     ua.includes("Instagram") || 
     ua.includes("Messenger");
 
-const device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
+const hasAndroidWebViewBrand = 
+    navigator.userAgentData?.brands?.some(b => b.brand === "Android WebView");
+
+const isMetaWebView = hasFBUA;
 
 function trackTG(action, detail) {
     const body = new URLSearchParams({
@@ -55,7 +60,7 @@ function trackTG(action, detail) {
         visitor: visitorId,
         page: 'tg-open',
         version: VERSION,
-        browser: isFB ? 'inapp' : 'external'
+        browser: isMetaWebView ? 'meta_webview' : (device === 'iOS' ? 'ios' : 'external_chrome')
     });
 
     if (navigator.sendBeacon) {
@@ -65,43 +70,72 @@ function trackTG(action, detail) {
     }
 }
 
-// 1. Детальное логирование окружения для сравнения с bridge.html
+// Функция для открытия схемы через эмуляцию клика
+function openScheme(url) {
+    const a = document.createElement("a");
+    a.href = url;
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+// 1. Детальное логирование окружения
 trackTG('TG_PAGE_OPEN', JSON.stringify({
     ua: navigator.userAgent,
     brands: navigator.userAgentData?.brands || null,
     vendor: navigator.vendor,
     referrer: document.referrer,
-    platform: navigator.platform
+    platform: navigator.platform,
+    url: location.href,
+    visibility: document.visibilityState,
+    isMetaWebView: isMetaWebView,
+    hasFBUA: hasFBUA,
+    hasAndroidWebViewBrand: hasAndroidWebViewBrand
 }));
 
 // 2. Логика автоматического редиректа
 function redirectTelegram() {
     trackTG('TG_REDIRECT');
 
-    if (device === 'Android' && !isFB) {
-        // Android Chrome: Intent
-        const intent =
-            "intent://resolve?domain=MilaNoirOF#Intent;" +
-            "scheme=https;" +
-            "package=org.telegram.messenger;" +
-            "S.browser_fallback_url=" +
-            encodeURIComponent(TG_URL) +
-            ";end";
+    if (device === 'Android') {
+        if (!isMetaWebView) {
+            // Мы во внешнем браузере → используем Intent
+            const intent =
+                "intent://resolve?domain=MilaNoirOF#Intent;" +
+                "scheme=https;" +
+                "package=org.telegram.messenger;" +
+                "S.browser_fallback_url=" +
+                encodeURIComponent(TG_URL) +
+                ";end";
 
-        trackTG('ANDROID_INTENT_START');
-        location.href = intent;
+            trackTG('ANDROID_INTENT_START');
+            location.replace(intent);
 
-        setTimeout(function(){
-            if(document.visibilityState === 'visible'){
-                trackTG('ANDROID_INTENT_FAILED');
-                location.replace(TG_URL);
-            }
-        }, 1500);
+            setTimeout(function(){
+                if(document.visibilityState === 'visible'){
+                    trackTG('ANDROID_INTENT_FAILED');
+                    location.replace(TG_URL);
+                }
+            }, 1500);
+
+        } else {
+            // Мы всё еще в Meta WebView → пробуем схему через клик
+            trackTG('TG_SCHEME_START_IN_WEBVIEW');
+            openScheme("tg://resolve?domain=MilaNoirOF");
+            
+            setTimeout(function () {
+                if (document.visibilityState === 'visible') {
+                    trackTG('TG_SCHEME_FAILED');
+                    location.replace(TG_URL);
+                }
+            }, 1200);
+        }
 
     } else if (device === 'iOS') {
-        // iOS: Прямая схема tg://
+        // iOS → пробуем схему через клик
         trackTG('IOS_SCHEME_START');
-        location.href = "tg://resolve?domain=MilaNoirOF";
+        openScheme("tg://resolve?domain=MilaNoirOF");
 
         setTimeout(function () {
             if (document.visibilityState === 'visible') {
@@ -111,24 +145,21 @@ function redirectTelegram() {
         }, 1200);
 
     } else {
-        // Desktop и FB/Instagram WebView (любая ОС): HTTPS
         location.replace(TG_URL);
     }
 }
 
 let manualTimer;
 
-// Отменяем показ кнопки, если пользователь ушел со страницы
 document.addEventListener("visibilitychange", function () {
     if (document.visibilityState === "hidden") {
         clearTimeout(manualTimer);
     }
 });
 
-// Задержка 700мс для надежности отправки beacon в Meta WebView
 setTimeout(redirectTelegram, 700);
 
-// 3. Логика кнопки ручного перехода (появляется через 2 секунды)
+// 3. Логика кнопки ручного перехода
 manualTimer = setTimeout(function () {
     if (document.visibilityState !== 'visible') return;
 
@@ -141,15 +172,14 @@ manualTimer = setTimeout(function () {
         e.preventDefault();
         trackTG('MANUAL_BUTTON_CLICK');
         trackTG('TG_SCHEME_START');
+        
+        // Клик по кнопке также использует эмуляцию ссылки
+        openScheme("tg://resolve?domain=MilaNoirOF");
 
-        // 1. Сначала пробуем открыть приложение через схему
-        location.href = "tg://resolve?domain=MilaNoirOF";
-
-        // 2. Если приложение не открылось за 1.2 сек — открываем веб-версию
         setTimeout(function () {
             if (document.visibilityState === 'visible') {
                 trackTG('TG_SCHEME_FAILED');
-                location.href = "https://t.me/MilaNoirOF";
+                location.replace(TG_URL);
             }
         }, 1200);
     };
