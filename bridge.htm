@@ -8,7 +8,7 @@
 <!-- Meta Pixel Code -->
 <script>
 !function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+{if(f.fbq)return;n=f(fbq=function(){n.callMethod?
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};
 if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
 n.queue=[];t=b.createElement(e);t.async=!0;
@@ -50,13 +50,12 @@ if (!visitorId) {
     localStorage.setItem('visitor_id', visitorId);
 }
 
-const VERSION = '2026-07-31-WORKER';
-const WORKER_URL = "https://tg-open.edvard7789.workers.dev/?v=" + encodeURIComponent(visitorId);
+const VERSION = '2026-07-31-BRIDGE';
+const TG_OPEN_URL = "/tg-open.html?v=" + encodeURIComponent(visitorId);
 
 var ua = navigator.userAgent || '';
 var device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
 
-// Определение типа браузера (In-App или внешний)
 var isFB = 
     ua.includes("FBAN") || 
     ua.includes("FBAV") || 
@@ -90,9 +89,6 @@ function trackTG(action, details) {
 
 trackTG('BRIDGE_OPEN');
 
-// ─────────────────────────────────────────────
-// УЛУЧШЕННЫЙ ДЕТЕКТОР УХОДА
-// ─────────────────────────────────────────────
 var leavingBridge = false;
 var startTime = Date.now();
 
@@ -116,7 +112,6 @@ window.addEventListener('pagehide', function() {
     markLeaving('pagehide');
 });
 
-// Защита от ложных blur: проверяем visibilityState через 300мс
 window.addEventListener('blur', function() {
     setTimeout(function(){
         if (document.visibilityState === 'hidden') {
@@ -133,26 +128,24 @@ setTimeout(function() {
     }
 }, 5000);
 
-// ─────────────────────────────────────────────
-// ПЕРЕХОД НА WORKER
-// ─────────────────────────────────────────────
 function openExternal() {
-    trackTG('BRIDGE_EXIT', 'redirect_to_worker');
-    window.location.replace(WORKER_URL);
+    trackTG('BRIDGE_EXIT', 'redirect_to_tg_open');
+    window.location.replace(TG_OPEN_URL);
 }
 
 var leadSent = false;
 
+// Увеличено до 1500мс для надежности отправки Pixel
 setTimeout(function() {
     if (!leadSent) {
         leadSent = true;
         if (typeof fbq === 'function') {
-            fbq('track', 'Lead', { content_name: 'tg_bridge_worker', device: device });
+            fbq('track', 'Lead', { content_name: 'tg_bridge_open', device: device });
         }
         trackTG('LEAD_QUEUED');
     }
     openExternal();
-}, 1000);
+}, 1500);
 
 document.getElementById('openBtn').onclick = function(e) {
     e.preventDefault();
