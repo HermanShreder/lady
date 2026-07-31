@@ -14,7 +14,7 @@ body{margin:0;display:flex;align-items:center;justify-content:center;height:100v
 <div class="spinner"></div>
 
 <script>
-const OF_URL = "https://onlyfans.com/clubmila/trial/br8sz4g649t0gqafx1vjtppzi7mgprpl";
+const TG_URL = "https://t.me/MilaNoirOF";
 const VERSION = '2026-07-31';
 
 const params = new URLSearchParams(location.search);
@@ -28,7 +28,7 @@ const details = navigator.userAgentData?.brands
     ? JSON.stringify(navigator.userAgentData.brands)
     : ua.substring(0, 200);
 
-const action = isFB ? 'OF_INAPP' : 'OF_EXTERNAL';
+const action = isFB ? 'TG_INAPP' : 'TG_EXTERNAL';
 
 const body = new URLSearchParams({
     action: action,
@@ -37,18 +37,15 @@ const body = new URLSearchParams({
     screen: screen.width + 'x' + screen.height,
     lang: navigator.language || '?',
     visitor: visitorId,
-    page: 'onlyfans-open',
+    page: 'tg-open',
     version: VERSION
 });
 
-// sendBeacon с проверкой результата
-// sendBeacon() возвращает false если браузер отказал (лимит ~64KB, очередь переполнена)
-// В этом случае fallback на fetch с keepalive
 const ok = navigator.sendBeacon && navigator.sendBeacon('/api/track', body);
 
 if (ok) {
     setTimeout(function() {
-        location.replace(OF_URL);
+        location.replace(TG_URL);
     }, 150);
 } else {
     fetch('/api/track', {
@@ -56,7 +53,7 @@ if (ok) {
         body: body,
         keepalive: true
     }).finally(function() {
-        location.replace(OF_URL);
+        location.replace(TG_URL);
     });
 }
 </script>
