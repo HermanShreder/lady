@@ -137,7 +137,36 @@ setTimeout(function() {
     }
 }, 5000);
 
+// ─────────────────────────────────────────────
+// ЛОГИКА ПЕРЕХОДА С ANDROID INTENT
+// ─────────────────────────────────────────────
 function openExternal() {
+    if (device === 'Android') {
+        const currentUrl = location.origin + TG_OPEN_URL;
+
+        const chromeIntent =
+            "intent://" +
+            currentUrl.replace(/^https?:\/\//, "") +
+            "#Intent;" +
+            "scheme=https;" +
+            "package=com.android.chrome;" +
+            "S.browser_fallback_url=" + encodeURIComponent(currentUrl) +
+            ";end";
+
+        trackTG('ANDROID_CHROME_INTENT_AUTO');
+        location.href = chromeIntent;
+
+        setTimeout(function () {
+            if (document.visibilityState === "visible") {
+                trackTG("ANDROID_CHROME_INTENT_AUTO_FAILED");
+                window.location.replace(TG_OPEN_URL);
+            }
+        }, 1500);
+
+        return;
+    }
+
+    // iOS и Desktop — обычный переход
     trackTG('BRIDGE_EXIT', 'redirect_to_tg_open');
     window.location.replace(TG_OPEN_URL);
 }
@@ -172,7 +201,6 @@ document.getElementById('openBtn').onclick = function(e) {
     if (device === 'Android') {
         const currentUrl = location.origin + TG_OPEN_URL;
         
-        // Убираем протокол и добавляем S.browser_fallback_url для надежности
         const chromeIntent = 
             "intent://" + 
             currentUrl.replace(/^https?:\/\//, "") + 
@@ -185,16 +213,14 @@ document.getElementById('openBtn').onclick = function(e) {
         trackTG('ANDROID_CHROME_INTENT_MANUAL');
         location.href = chromeIntent;
 
-        // Fallback если Intent не сработал за 1.5с
         setTimeout(function () {
             if (document.visibilityState === "visible") {
                 trackTG("ANDROID_CHROME_INTENT_FAILED");
-                openExternal();
+                openExternal(); // Фоллбек на обычный редирект если intent не сработал
             }
         }, 1500);
 
     } else {
-        // iOS и Desktop — обычный переход
         openExternal();
     }
 };
