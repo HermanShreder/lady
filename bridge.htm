@@ -89,6 +89,15 @@ function trackTG(action, details) {
 
 trackTG('BRIDGE_OPEN');
 
+// Логирование окружения для сравнения с tg-open.html
+trackTG('BRIDGE_ENV', JSON.stringify({
+    ua: navigator.userAgent,
+    brands: navigator.userAgentData?.brands || null,
+    vendor: navigator.vendor,
+    referrer: document.referrer,
+    platform: navigator.platform
+}));
+
 var leavingBridge = false;
 var startTime = Date.now();
 
@@ -135,7 +144,6 @@ function openExternal() {
 
 var leadSent = false;
 
-// Увеличено до 1500мс для надежности отправки Pixel
 setTimeout(function() {
     if (!leadSent) {
         leadSent = true;
