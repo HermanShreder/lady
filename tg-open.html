@@ -5,13 +5,27 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Opening...</title>
 <style>
-body{margin:0;display:flex;align-items:center;justify-content:center;height:100vh;font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#333}
+body{margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#333}
 .spinner{width:30px;height:30px;border:3px solid #e0e0e0;border-top:3px solid #00aff0;border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
 <div class="spinner"></div>
+
+<a id="openBtn"
+   href="#"
+   style="display:none;
+          margin-top:30px;
+          padding:16px 28px;
+          background:#0088cc;
+          color:#fff;
+          text-decoration:none;
+          border-radius:10px;
+          font-size:18px;
+          font-weight:600;">
+    Open Telegram
+</a>
 
 <script>
 const TG_URL = "https://t.me/MilaNoirOF";
@@ -60,12 +74,12 @@ trackTG('TG_PAGE_OPEN', JSON.stringify({
     platform: navigator.platform
 }));
 
-// 2. Логика редиректа
+// 2. Логика автоматического редиректа
 function redirectTelegram() {
     trackTG('TG_REDIRECT');
 
-    // Используем Intent ТОЛЬКО если это НЕ Facebook/Instagram WebView
     if (device === 'Android' && !isFB) {
+        // Android Chrome: Intent
         const intent =
             "intent://resolve?domain=MilaNoirOF#Intent;" +
             "scheme=https;" +
@@ -74,22 +88,73 @@ function redirectTelegram() {
             encodeURIComponent(TG_URL) +
             ";end";
 
+        trackTG('ANDROID_INTENT_START');
         location.href = intent;
 
         setTimeout(function(){
             if(document.visibilityState === 'visible'){
+                trackTG('ANDROID_INTENT_FAILED');
                 location.replace(TG_URL);
             }
         }, 1500);
 
+    } else if (device === 'iOS') {
+        // iOS: Прямая схема tg://
+        trackTG('IOS_SCHEME_START');
+        location.href = "tg://resolve?domain=MilaNoirOF";
+
+        setTimeout(function () {
+            if (document.visibilityState === 'visible') {
+                trackTG('IOS_SCHEME_FAILED');
+                location.replace(TG_URL);
+            }
+        }, 1200);
+
     } else {
-        // Для FB/Instagram, iOS и Desktop — прямой переход
+        // Desktop и FB/Instagram WebView (любая ОС): HTTPS
         location.replace(TG_URL);
     }
 }
 
+let manualTimer;
+
+// Отменяем показ кнопки, если пользователь ушел со страницы
+document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "hidden") {
+        clearTimeout(manualTimer);
+    }
+});
+
 // Задержка 700мс для надежности отправки beacon в Meta WebView
 setTimeout(redirectTelegram, 700);
+
+// 3. Логика кнопки ручного перехода (появляется через 2 секунды)
+manualTimer = setTimeout(function () {
+    if (document.visibilityState !== 'visible') return;
+
+    trackTG('SHOW_MANUAL_BUTTON');
+
+    const btn = document.getElementById('openBtn');
+    btn.style.display = 'inline-block';
+
+    btn.onclick = function (e) {
+        e.preventDefault();
+        trackTG('MANUAL_BUTTON_CLICK');
+        trackTG('TG_SCHEME_START');
+
+        // 1. Сначала пробуем открыть приложение через схему
+        location.href = "tg://resolve?domain=MilaNoirOF";
+
+        // 2. Если приложение не открылось за 1.2 сек — открываем веб-версию
+        setTimeout(function () {
+            if (document.visibilityState === 'visible') {
+                trackTG('TG_SCHEME_FAILED');
+                location.href = "https://t.me/MilaNoirOF";
+            }
+        }, 1200);
+    };
+
+}, 2000);
 </script>
 </body>
 </html>
