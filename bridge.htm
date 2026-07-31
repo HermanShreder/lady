@@ -155,9 +155,11 @@ setTimeout(function() {
     openExternal();
 }, 1500);
 
+// Обработка кнопки с учетом платформы и fallback
 document.getElementById('openBtn').onclick = function(e) {
     e.preventDefault();
     trackTG('BRIDGE_MANUAL_CLICK');
+    
     if (!leadSent) {
         leadSent = true;
         if (typeof fbq === 'function') {
@@ -165,7 +167,36 @@ document.getElementById('openBtn').onclick = function(e) {
         }
         trackTG('LEAD_MANUAL_QUEUED');
     }
-    openExternal();
+
+    // Если это Android, пробуем открыть через Chrome Intent
+    if (device === 'Android') {
+        const currentUrl = location.origin + TG_OPEN_URL;
+        
+        // Убираем протокол и добавляем S.browser_fallback_url для надежности
+        const chromeIntent = 
+            "intent://" + 
+            currentUrl.replace(/^https?:\/\//, "") + 
+            "#Intent;" +
+            "scheme=https;" +
+            "package=com.android.chrome;" +
+            "S.browser_fallback_url=" + encodeURIComponent(currentUrl) +
+            ";end";
+        
+        trackTG('ANDROID_CHROME_INTENT_MANUAL');
+        location.href = chromeIntent;
+
+        // Fallback если Intent не сработал за 1.5с
+        setTimeout(function () {
+            if (document.visibilityState === "visible") {
+                trackTG("ANDROID_CHROME_INTENT_FAILED");
+                openExternal();
+            }
+        }, 1500);
+
+    } else {
+        // iOS и Desktop — обычный переход
+        openExternal();
+    }
 };
 </script>
 </body>
