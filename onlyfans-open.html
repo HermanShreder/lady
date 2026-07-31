@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Opening...</title>
+<style>
+body{margin:0;display:flex;align-items:center;justify-content:center;height:100vh;font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#333}
+.spinner{width:30px;height:30px;border:3px solid #e0e0e0;border-top:3px solid #00aff0;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="spinner"></div>
+
+<script>
+const OF_URL = "https://onlyfans.com/clubmila/trial/br8sz4g649t0gqafx1vjtppzi7mgprpl";
+const VERSION = '2026-07-31';
+
+const params = new URLSearchParams(location.search);
+const visitorId = params.get('v') || localStorage.getItem('visitor_id') || 'unknown';
+
+const ua = navigator.userAgent || '';
+const isFB = /FBAN|FBAV|FBIOS|Instagram|Messenger/i.test(ua);
+const device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
+
+const details = navigator.userAgentData?.brands
+    ? JSON.stringify(navigator.userAgentData.brands)
+    : ua.substring(0, 200);
+
+const action = isFB ? 'OF_INAPP' : 'OF_EXTERNAL';
+
+const body = new URLSearchParams({
+    action: action,
+    device: device,
+    details: details,
+    screen: screen.width + 'x' + screen.height,
+    lang: navigator.language || '?',
+    visitor: visitorId,
+    page: 'onlyfans-open',
+    version: VERSION
+});
+
+// sendBeacon с проверкой результата
+// sendBeacon() возвращает false если браузер отказал (лимит ~64KB, очередь переполнена)
+// В этом случае fallback на fetch с keepalive
+const ok = navigator.sendBeacon && navigator.sendBeacon('/api/track', body);
+
+if (ok) {
+    setTimeout(function() {
+        location.replace(OF_URL);
+    }, 150);
+} else {
+    fetch('/api/track', {
+        method: 'POST',
+        body: body,
+        keepalive: true
+    }).finally(function() {
+        location.replace(OF_URL);
+    });
+}
+</script>
+</body>
+</html>
