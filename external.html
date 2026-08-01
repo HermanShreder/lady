@@ -16,15 +16,11 @@ body{margin:0;display:flex;flex-direction:column;align-items:center;justify-cont
 
 <div class="spinner" id="spinner"></div>
 
-<!-- Кнопка теперь является настоящей ссылкой. Браузер сам обработает переход -->
-<a id="openBtn" class="btn" href="https://t.me/MilaNoirOF">Открыть Telegram</a>
+<!-- Кнопка-фоллбек. Ведет на Fansly -->
+<a id="openBtn" class="btn" href="https://fansly.com/Alina_dofi/t0">Open Link</a>
 
 <script>
-// !!! ЗАМЕНИ НА СВОЙ ЮЗЕРНЕЙМ !!!
-const TG_USERNAME = "MilaNoirOF"; 
-
-const tgScheme = "tg://resolve?domain=" + TG_USERNAME;
-const tgHttps = "https://t.me/" + TG_USERNAME;
+const FANSLY_URL = "https://fansly.com/Alina_dofi/t0";
 
 const params = new URLSearchParams(location.search);
 const visitorId = params.get('v') || localStorage.getItem('visitor_id') || 'unknown';
@@ -32,7 +28,7 @@ const visitorId = params.get('v') || localStorage.getItem('visitor_id') || 'unkn
 const ua = navigator.userAgent || '';
 const device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
 
-// Сбор данных
+// Сбор данных об окружении
 const envData = {
     ua: ua,
     userAgentData: navigator.userAgentData ? { brands: navigator.userAgentData.brands, platform: navigator.userAgentData.platform, mobile: navigator.userAgentData.mobile } : null,
@@ -61,7 +57,7 @@ function trackTG(action, details) {
         details: details || '',
         visitor: visitorId,
         page: 'external',
-        version: '2026-08-01-EXTERNAL-NATIVE-LINK'
+        version: '2026-08-01-EXTERNAL-FANSLY-CLEAN'
     });
 
     if (navigator.sendBeacon) navigator.sendBeacon('/api/track', body);
@@ -70,37 +66,44 @@ function trackTG(action, details) {
 
 trackTG('EXTERNAL_PAGE_LOADED', JSON.stringify(envData));
 
+// Переменная для таймера, чтобы можно было его отменить
+let fallbackTimer;
+
 // Функция настройки кнопки (Фоллбек)
 function setupFallbackButton() {
     document.getElementById('spinner').style.display = 'none';
     const btn = document.getElementById('openBtn');
     btn.style.display = 'block';
     
-    // Мы НЕ используем onclick для перехода. Переход делает сам тег <a>.
-    // Мы используем addEventListener только для отправки аналитики перед уходом.
+    // Только аналитика. Переход делает сам тег <a href="...">
     btn.addEventListener('click', function() {
         trackTG('MANUAL_FALLBACK_CLICK');
-        // Никакого e.preventDefault() и window.location.href!
     });
 }
 
+// Если браузер начал уход со страницы — отменяем показ кнопки
+window.addEventListener('pagehide', function() {
+    clearTimeout(fallbackTimer);
+});
+
 // Логика запуска
 if (device === 'iOS' || device === 'Android') {
-    // 1. Сразу пытаемся открыть приложение через tg://
-    trackTG('TG_OPEN_ATTEMPT');
-    window.location.href = tgScheme;
+    // 1. АВТО-РЕДИРЕКТ: Сразу пытаемся перейти на Fansly
+    trackTG('FANSLY_REDIRECT_ATTEMPT');
+    window.location.href = FANSLY_URL;
 
-    // 2. Проверяем через 1.5 секунды. Если страница видна — значит приложение НЕ открылось.
-    setTimeout(function() {
+    // 2. ФАЛЛБЕК: Запускаем таймер
+    fallbackTimer = setTimeout(function() {
+        // Проверяем видимость еще раз на всякий случай
         if (document.visibilityState === 'visible') {
-            trackTG('TG_SCHEME_FAILED_SHOW_BUTTON');
+            trackTG('REDIRECT_FAILED_SHOW_BUTTON');
             setupFallbackButton();
         }
     }, 1500);
 
 } else {
     // Desktop: просто редирект
-    window.location.replace(tgHttps);
+    window.location.replace(FANSLY_URL);
 }
 </script>
 </body>
