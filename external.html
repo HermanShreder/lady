@@ -15,7 +15,9 @@ body{margin:0;display:flex;flex-direction:column;align-items:center;justify-cont
 <body>
 
 <div class="spinner" id="spinner"></div>
-<a id="openBtn" class="btn" href="#">Открыть Telegram</a>
+
+<!-- Кнопка теперь является настоящей ссылкой. Браузер сам обработает переход -->
+<a id="openBtn" class="btn" href="https://t.me/MilaNoirOF">Открыть Telegram</a>
 
 <script>
 // !!! ЗАМЕНИ НА СВОЙ ЮЗЕРНЕЙМ !!!
@@ -59,7 +61,7 @@ function trackTG(action, details) {
         details: details || '',
         visitor: visitorId,
         page: 'external',
-        version: '2026-08-01-EXTERNAL-AUTO-FALLBACK'
+        version: '2026-08-01-EXTERNAL-NATIVE-LINK'
     });
 
     if (navigator.sendBeacon) navigator.sendBeacon('/api/track', body);
@@ -68,18 +70,18 @@ function trackTG(action, details) {
 
 trackTG('EXTERNAL_PAGE_LOADED', JSON.stringify(envData));
 
-// Функция показа кнопки (Фоллбек)
-function showFallbackButton() {
+// Функция настройки кнопки (Фоллбек)
+function setupFallbackButton() {
     document.getElementById('spinner').style.display = 'none';
     const btn = document.getElementById('openBtn');
     btn.style.display = 'block';
     
-    // При клике на кнопку делаем прямой переход по https (User Gesture)
-    btn.onclick = function(e) {
-        e.preventDefault();
+    // Мы НЕ используем onclick для перехода. Переход делает сам тег <a>.
+    // Мы используем addEventListener только для отправки аналитики перед уходом.
+    btn.addEventListener('click', function() {
         trackTG('MANUAL_FALLBACK_CLICK');
-        window.location.href = tgHttps;
-    };
+        // Никакого e.preventDefault() и window.location.href!
+    });
 }
 
 // Логика запуска
@@ -92,7 +94,7 @@ if (device === 'iOS' || device === 'Android') {
     setTimeout(function() {
         if (document.visibilityState === 'visible') {
             trackTG('TG_SCHEME_FAILED_SHOW_BUTTON');
-            showFallbackButton();
+            setupFallbackButton();
         }
     }, 1500);
 
