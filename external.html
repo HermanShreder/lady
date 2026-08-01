@@ -77,7 +77,7 @@ function trackTG(action, details) {
 // 1. Логируем загрузку страницы с полными данными
 trackTG('EXTERNAL_PAGE_LOADED', JSON.stringify(envData));
 
-// 2. Функция попытки открытия через tg:// с фоллбеком
+// 2. Функция попытки открытия через tg:// с фоллбеком (используется ТОЛЬКО для Android)
 function attemptOpenTelegram() {
     trackTG('TG_OPEN_ATTEMPT');
     window.location.href = tgScheme;
@@ -93,7 +93,8 @@ function attemptOpenTelegram() {
 
 // 3. Разделение логики для iOS и Android
 if (device === 'iOS') {
-    // iOS: Safari блокирует авто-редирект. Показываем кнопку для гарантированного действия пользователя.
+    // iOS: Safari блокирует автоматические редиректы и таймаут-фоллбеки.
+    // Самое надежное решение — использовать Universal Links по прямому клику.
     document.getElementById('spinner').style.display = 'none';
     const btn = document.getElementById('openBtn');
     btn.style.display = 'block';
@@ -102,14 +103,18 @@ if (device === 'iOS') {
     btn.onclick = function(e) {
         e.preventDefault();
         trackTG('IOS_MANUAL_CLICK');
-        attemptOpenTelegram();
+        
+        // ПРЯМОЙ ПЕРЕХОД ПО HTTPS. 
+        // На iOS это сработает как Universal Link: если приложение есть, iOS сама предложит его открыть. 
+        // Если нет — откроет веб-версию. Safari НЕ заблокирует это, так как это прямой клик пользователя.
+        window.location.href = tgHttps;
     };
 
 } else if (device === 'Android') {
-    // Android: Мы уже в Chrome (спасибо bridge.html). Пробуем открыть приложение сразу.
+    // Android: Мы уже в Chrome (спасибо bridge.html). Пробуем открыть приложение сразу через tg://.
     attemptOpenTelegram();
 
-    // Если фоллбек сработал, показываем кнопку на всякий случай
+    // Если фоллбек сработал (приложение не открылось), показываем кнопку на всякий случай
     setTimeout(function() {
         if (document.visibilityState === 'visible') {
             document.getElementById('spinner').style.display = 'none';
@@ -118,6 +123,7 @@ if (device === 'iOS') {
             btn.innerText = "Открыть веб-версию Telegram";
             btn.onclick = function(e) {
                 e.preventDefault();
+                trackTG('ANDROID_FALLBACK_CLICK');
                 window.location.replace(tgHttps);
             };
         }
