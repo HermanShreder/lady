@@ -41,39 +41,54 @@ if (!visitorId) {
     localStorage.setItem('visitor_id', visitorId);
 }
 
-const VERSION = '2026-07-31-BRIDGE';
+const VERSION = '2026-08-01-BRIDGE-FIX';
 const EXTERNAL_URL = "/external.html?v=" + encodeURIComponent(visitorId);
-const ua = navigator.userAgent || '';
 
+// 1. Собираем данные об окружении СРАЗУ
+var ua = navigator.userAgent || '';
+var device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
+var isFB = ua.includes("FBAN") || ua.includes("FBAV") || ua.includes("FB_IAB") || ua.includes("FBIOS") || ua.includes("Instagram") || ua.includes("Messenger");
+
+// 2. Исправленная функция трекинга (возвращены device, screen, lang, browser)
 function trackTG(action, details) {
-    const d = new URLSearchParams({
+    var d = new URLSearchParams({
         action: action,
+        device: device,                                  // <-- Вернул
         details: details || '',
+        screen: screen.width + 'x' + screen.height,      // <-- Вернул
+        lang: navigator.language || '?',                 // <-- Вернул
         visitor: visitorId,
         page: 'bridge',
-        version: VERSION
+        version: VERSION,
+        browser: isFB ? 'inapp' : 'external'             // <-- Вернул
     });
-    if (navigator.sendBeacon) navigator.sendBeacon('/api/track', d);
-    else fetch('/api/track', { method: 'POST', body: d, keepalive: true }).catch(()=>{});
+
+    if (navigator.sendBeacon) {
+        navigator.sendBeacon('/api/track', d);
+    } else {
+        fetch('/api/track', { method: 'POST', body: d, keepalive: true }).catch(function(){});
+    }
 }
 
+// Логируем загрузку страницы (теперь с полными данными)
+trackTG('BRIDGE_OPEN');
+
+// 3. Обработка клика
 document.getElementById('openBtn').addEventListener('click', function(e) {
     e.preventDefault();
 
-    // 1. Отправляем Lead
+    // Отправка Lead
     if (typeof fbq === 'function') {
         fbq('track', 'Lead', { content_name: 'bridge_click' });
     }
     trackTG('LEAD_QUEUED');
     trackTG('BRIDGE_CLICK');
 
-    // 2. Попытка выброса во внешний браузер
-    const isAndroid = /Android/i.test(ua);
-    const isIOS = /iPhone|iPad|iPod/i.test(ua);
+    // Попытка выброса во внешний браузер
     const fullExternalUrl = location.origin + EXTERNAL_URL;
 
-    if (isAndroid) {
-        // Пытаемся открыть Chrome. Если не выйдет, сработает browser_fallback_url
+    if (device === 'Android') {
+        // Intent для Android с фоллбеком
         const intent = "intent://" + 
             fullExternalUrl.replace(/^https?:\/\//, "") + 
             "#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" + 
@@ -81,7 +96,7 @@ document.getElementById('openBtn').addEventListener('click', function(e) {
         
         window.location.href = intent;
     } else {
-        // iOS / Desktop: прямой переход (iOS сам предложит открыть в Safari, если это IAB)
+        // iOS / Desktop: прямой переход
         window.location.href = fullExternalUrl;
     }
 });
