@@ -41,62 +41,68 @@ if (!visitorId) {
     localStorage.setItem('visitor_id', visitorId);
 }
 
-const VERSION = '2026-08-01-BRIDGE-FIX';
+const VERSION = '2026-08-01-BRIDGE-IOS-FIX';
 const EXTERNAL_URL = "/external.html?v=" + encodeURIComponent(visitorId);
 
-// 1. Собираем данные об окружении СРАЗУ
 var ua = navigator.userAgent || '';
 var device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
 var isFB = ua.includes("FBAN") || ua.includes("FBAV") || ua.includes("FB_IAB") || ua.includes("FBIOS") || ua.includes("Instagram") || ua.includes("Messenger");
 
-// 2. Исправленная функция трекинга (возвращены device, screen, lang, browser)
 function trackTG(action, details) {
     var d = new URLSearchParams({
         action: action,
-        device: device,                                  // <-- Вернул
+        device: device,
         details: details || '',
-        screen: screen.width + 'x' + screen.height,      // <-- Вернул
-        lang: navigator.language || '?',                 // <-- Вернул
+        screen: screen.width + 'x' + screen.height,
+        lang: navigator.language || '?',
         visitor: visitorId,
         page: 'bridge',
         version: VERSION,
-        browser: isFB ? 'inapp' : 'external'             // <-- Вернул
+        browser: isFB ? 'inapp' : 'external'
     });
 
-    if (navigator.sendBeacon) {
-        navigator.sendBeacon('/api/track', d);
-    } else {
-        fetch('/api/track', { method: 'POST', body: d, keepalive: true }).catch(function(){});
-    }
+    if (navigator.sendBeacon) navigator.sendBeacon('/api/track', d);
+    else fetch('/api/track', { method: 'POST', body: d, keepalive: true }).catch(function(){});
 }
 
-// Логируем загрузку страницы (теперь с полными данными)
 trackTG('BRIDGE_OPEN');
 
-// 3. Обработка клика
 document.getElementById('openBtn').addEventListener('click', function(e) {
     e.preventDefault();
 
-    // Отправка Lead
-    if (typeof fbq === 'function') {
-        fbq('track', 'Lead', { content_name: 'bridge_click' });
-    }
+    if (typeof fbq === 'function') fbq('track', 'Lead', { content_name: 'bridge_click' });
     trackTG('LEAD_QUEUED');
     trackTG('BRIDGE_CLICK');
 
-    // Попытка выброса во внешний браузер
     const fullExternalUrl = location.origin + EXTERNAL_URL;
 
-    if (device === 'Android') {
-        // Intent для Android с фоллбеком
+    if (device === 'Android' && isFB) {
+        // ANDROID: Выброс через Intent (работает отлично)
         const intent = "intent://" + 
             fullExternalUrl.replace(/^https?:\/\//, "") + 
             "#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" + 
             encodeURIComponent(fullExternalUrl) + ";end";
         
         window.location.href = intent;
+
+        setTimeout(function() {
+            if (document.visibilityState === 'visible') {
+                trackTG('INTENT_BLOCKED_FALLBACK');
+                window.location.href = fullExternalUrl;
+            }
+        }, 1500);
+
+    } else if (device === 'iOS') {
+        // iOS: "Двойной удар" для принудительного открытия в Safari из Meta IAB
+        trackTG('IOS_ESCAPE_ATTEMPT');
+        
+        // 1. Пытаемся открыть в новой вкладке/контексте
+        window.open(fullExternalUrl, '_blank');
+        // 2. Мгновенно меняем текущий адрес. Один из этих методов заставит iOS передать управление Safari
+        window.location.href = fullExternalUrl;
+
     } else {
-        // iOS / Desktop: прямой переход
+        // Desktop или уже внешний браузер
         window.location.href = fullExternalUrl;
     }
 });
