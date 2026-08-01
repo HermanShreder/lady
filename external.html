@@ -18,7 +18,7 @@ body{margin:0;display:flex;flex-direction:column;align-items:center;justify-cont
 <a id="openBtn" class="btn" href="#">Открыть Telegram</a>
 
 <script>
-// !!! ЗАМЕНИ ЭТОТ ЮЗЕРНЕЙМ НА СВОЙ КАНАЛ ИЛИ БОТА !!!
+// !!! ЗАМЕНИ НА СВОЙ ЮЗЕРНЕЙМ !!!
 const TG_USERNAME = "MilaNoirOF"; 
 
 const tgScheme = "tg://resolve?domain=" + TG_USERNAME;
@@ -30,14 +30,10 @@ const visitorId = params.get('v') || localStorage.getItem('visitor_id') || 'unkn
 const ua = navigator.userAgent || '';
 const device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
 
-// Сбор всех данных об окружении
+// Сбор данных
 const envData = {
     ua: ua,
-    userAgentData: navigator.userAgentData ? {
-        brands: navigator.userAgentData.brands,
-        platform: navigator.userAgentData.platform,
-        mobile: navigator.userAgentData.mobile
-    } : null,
+    userAgentData: navigator.userAgentData ? { brands: navigator.userAgentData.brands, platform: navigator.userAgentData.platform, mobile: navigator.userAgentData.mobile } : null,
     vendor: navigator.vendor,
     platform: navigator.platform,
     language: navigator.language,
@@ -48,7 +44,6 @@ const envData = {
     timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
 };
 
-// Определение браузера для логов
 const browser = /Telegram/i.test(ua) ? "telegram" :
                 /FBAN|FBAV|FB_IAB|Instagram|Messenger/i.test(ua) ? "facebook" :
                 /CriOS|Chrome/i.test(ua) ? "chrome" :
@@ -57,77 +52,49 @@ const browser = /Telegram/i.test(ua) ? "telegram" :
 function trackTG(action, details) {
     const body = new URLSearchParams({
         action: action,
-        device: device,          // <-- Передаем отдельно, чтобы не было "?"
-        screen: screen.width + 'x' + screen.height, // <-- Передаем отдельно
-        lang: navigator.language || '?',            // <-- Передаем отдельно
+        device: device,
+        screen: screen.width + 'x' + screen.height,
+        lang: navigator.language || '?',
         browser: browser,
         details: details || '',
         visitor: visitorId,
         page: 'external',
-        version: '2026-08-01-EXTERNAL-FINAL'
+        version: '2026-08-01-EXTERNAL-AUTO-FALLBACK'
     });
 
-    if (navigator.sendBeacon) {
-        navigator.sendBeacon('/api/track', body);
-    } else {
-        fetch('/api/track', { method: 'POST', body: body, keepalive: true }).catch(()=>{});
-    }
+    if (navigator.sendBeacon) navigator.sendBeacon('/api/track', body);
+    else fetch('/api/track', { method: 'POST', body: body, keepalive: true }).catch(()=>{});
 }
 
-// 1. Логируем загрузку страницы с полными данными
 trackTG('EXTERNAL_PAGE_LOADED', JSON.stringify(envData));
 
-// 2. Функция попытки открытия через tg:// с фоллбеком (используется ТОЛЬКО для Android)
-function attemptOpenTelegram() {
-    trackTG('TG_OPEN_ATTEMPT');
-    window.location.href = tgScheme;
-
-    // Если через 1.5 секунды страница все еще видна, значит приложение не открылось
-    setTimeout(function() {
-        if (document.visibilityState === 'visible') {
-            trackTG('TG_SCHEME_FAILED_FALLBACK');
-            window.location.replace(tgHttps);
-        }
-    }, 1500);
-}
-
-// 3. Разделение логики для iOS и Android
-if (device === 'iOS') {
-    // iOS: Safari блокирует автоматические редиректы и таймаут-фоллбеки.
-    // Самое надежное решение — использовать Universal Links по прямому клику.
+// Функция показа кнопки (Фоллбек)
+function showFallbackButton() {
     document.getElementById('spinner').style.display = 'none';
     const btn = document.getElementById('openBtn');
     btn.style.display = 'block';
-    btn.innerText = "Открыть в Telegram";
     
+    // При клике на кнопку делаем прямой переход по https (User Gesture)
     btn.onclick = function(e) {
         e.preventDefault();
-        trackTG('IOS_MANUAL_CLICK');
-        
-        // ПРЯМОЙ ПЕРЕХОД ПО HTTPS. 
-        // На iOS это сработает как Universal Link: если приложение есть, iOS сама предложит его открыть. 
-        // Если нет — откроет веб-версию. Safari НЕ заблокирует это, так как это прямой клик пользователя.
+        trackTG('MANUAL_FALLBACK_CLICK');
         window.location.href = tgHttps;
     };
+}
 
-} else if (device === 'Android') {
-    // Android: Мы уже в Chrome (спасибо bridge.html). Пробуем открыть приложение сразу через tg://.
-    attemptOpenTelegram();
+// Логика запуска
+if (device === 'iOS' || device === 'Android') {
+    // 1. Сразу пытаемся открыть приложение через tg://
+    trackTG('TG_OPEN_ATTEMPT');
+    window.location.href = tgScheme;
 
-    // Если фоллбек сработал (приложение не открылось), показываем кнопку на всякий случай
+    // 2. Проверяем через 1.5 секунды. Если страница видна — значит приложение НЕ открылось.
     setTimeout(function() {
         if (document.visibilityState === 'visible') {
-            document.getElementById('spinner').style.display = 'none';
-            const btn = document.getElementById('openBtn');
-            btn.style.display = 'block';
-            btn.innerText = "Открыть веб-версию Telegram";
-            btn.onclick = function(e) {
-                e.preventDefault();
-                trackTG('ANDROID_FALLBACK_CLICK');
-                window.location.replace(tgHttps);
-            };
+            trackTG('TG_SCHEME_FAILED_SHOW_BUTTON');
+            showFallbackButton();
         }
-    }, 1600);
+    }, 1500);
 
 } else {
     // Desktop: просто редирект
