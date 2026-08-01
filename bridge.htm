@@ -8,7 +8,7 @@
 <!-- Meta Pixel Code -->
 <script>
 !function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+{if(f.fbq)return;n=f(fbq=function(){n.callMethod?
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};
 if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
 n.queue=[];t=b.createElement(e);t.async=true;
@@ -41,7 +41,7 @@ if (!visitorId) {
     localStorage.setItem('visitor_id', visitorId);
 }
 
-const VERSION = '2026-08-01-BRIDGE-IOS-FIX';
+const VERSION = '2026-08-01-BRIDGE-GOOGLECHROME';
 const EXTERNAL_URL = "/external.html?v=" + encodeURIComponent(visitorId);
 
 var ua = navigator.userAgent || '';
@@ -77,7 +77,7 @@ document.getElementById('openBtn').addEventListener('click', function(e) {
     const fullExternalUrl = location.origin + EXTERNAL_URL;
 
     if (device === 'Android' && isFB) {
-        // ANDROID: Выброс через Intent (работает отлично)
+        // ANDROID: Выброс через Intent (НЕ ТРОГАЕМ, РАБОТАЕТ ОТЛИЧНО)
         const intent = "intent://" + 
             fullExternalUrl.replace(/^https?:\/\//, "") + 
             "#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" + 
@@ -93,13 +93,17 @@ document.getElementById('openBtn').addEventListener('click', function(e) {
         }, 1500);
 
     } else if (device === 'iOS') {
-        // iOS: "Двойной удар" для принудительного открытия в Safari из Meta IAB
-        trackTG('IOS_ESCAPE_ATTEMPT');
+        // iOS: Принудительный вызов Google Chrome для выхода из Meta IAB
+        trackTG('IOS_GOOGLE_CHROME_ESCAPE');
         
-        // 1. Пытаемся открыть в новой вкладке/контексте
-        window.open(fullExternalUrl, '_blank');
-        // 2. Мгновенно меняем текущий адрес. Один из этих методов заставит iOS передать управление Safari
-        window.location.href = fullExternalUrl;
+        // 1. Пытаемся вызвать Google Chrome напрямую
+        window.location.href = "googlechrome://" + fullExternalUrl.replace(/^https?:\/\//, "");
+        
+        // 2. Страховка: если Chrome не установлен или вызов заблокирован, 
+        // через небольшую задержку делаем обычный переход (он откроется в Safari, если это IAB)
+        setTimeout(function() {
+             window.location.href = fullExternalUrl;
+        }, 500);
 
     } else {
         // Desktop или уже внешний браузер
