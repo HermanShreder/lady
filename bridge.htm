@@ -32,11 +32,10 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 
 <div class="title">Tap the button to continue</div>
 
-<!-- Нативная ссылка. Браузер сам обработает переход (Universal Link / App Link) -->
+<!-- Базовая ссылка на случай, если JS отключен (редкость, но для порядка) -->
 <a id="openBtn" class="btn" href="https://t.me/MilaNoirOF">Open Telegram</a>
 
 <script>
-// 1. Управление ID посетителя
 let visitorId = localStorage.getItem('visitor_id');
 if (!visitorId) {
     visitorId = (typeof crypto !== 'undefined' && crypto.randomUUID)
@@ -45,18 +44,15 @@ if (!visitorId) {
     localStorage.setItem('visitor_id', visitorId);
 }
 
-const VERSION = '2026-07-31-DIRECT';
-// Если используете трекер, замените эту ссылку на ссылку трекера
-const TG_URL = "https://t.me/MilaNoirOF"; 
-
-// Гарантируем, что у кнопки правильный href
-document.getElementById('openBtn').href = TG_URL;
+const VERSION = '2026-07-31-DIRECT-TG';
+const TG_USERNAME = "MilaNoirOF"; // ЗАМЕНИ НА СВОЙ, ЕСЛИ НУЖНО
+const TG_HTTPS_URL = "https://t.me/" + TG_USERNAME;
+const TG_SCHEME_URL = "tg://resolve?domain=" + TG_USERNAME;
 
 var ua = navigator.userAgent || '';
 var device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
 var isFB = ua.includes("FBAN") || ua.includes("FBAV") || ua.includes("FB_IAB") || ua.includes("FBIOS") || ua.includes("Instagram") || ua.includes("Messenger");
 
-// 2. Функция отправки аналитики
 function trackTG(action, details) {
     var d = new URLSearchParams({
         action: action,
@@ -77,7 +73,6 @@ function trackTG(action, details) {
     }
 }
 
-// 3. Логируем открытие страницы и окружение сразу при загрузке
 trackTG('BRIDGE_OPEN');
 trackTG('BRIDGE_ENV', JSON.stringify({
     ua: navigator.userAgent,
@@ -89,26 +84,33 @@ trackTG('BRIDGE_ENV', JSON.stringify({
 
 var leadSent = false;
 
-// 4. Обработка клика БЕЗ preventDefault()
-// Мы просто отправляем данные в фон, а браузер сам выполняет переход по href
-document.getElementById('openBtn').addEventListener('click', function() {
+// ГЛАВНАЯ ЛОГИКА КЛИКА
+document.getElementById('openBtn').addEventListener('click', function(e) {
+    // Предотвращаем стандартный переход, чтобы контролировать процесс и сделать фоллбек
+    e.preventDefault();
+
     if (!leadSent) {
         leadSent = true;
-        
-        // Отправка Meta Pixel Lead
         if (typeof fbq === 'function') {
             fbq('track', 'Lead', { content_name: 'tg_bridge_direct', device: device });
         }
-        
-        // Отправка в нашу аналитику
         trackTG('LEAD_QUEUED');
     }
     
     trackTG('BRIDGE_MANUAL_CLICK');
-    
-    // Никакого e.preventDefault()
-    // Никакого window.location.href = ...
-    // Браузер просто переходит по ссылке, указанной в href тега <a>
+
+    // 1. Пытаемся открыть приложение через tg://
+    trackTG('TG_SCHEME_START');
+    window.location.href = TG_SCHEME_URL;
+
+    // 2. Если через 1.5 секунды страница все еще видна (приложение не открылось и не увело фокус)
+    setTimeout(function() {
+        if (document.visibilityState === 'visible') {
+            trackTG('TG_SCHEME_FAILED_FALLBACK');
+            // Делаем запасной переход на веб-версию
+            window.location.href = TG_HTTPS_URL;
+        }
+    }, 1500);
 });
 </script>
 </body>
