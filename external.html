@@ -8,7 +8,7 @@
 body{margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#333}
 .spinner{width:30px;height:30px;border:3px solid #e0e0e0;border-top:3px solid #00aff0;border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.btn{display:none; margin-top:30px; padding:16px 32px; background:#00aff0; color:#fff; text-decoration:none; border-radius:25px; font-size:16px; font-weight:600; box-shadow:0 4px 12px rgba(0,175,240,0.3)}
+.btn{display:none; margin-top:30px; padding:16px 32px; background:#00aff0; color:#fff; text-decoration:none; border-radius:25px; font-size:16px; font-weight:600; box-shadow:0 4px 12px rgba(0,175,240,0.3); cursor: pointer;}
 .btn:active{transform:scale(0.98)}
 </style>
 </head>
@@ -16,11 +16,21 @@ body{margin:0;display:flex;flex-direction:column;align-items:center;justify-cont
 
 <div class="spinner" id="spinner"></div>
 
-<!-- Кнопка-фоллбек. Ведет на Fansly -->
-<a id="openBtn" class="btn" href="https://fansly.com/Alina_dofi/t0">Open Link</a>
+<!-- Кнопка-фоллбек. Ведет в Telegram канал -->
+<a id="openBtn" class="btn" href="https://t.me/MilaNoirOF">Open Channel</a>
 
 <script>
-const FANSLY_URL = "https://fansly.com/Alina_dofi/t0";
+// КОНФИГУРАЦИЯ
+const TG_USERNAME = 'MilaNoirOF';
+
+// Формируем ссылки
+// 1. Схема приложения (для открытия напрямую)
+const tgScheme = `tg://resolve?domain=${TG_USERNAME}`;
+// 2. Веб-ссылка (фоллбек для кнопки и десктопа)
+const tgWebUrl = `https://t.me/${TG_USERNAME}`;
+
+// Устанавливаем ссылку для кнопки сразу
+document.getElementById('openBtn').href = tgWebUrl;
 
 const params = new URLSearchParams(location.search);
 const visitorId = params.get('v') || localStorage.getItem('visitor_id') || 'unknown';
@@ -56,8 +66,8 @@ function trackTG(action, details) {
         browser: browser,
         details: details || '',
         visitor: visitorId,
-        page: 'external',
-        version: '2026-08-01-EXTERNAL-FANSLY-CLEAN'
+        page: 'external_tg',
+        version: '2026-08-03-TG-CHANNEL-AUTO'
     });
 
     if (navigator.sendBeacon) navigator.sendBeacon('/api/track', body);
@@ -88,22 +98,22 @@ window.addEventListener('pagehide', function() {
 
 // Логика запуска
 if (device === 'iOS' || device === 'Android') {
-    // 1. АВТО-РЕДИРЕКТ: Сразу пытаемся перейти на Fansly
-    trackTG('FANSLY_REDIRECT_ATTEMPT');
-    window.location.href = FANSLY_URL;
+    // 1. АВТО-РЕДИРЕКТ: Сразу пытаемся перейти по схеме tg://
+    trackTG('TG_SCHEME_START');
+    window.location.href = tgScheme;
 
-    // 2. ФАЛЛБЕК: Запускаем таймер
+    // 2. ФАЛЛБЕК: Запускаем таймер на 2 секунды
     fallbackTimer = setTimeout(function() {
         // Проверяем видимость еще раз на всякий случай
         if (document.visibilityState === 'visible') {
-            trackTG('REDIRECT_FAILED_SHOW_BUTTON');
+            trackTG('TG_SCHEME_FAILED_SHOW_BUTTON');
             setupFallbackButton();
         }
-    }, 1500);
+    }, 2000);
 
 } else {
-    // Desktop: просто редирект
-    window.location.replace(FANSLY_URL);
+    // Desktop: просто редирект на веб-версию
+    window.location.replace(tgWebUrl);
 }
 </script>
 </body>
