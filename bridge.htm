@@ -29,7 +29,7 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 </head>
 <body>
 
-<div class="title">Tap to continue in browser</div>
+<div class="title">Opening Telegram...</div>
 <a id="openBtn" class="btn" href="/external.html">Open in Browser</a>
 
 <script>
@@ -46,7 +46,7 @@ const EXTERNAL_URL = "/external.html?v=" + encodeURIComponent(visitorId);
 
 var ua = navigator.userAgent || '';
 var device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
-var isFB = ua.includes("FBAN") || ua.includes("FBAV") || ua.includes("FB_IAB") || ua.includes("FBIOS") || ua.includes("Instagram") || ua.includes("Messenger");
+var isFB = ua.includes("FBAN") || ua.includes("FBAV") || ua.includes("FB_IAB") || ua.includes("FBIOS") || ua.includes("Instagram") || ua.includes("Messenger") || ua.includes("wv");
 
 function trackTG(action, details) {
     var d = new URLSearchParams({
@@ -67,6 +67,59 @@ function trackTG(action, details) {
 
 trackTG('BRIDGE_OPEN');
 
+// Функция для определения целевого URL в external.html
+function getTelegramUrl() {
+    const telegramUsername = 'MasqueradeStudios';
+    const prefillMessage = 'Здравствуйте я из рекламы фб,меня интересует онлайн заработок';
+    const encodedMessage = encodeURIComponent(prefillMessage);
+    
+    return location.origin + '/external.html?v=' + encodeURIComponent(visitorId) + 
+           '&tg_user=' + encodeURIComponent(telegramUsername) + 
+           '&tg_msg=' + encodedMessage;
+}
+
+// Авто-редирект при загрузке страницы
+window.addEventListener('load', function() {
+    const fullExternalUrl = getTelegramUrl();
+    
+    if (device === 'Android' && isFB) {
+        // ANDROID: Выброс через Intent во внешний браузер
+        trackTG('AUTO_REDIRECT_ANDROID_INTENT');
+        
+        const intent = "intent://" + 
+            fullExternalUrl.replace(/^https?:\/\//, "") + 
+            "#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" + 
+            encodeURIComponent(fullExternalUrl) + ";end";
+        
+        window.location.href = intent;
+
+        setTimeout(function() {
+            if (document.visibilityState === 'visible') {
+                trackTG('INTENT_BLOCKED_FALLBACK');
+                window.location.href = fullExternalUrl;
+            }
+        }, 1500);
+
+    } else if (device === 'iOS') {
+        // iOS: Принудительный вызов Google Chrome для выхода из Meta IAB
+        trackTG('IOS_GOOGLE_CHROME_ESCAPE');
+        
+        // 1. Пытаемся вызвать Google Chrome напрямую
+        window.location.href = "googlechrome://" + fullExternalUrl.replace(/^https?:\/\//, "");
+        
+        // 2. Страховка: если Chrome не установлен или вызов заблокирован
+        setTimeout(function() {
+             window.location.href = fullExternalUrl;
+        }, 500);
+
+    } else {
+        // Desktop или уже внешний браузер
+        trackTG('DESKTOP_DIRECT_REDIRECT');
+        window.location.href = fullExternalUrl;
+    }
+});
+
+// Обработчик клика по кнопке (fallback)
 document.getElementById('openBtn').addEventListener('click', function(e) {
     e.preventDefault();
 
@@ -74,7 +127,7 @@ document.getElementById('openBtn').addEventListener('click', function(e) {
     trackTG('LEAD_QUEUED');
     trackTG('BRIDGE_CLICK');
 
-    const fullExternalUrl = location.origin + EXTERNAL_URL;
+    const fullExternalUrl = getTelegramUrl();
 
     if (device === 'Android' && isFB) {
         // ANDROID: Выброс через Intent (НЕ ТРОГАЕМ, РАБОТАЕТ ОТЛИЧНО)
