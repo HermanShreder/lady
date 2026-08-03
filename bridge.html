@@ -1,1 +1,156 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Continue</title>
+
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f(fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=true;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window,document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init','2127136807835684');
+fbq('track', 'PageView');
+</script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:#fff;color:#333;text-align:center;padding:20px}
+.title{font-size:18px;font-weight:600;margin-bottom:24px;color:#333}
+.btn{display:inline-block;padding:16px 32px;background:#00aff0;color:#fff;border:none;border-radius:25px;font-size:16px;font-weight:600;cursor:pointer;text-decoration:none;-webkit-tap-highlight-color:transparent;box-shadow:0 4px 12px rgba(0,175,240,0.3);transition:transform 0.1s}
+.btn:active{transform:scale(0.98)}
+</style>
+</head>
+<body>
+
+<div class="title">Opening Telegram...</div>
+<a id="openBtn" class="btn" href="https://t.me/MilaNoirOF">Open Channel</a>
+
+<script>
+let visitorId = localStorage.getItem('visitor_id');
+if (!visitorId) {
+    visitorId = (typeof crypto !== 'undefined' && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : 'v-' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+    localStorage.setItem('visitor_id', visitorId);
+}
+
+const VERSION = '2026-08-03-BRIDGE-INTENT-FB';
+const TG_USERNAME = 'MilaNoirOF';
+
+// Ссылки
+const TG_SCHEME = `tg://resolve?domain=${TG_USERNAME}`;
+const TG_WEB_URL = `https://t.me/${TG_USERNAME}`;
+
+var ua = navigator.userAgent || '';
+var device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
+
+// ОПРЕДЕЛЕНИЕ FB/INSTAGRAM BROWSER
+var isFB = false;
+// 1. Проверка по User-Agent
+if (/FBAN|FBAV|FB_IAB|FBIOS|Instagram|Messenger|wv/i.test(ua)) {
+    isFB = true;
+}
+// 2. Проверка по Client Hints (для новых Android)
+if (navigator.userAgentData && navigator.userAgentData.brands) {
+    if (navigator.userAgentData.brands.some(b => b.brand === "Android WebView")) {
+        isFB = true;
+    }
+}
+
+function trackTG(action, details) {
+    var d = new URLSearchParams({
+        action: action,
+        device: device,
+        details: details || '',
+        screen: screen.width + 'x' + screen.height,
+        lang: navigator.language || '?',
+        visitor: visitorId,
+        page: 'bridge_direct_tg',
+        version: VERSION,
+        browser: isFB ? 'inapp' : 'external'
+    });
+
+    if (navigator.sendBeacon) navigator.sendBeacon('/api/track', d);
+    else fetch('/api/track', { method: 'POST', body: d, keepalive: true }).catch(function(){});
+}
+
+trackTG('BRIDGE_OPEN');
+
+function executeRedirect() {
+    trackTG('REDIRECT_TRIGGERED');
+
+    if (device === 'Android') {
+        if (isFB) {
+            // ANDROID IN-APP: Агрессивный Intent для выброса в Chrome
+            // Схема tg:// заставит Chrome предложить открыть приложение Telegram
+            trackTG('ANDROID_FB_INTENT_ESCAPE');
+            
+            const intent = "intent://resolve?domain=" + TG_USERNAME + 
+                           "#Intent;scheme=tg;package=org.telegram.messenger;" +
+                           "S.browser_fallback_url=" + encodeURIComponent(TG_WEB_URL) + ";end";
+            
+            window.location.href = intent;
+
+            // Фоллбек если Intent заблокирован или не сработал
+            setTimeout(function() {
+                if (document.visibilityState === 'visible') {
+                    trackTG('INTENT_FAILED_FALLBACK_WEB');
+                    window.location.href = TG_WEB_URL;
+                }
+            }, 2000);
+
+        } else {
+            // ANDROID EXTERNAL: Прямая схема
+            trackTG('ANDROID_EXTERNAL_SCHEME');
+            window.location.href = TG_SCHEME;
+            setTimeout(() => { 
+                if (document.visibilityState === 'visible') window.location.href = TG_WEB_URL; 
+            }, 2000);
+        }
+
+    } else if (device === 'iOS') {
+        // iOS: Пытаемся схему, затем веб
+        trackTG('IOS_SCHEME_ATTEMPT');
+        window.location.href = TG_SCHEME;
+        
+        setTimeout(function() {
+            if (document.visibilityState === 'visible') {
+                trackTG('IOS_SCHEME_FAILED_WEB');
+                window.location.href = TG_WEB_URL;
+            }
+        }, 1500);
+
+    } else {
+        // Desktop
+        trackTG('DESKTOP_WEB_REDIRECT');
+        window.location.replace(TG_WEB_URL);
+    }
+}
+
+// Авто-запуск
+window.addEventListener('load', function() {
+    setTimeout(executeRedirect, 100);
+});
+
+// Кнопка фоллбек
+document.getElementById('openBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    if (typeof fbq === 'function') fbq('track', 'Lead', { content_name: 'bridge_click' });
+    trackTG('MANUAL_CLICK_REDIRECT');
+    executeRedirect();
+});
+
+// Обновляем href кнопки на всякий случай
+document.getElementById('openBtn').href = TG_WEB_URL;
+
+</script>
+</body>
+</html>
