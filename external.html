@@ -27,15 +27,12 @@ const PREFILL_MSG = 'Здравствуйте я из рекламы фб,мен
 // Формируем ссылки
 const encodedMsg = encodeURIComponent(PREFILL_MSG);
 
-// 1. Схема приложения (пытается открыть приложение и вставить текст)
-// tg://resolve открывает профиль, tg://msg пытается создать сообщение
-const tgScheme = `tg://resolve?domain=${TG_USERNAME}&text=${encodedMsg}`;
-
-// 2. Веб-ссылка (фоллбек). ?text= работает в веб-версии и как Universal Link на iOS
-const tgWebUrl = `https://t.me/${TG_USERNAME}?text=${encodedMsg}`;
+// ЕДИНАЯ ПРАВИЛЬНАЯ ССЫЛКА для открытия чата с текстом.
+// Telegram на iOS и Android перехватывает https://t.me/...?text=... и открывает приложение с готовым сообщением.
+const tgUrl = `https://t.me/${TG_USERNAME}?text=${encodedMsg}`;
 
 // Устанавливаем ссылку для кнопки сразу
-document.getElementById('openBtn').href = tgWebUrl;
+document.getElementById('openBtn').href = tgUrl;
 
 const params = new URLSearchParams(location.search);
 const visitorId = params.get('v') || localStorage.getItem('visitor_id') || 'unknown';
@@ -72,7 +69,7 @@ function trackTG(action, details) {
         details: details || '',
         visitor: visitorId,
         page: 'external_tg_msg',
-        version: '2026-08-03-TG-MSG-AUTO'
+        version: '2026-08-03-TG-MSG-FIXED'
     });
 
     if (navigator.sendBeacon) navigator.sendBeacon('/api/track', body);
@@ -94,28 +91,28 @@ function setupFallbackButton() {
     });
 }
 
-// Отмена таймера если страница начала выгружаться
+// Отмена таймера если страница начала выгружаться (значит редирект сработал)
 window.addEventListener('pagehide', function() {
     clearTimeout(fallbackTimer);
 });
 
 // Логика запуска
 if (device === 'iOS' || device === 'Android') {
-    // 1. АВТО-РЕДИРЕКТ: Пытаемся открыть приложение с текстом
-    trackTG('TG_MSG_SCHEME_START');
-    window.location.href = tgScheme;
+    // 1. АВТО-РЕДИРЕКТ: Используем https ссылку, так как она корректно передает параметр ?text= в приложение Telegram
+    trackTG('TG_MSG_UNIVERSAL_LINK_START');
+    window.location.href = tgUrl;
 
-    // 2. ФАЛЛБЕК: Если через 2 секунды мы все еще здесь
+    // 2. ФАЛЛБЕК: Если через 2.5 секунды мы все еще здесь (приложение не открылось)
     fallbackTimer = setTimeout(function() {
         if (document.visibilityState === 'visible') {
-            trackTG('TG_SCHEME_FAILED_SHOW_BUTTON');
+            trackTG('TG_LINK_FAILED_SHOW_BUTTON');
             setupFallbackButton();
         }
-    }, 2000);
+    }, 2500);
 
 } else {
     // Desktop: просто редирект на веб-версию с текстом
-    window.location.replace(tgWebUrl);
+    window.location.replace(tgUrl);
 }
 </script>
 </body>
