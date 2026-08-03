@@ -29,9 +29,9 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 </head>
 <body>
 
-<div class="title">Tap to open Telegram</div>
-<!-- Ссылка оставлена для фоллбека, но JS перехватит клик -->
-<a id="openBtn" class="btn" href="https://t.me/MilaNoirOF">Open Channel</a>
+<div class="title">Tap to open Chat</div>
+<!-- Ссылка обновлена на чат с текстом -->
+<a id="openBtn" class="btn" href="#">Open Chat</a>
 
 <script>
 let visitorId = localStorage.getItem('visitor_id');
@@ -42,23 +42,27 @@ if (!visitorId) {
     localStorage.setItem('visitor_id', visitorId);
 }
 
-const VERSION = '2026-08-03-BRIDGE-CLICK-ONLY';
-const TG_USERNAME = 'MilaNoirOF';
+const VERSION = '2026-08-03-BRIDGE-CHAT-MSG';
 
-// Ссылки
-const TG_SCHEME = `tg://resolve?domain=${TG_USERNAME}`;
-const TG_WEB_URL = `https://t.me/${TG_USERNAME}`;
+// --- КОНФИГУРАЦИЯ ---
+const TG_USERNAME = 'frgoo';
+const PREFILL_MSG = 'Здравствуйте я из рекламы фб,меня интересует онлайн заработок';
+const encodedMsg = encodeURIComponent(PREFILL_MSG);
+
+// Универсальная ссылка, которая открывает чат и вставляет текст (работает на iOS и Android)
+const TG_URL_WITH_TEXT = `https://t.me/${TG_USERNAME}?text=${encodedMsg}`;
+
+// Устанавливаем правильную ссылку в кнопку сразу
+document.getElementById('openBtn').href = TG_URL_WITH_TEXT;
 
 var ua = navigator.userAgent || '';
 var device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
 
 // ОПРЕДЕЛЕНИЕ FB/INSTAGRAM BROWSER
 var isFB = false;
-// 1. Проверка по User-Agent
 if (/FBAN|FBAV|FB_IAB|FBIOS|Instagram|Messenger|wv/i.test(ua)) {
     isFB = true;
 }
-// 2. Проверка по Client Hints (для новых Android)
 if (navigator.userAgentData && navigator.userAgentData.brands) {
     if (navigator.userAgentData.brands.some(b => b.brand === "Android WebView")) {
         isFB = true;
@@ -73,7 +77,7 @@ function trackTG(action, details) {
         screen: screen.width + 'x' + screen.height,
         lang: navigator.language || '?',
         visitor: visitorId,
-        page: 'bridge_direct_tg',
+        page: 'bridge_direct_chat',
         version: VERSION,
         browser: isFB ? 'inapp' : 'external'
     });
@@ -82,7 +86,7 @@ function trackTG(action, details) {
     else fetch('/api/track', { method: 'POST', body: d, keepalive: true }).catch(function(){});
 }
 
-// Логируем открытие страницы (но НЕ делаем редирект)
+// Логируем открытие страницы
 trackTG('BRIDGE_OPEN');
 
 function executeRedirect() {
@@ -90,48 +94,45 @@ function executeRedirect() {
 
     if (device === 'Android') {
         if (isFB) {
-            // ANDROID IN-APP: Агрессивный Intent для выброса в Chrome
+            // ANDROID IN-APP: Выброс в Chrome, который передаст ссылку с текстом в Telegram
             trackTG('ANDROID_FB_INTENT_ESCAPE');
             
-            const intent = "intent://resolve?domain=" + TG_USERNAME + 
-                           "#Intent;scheme=tg;package=org.telegram.messenger;" +
-                           "S.browser_fallback_url=" + encodeURIComponent(TG_WEB_URL) + ";end";
+            const intent = "intent://" + 
+                TG_URL_WITH_TEXT.replace(/^https?:\/\//, "") + 
+                "#Intent;scheme=https;package=com.android.chrome;" +
+                "S.browser_fallback_url=" + encodeURIComponent(TG_URL_WITH_TEXT) + ";end";
             
             window.location.href = intent;
 
-            // Фоллбек если Intent заблокирован или не сработал
             setTimeout(function() {
                 if (document.visibilityState === 'visible') {
                     trackTG('INTENT_FAILED_FALLBACK_WEB');
-                    window.location.href = TG_WEB_URL;
+                    window.location.href = TG_URL_WITH_TEXT;
                 }
             }, 2000);
 
         } else {
-            // ANDROID EXTERNAL: Прямая схема
+            // ANDROID EXTERNAL: Прямой переход по ссылке с текстом
             trackTG('ANDROID_EXTERNAL_SCHEME');
-            window.location.href = TG_SCHEME;
-            setTimeout(() => { 
-                if (document.visibilityState === 'visible') window.location.href = TG_WEB_URL; 
-            }, 2000);
+            window.location.href = TG_URL_WITH_TEXT;
         }
 
     } else if (device === 'iOS') {
-        // iOS: Пытаемся схему, затем веб
+        // iOS: Ссылка https://t.me/...?text=... идеально открывает приложение с сообщением
         trackTG('IOS_SCHEME_ATTEMPT');
-        window.location.href = TG_SCHEME;
+        window.location.href = TG_URL_WITH_TEXT;
         
         setTimeout(function() {
             if (document.visibilityState === 'visible') {
                 trackTG('IOS_SCHEME_FAILED_WEB');
-                window.location.href = TG_WEB_URL;
+                window.location.href = TG_URL_WITH_TEXT;
             }
         }, 1500);
 
     } else {
         // Desktop
         trackTG('DESKTOP_WEB_REDIRECT');
-        window.location.replace(TG_WEB_URL);
+        window.location.replace(TG_URL_WITH_TEXT);
     }
 }
 
@@ -139,17 +140,16 @@ function executeRedirect() {
 
 // Обработка клика по кнопке
 document.getElementById('openBtn').addEventListener('click', function(e) {
-    e.preventDefault(); // Останавливаем стандартный переход, чтобы отработал наш JS
+    // Мы НЕ делаем e.preventDefault(), чтобы браузер максимально естественно обработал клик по ссылке <a>,
+    // но мы всё равно успеваем отправить аналитику и Pixel
     
-    // Отправка события в Meta Pixel
     if (typeof fbq === 'function') {
-        fbq('track', 'Lead', { content_name: 'bridge_click' });
+        fbq('track', 'Lead', { content_name: 'bridge_chat_click' });
     }
     
-    // Отправка в нашу аналитику
     trackTG('MANUAL_CLICK_REDIRECT');
     
-    // Запуск логики редиректа
+    // Запускаем нашу проверенную логику редиректа
     executeRedirect();
 });
 
