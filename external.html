@@ -28,7 +28,7 @@ const PREFILL_MSG = 'Здравствуйте я из рекламы фб,мен
 const encodedMsg = encodeURIComponent(PREFILL_MSG);
 
 // ЕДИНАЯ ПРАВИЛЬНАЯ ССЫЛКА для открытия чата с текстом.
-// Telegram на iOS и Android перехватывает https://t.me/...?text=... и открывает приложение с готовым сообщением.
+// Внешний браузер (Chrome/Safari) отлично передает это в приложение Telegram.
 const tgUrl = `https://t.me/${TG_USERNAME}?text=${encodedMsg}`;
 
 // Устанавливаем ссылку для кнопки сразу
@@ -59,6 +59,7 @@ const browser = /Telegram/i.test(ua) ? "telegram" :
                 /CriOS|Chrome/i.test(ua) ? "chrome" :
                 /Safari/i.test(ua) ? "safari" : "other";
 
+// --- ИСПРАВЛЕННАЯ ФУНКЦИЯ ЛОГИРОВАНИЯ ---
 function trackTG(action, details) {
     const body = new URLSearchParams({
         action: action,
@@ -69,14 +70,17 @@ function trackTG(action, details) {
         details: details || '',
         visitor: visitorId,
         page: 'external_tg_msg',
-        version: '2026-08-03-TG-MSG-FIXED'
+        version: '2026-08-03-TG-MSG-LOGS-FIXED'
     });
 
-    if (navigator.sendBeacon) navigator.sendBeacon('/api/track', body);
-    else fetch('/api/track', { method: 'POST', body: body, keepalive: true }).catch(()=>{});
+    // sendBeacon создан специально для отправки данных при уходе со страницы.
+    // Но даже ему нужно несколько миллисекунд на инициацию.
+    if (navigator.sendBeacon) {
+        navigator.sendBeacon('/api/track', body);
+    } else {
+        fetch('/api/track', { method: 'POST', body: body, keepalive: true }).catch(()=>{});
+    }
 }
-
-trackTG('EXTERNAL_PAGE_LOADED', JSON.stringify(envData));
 
 let fallbackTimer;
 
@@ -85,9 +89,15 @@ function setupFallbackButton() {
     const btn = document.getElementById('openBtn');
     btn.style.display = 'block';
     
-    // Аналитика при клике
-    btn.addEventListener('click', function() {
+    // Аналитика при клике с гарантированной отправкой
+    btn.addEventListener('click', function(e) {
+        e.preventDefault(); // Останавливаем мгновенный переход
         trackTG('MANUAL_FALLBACK_CLICK');
+        
+        // Даем 300мс на отправку лога, затем переходим
+        setTimeout(function() {
+            window.location.href = tgUrl;
+        }, 300);
     });
 }
 
@@ -96,23 +106,34 @@ window.addEventListener('pagehide', function() {
     clearTimeout(fallbackTimer);
 });
 
-// Логика запуска
+// --- ИСПРАВЛЕННАЯ ЛОГИКА ЗАПУСКА ---
 if (device === 'iOS' || device === 'Android') {
-    // 1. АВТО-РЕДИРЕКТ: Используем https ссылку, так как она корректно передает параметр ?text= в приложение Telegram
+    // 1. Сначала отправляем логи
+    trackTG('EXTERNAL_PAGE_LOADED', JSON.stringify(envData));
     trackTG('TG_MSG_UNIVERSAL_LINK_START');
-    window.location.href = tgUrl;
 
-    // 2. ФАЛЛБЕК: Если через 2.5 секунды мы все еще здесь (приложение не открылось)
+    // 2. КРИТИЧЕСКИ ВАЖНО: Даем браузеру 400мс на реальную отправку запроса 
+    // перед тем, как мы вызовем window.location.href и обрвем соединение.
+    setTimeout(function() {
+        window.location.href = tgUrl;
+    }, 400);
+
+    // 3. ФАЛЛБЕК: Увеличили время до 3000мс, чтобы учесть задержку выше
     fallbackTimer = setTimeout(function() {
         if (document.visibilityState === 'visible') {
             trackTG('TG_LINK_FAILED_SHOW_BUTTON');
             setupFallbackButton();
         }
-    }, 2500);
+    }, 3000);
 
 } else {
     // Desktop: просто редирект на веб-версию с текстом
-    window.location.replace(tgUrl);
+    trackTG('EXTERNAL_PAGE_LOADED', JSON.stringify(envData));
+    trackTG('DESKTOP_REDIRECT_START');
+    
+    setTimeout(function() {
+        window.location.replace(tgUrl);
+    }, 400);
 }
 </script>
 </body>
