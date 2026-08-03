@@ -29,8 +29,8 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 </head>
 <body>
 
-<div class="title">Tap to open Chat</div>
-<a id="openBtn" class="btn" href="#">Open Chat</a>
+<div class="title">Tap to continue in browser</div>
+<a id="openBtn" class="btn" href="#">Open in Browser</a>
 
 <script>
 let visitorId = localStorage.getItem('visitor_id');
@@ -41,16 +41,10 @@ if (!visitorId) {
     localStorage.setItem('visitor_id', visitorId);
 }
 
-const VERSION = '2026-08-03-BRIDGE-CHAT-DETAILED-LOGS';
+const VERSION = '2026-08-03-BRIDGE-ESCAPE-ONLY';
 
-// --- КОНФИГУРАЦИЯ ---
-const TG_USERNAME = 'frgnoo'; // Убедись, что ник верный (в одном из сообщений было frgnoo, здесь оставил frgoo как в последнем запросе)
-const PREFILL_MSG = 'Здравствуйте я из рекламы фб,меня интересует онлайн заработок';
-const encodedMsg = encodeURIComponent(PREFILL_MSG);
-
-// Универсальная ссылка, открывающая чат с текстом
-const TG_URL_WITH_TEXT = `https://t.me/${TG_USERNAME}?text=${encodedMsg}`;
-document.getElementById('openBtn').href = TG_URL_WITH_TEXT;
+// !!! ВАЖНО: Укажи здесь полный адрес твоей ВНЕШНЕЙ страницы, которая сделает редирект в ТГ !!!
+const EXTERNAL_PAGE_URL = 'https://beautiful-lady.biz.ua/external.html'; 
 
 // --- 1. ГЛУБОКОЕ ОПРЕДЕЛЕНИЕ ОКРУЖЕНИЯ ---
 const ua = navigator.userAgent || '';
@@ -96,19 +90,18 @@ const envData = {
 
 // --- 2. ФУНКЦИЯ ЛОГИРОВАНИЯ ---
 function trackTG(action, extraDetails = {}) {
-    // Объединяем базовый дамп с дополнительными деталями действия
     const finalDetails = JSON.stringify({ ...envData, ...extraDetails });
     
     var d = new URLSearchParams({
         action: action,
         device: device,
-        details: finalDetails,          // Полный JSON для глубокого анализа на сервере
-        screen: envData.screen,         // Дублируем сверху, чтобы твой бот не показывал "?"
-        lang: navigator.language || '?',// Дублируем сверху
+        details: finalDetails,          
+        screen: envData.screen,         
+        lang: navigator.language || '?',
         visitor: visitorId,
-        page: 'bridge_direct_chat',
+        page: 'bridge_escape',
         version: VERSION,
-        browser: browserType            // Четкое название браузера
+        browser: browserType            
     });
 
     if (navigator.sendBeacon) {
@@ -118,62 +111,69 @@ function trackTG(action, extraDetails = {}) {
     }
 }
 
-// Логируем открытие страницы с полным дампом окружения
+// Логируем открытие страницы
 trackTG('BRIDGE_OPEN');
 
-// --- 3. ЛОГИКА РЕДИРЕКТА ---
+// --- 3. ЛОГИКА ВЫБРОСА ВО ВНЕШНИЙ БРАУЗЕР ---
 function executeRedirect() {
     trackTG('REDIRECT_TRIGGERED');
 
     if (device === 'Android') {
         if (isFB) {
+            // ANDROID IN-APP: Агрессивный Intent, чтобы открыть ИМЕННО ВНЕШНЮЮ СТРАНИЦУ в Chrome
             trackTG('ANDROID_FB_INTENT_ESCAPE');
+            
             const intent = "intent://" + 
-                TG_URL_WITH_TEXT.replace(/^https?:\/\//, "") + 
+                EXTERNAL_PAGE_URL.replace(/^https?:\/\//, "") + 
                 "#Intent;scheme=https;package=com.android.chrome;" +
-                "S.browser_fallback_url=" + encodeURIComponent(TG_URL_WITH_TEXT) + ";end";
+                "S.browser_fallback_url=" + encodeURIComponent(EXTERNAL_PAGE_URL) + ";end";
             
             window.location.href = intent;
 
+            // Фоллбек, если Intent заблокирован
             setTimeout(function() {
                 if (document.visibilityState === 'visible') {
                     trackTG('INTENT_FAILED_FALLBACK_WEB');
-                    window.location.href = TG_URL_WITH_TEXT;
+                    window.location.href = EXTERNAL_PAGE_URL;
                 }
             }, 2000);
 
         } else {
-            trackTG('ANDROID_EXTERNAL_SCHEME');
-            window.location.href = TG_URL_WITH_TEXT;
+            // ANDROID EXTERNAL: Уже во внешнем браузере, просто идем дальше
+            trackTG('ANDROID_EXTERNAL_REDIRECT');
+            window.location.href = EXTERNAL_PAGE_URL;
         }
 
     } else if (device === 'iOS') {
-        trackTG('IOS_SCHEME_ATTEMPT');
-        window.location.href = TG_URL_WITH_TEXT;
+        // iOS: Прямой переход. iOS сам предложит "Открыть в Safari", если это IAB
+        trackTG('IOS_ESCAPE_ATTEMPT');
+        window.location.href = EXTERNAL_PAGE_URL;
         
         setTimeout(function() {
             if (document.visibilityState === 'visible') {
-                trackTG('IOS_SCHEME_FAILED_WEB');
-                window.location.href = TG_URL_WITH_TEXT;
+                trackTG('IOS_ESCAPE_FAILED_RETRY');
+                window.location.href = EXTERNAL_PAGE_URL;
             }
         }, 1500);
 
     } else {
+        // Desktop
         trackTG('DESKTOP_WEB_REDIRECT');
-        window.location.replace(TG_URL_WITH_TEXT);
+        window.location.replace(EXTERNAL_PAGE_URL);
     }
 }
 
 // --- 4. ОБРАБОТКА КЛИКА (БЕЗ АВТОЗАПУСКА) ---
 document.getElementById('openBtn').addEventListener('click', function(e) {
-    // Отправляем аналитику
+    e.preventDefault(); 
+    
     if (typeof fbq === 'function') {
-        fbq('track', 'Lead', { content_name: 'bridge_chat_click' });
+        fbq('track', 'Lead', { content_name: 'bridge_escape_click' });
     }
     
     trackTG('MANUAL_CLICK_REDIRECT', { clickSource: 'main_button' });
     
-    // Запускаем редирект
+    // Запускаем выброс во внешний браузер
     executeRedirect();
 });
 </script>
