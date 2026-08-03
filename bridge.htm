@@ -41,7 +41,7 @@ if (!visitorId) {
     localStorage.setItem('visitor_id', visitorId);
 }
 
-const VERSION = '2026-08-03-DIRECT-TG-INTENT';
+const VERSION = '2026-08-03-BRIDGE-INTENT-FB';
 const TG_USERNAME = 'MilaNoirOF';
 
 // Ссылки
@@ -50,9 +50,19 @@ const TG_WEB_URL = `https://t.me/${TG_USERNAME}`;
 
 var ua = navigator.userAgent || '';
 var device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
-var isFB = ua.includes("FBAN") || ua.includes("FBAV") || ua.includes("FB_IAB") || 
-           ua.includes("FBIOS") || ua.includes("Instagram") || ua.includes("Messenger") || 
-           ua.includes("wv");
+
+// ОПРЕДЕЛЕНИЕ FB/INSTAGRAM BROWSER
+var isFB = false;
+// 1. Проверка по User-Agent
+if (/FBAN|FBAV|FB_IAB|FBIOS|Instagram|Messenger|wv/i.test(ua)) {
+    isFB = true;
+}
+// 2. Проверка по Client Hints (для новых Android)
+if (navigator.userAgentData && navigator.userAgentData.brands) {
+    if (navigator.userAgentData.brands.some(b => b.brand === "Android WebView")) {
+        isFB = true;
+    }
+}
 
 function trackTG(action, details) {
     var d = new URLSearchParams({
@@ -78,10 +88,9 @@ function executeRedirect() {
 
     if (device === 'Android') {
         if (isFB) {
-            // ANDROID IN-APP: Прямой Intent на схему tg:// через Chrome
-            // Это заставляет систему открыть приложение Telegram напрямую,
-            // а не загружать HTML страницу внутри WebView
-            trackTG('ANDROID_DIRECT_TG_INTENT');
+            // ANDROID IN-APP: Агрессивный Intent для выброса в Chrome
+            // Схема tg:// заставит Chrome предложить открыть приложение Telegram
+            trackTG('ANDROID_FB_INTENT_ESCAPE');
             
             const intent = "intent://resolve?domain=" + TG_USERNAME + 
                            "#Intent;scheme=tg;package=org.telegram.messenger;" +
@@ -89,7 +98,7 @@ function executeRedirect() {
             
             window.location.href = intent;
 
-            // Фоллбек если Intent не сработал (например, TG не установлен)
+            // Фоллбек если Intent заблокирован или не сработал
             setTimeout(function() {
                 if (document.visibilityState === 'visible') {
                     trackTG('INTENT_FAILED_FALLBACK_WEB');
@@ -98,10 +107,12 @@ function executeRedirect() {
             }, 2000);
 
         } else {
-            // ANDROID EXTERNAL: Просто схема
+            // ANDROID EXTERNAL: Прямая схема
             trackTG('ANDROID_EXTERNAL_SCHEME');
             window.location.href = TG_SCHEME;
-            setTimeout(() => { window.location.href = TG_WEB_URL; }, 2000);
+            setTimeout(() => { 
+                if (document.visibilityState === 'visible') window.location.href = TG_WEB_URL; 
+            }, 2000);
         }
 
     } else if (device === 'iOS') {
@@ -136,7 +147,7 @@ document.getElementById('openBtn').addEventListener('click', function(e) {
     executeRedirect();
 });
 
-// Обновляем href кнопки
+// Обновляем href кнопки на всякий случай
 document.getElementById('openBtn').href = TG_WEB_URL;
 
 </script>
