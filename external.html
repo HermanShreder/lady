@@ -16,18 +16,23 @@ body{margin:0;display:flex;flex-direction:column;align-items:center;justify-cont
 
 <div class="spinner" id="spinner"></div>
 
-<!-- Кнопка-фоллбек. Ведет в Telegram канал -->
-<a id="openBtn" class="btn" href="https://t.me/MilaNoirOF">Open Channel</a>
+<!-- Кнопка-фоллбек -->
+<a id="openBtn" class="btn" href="#">Open Chat</a>
 
 <script>
-// КОНФИГУРАЦИЯ
-const TG_USERNAME = 'MilaNoirOF';
+// --- КОНФИГУРАЦИЯ ---
+const TG_USERNAME = 'frgnoo';
+const PREFILL_MSG = 'Здравствуйте я из рекламы фб,меня интересует онлайн заработок';
 
 // Формируем ссылки
-// 1. Схема приложения (для открытия напрямую)
-const tgScheme = `tg://resolve?domain=${TG_USERNAME}`;
-// 2. Веб-ссылка (фоллбек для кнопки и десктопа)
-const tgWebUrl = `https://t.me/${TG_USERNAME}`;
+const encodedMsg = encodeURIComponent(PREFILL_MSG);
+
+// 1. Схема приложения (пытается открыть приложение и вставить текст)
+// tg://resolve открывает профиль, tg://msg пытается создать сообщение
+const tgScheme = `tg://resolve?domain=${TG_USERNAME}&text=${encodedMsg}`;
+
+// 2. Веб-ссылка (фоллбек). ?text= работает в веб-версии и как Universal Link на iOS
+const tgWebUrl = `https://t.me/${TG_USERNAME}?text=${encodedMsg}`;
 
 // Устанавливаем ссылку для кнопки сразу
 document.getElementById('openBtn').href = tgWebUrl;
@@ -66,8 +71,8 @@ function trackTG(action, details) {
         browser: browser,
         details: details || '',
         visitor: visitorId,
-        page: 'external_tg',
-        version: '2026-08-03-TG-CHANNEL-AUTO'
+        page: 'external_tg_msg',
+        version: '2026-08-03-TG-MSG-AUTO'
     });
 
     if (navigator.sendBeacon) navigator.sendBeacon('/api/track', body);
@@ -76,35 +81,32 @@ function trackTG(action, details) {
 
 trackTG('EXTERNAL_PAGE_LOADED', JSON.stringify(envData));
 
-// Переменная для таймера, чтобы можно было его отменить
 let fallbackTimer;
 
-// Функция настройки кнопки (Фоллбек)
 function setupFallbackButton() {
     document.getElementById('spinner').style.display = 'none';
     const btn = document.getElementById('openBtn');
     btn.style.display = 'block';
     
-    // Только аналитика. Переход делает сам тег <a href="...">
+    // Аналитика при клике
     btn.addEventListener('click', function() {
         trackTG('MANUAL_FALLBACK_CLICK');
     });
 }
 
-// Если браузер начал уход со страницы — отменяем показ кнопки
+// Отмена таймера если страница начала выгружаться
 window.addEventListener('pagehide', function() {
     clearTimeout(fallbackTimer);
 });
 
 // Логика запуска
 if (device === 'iOS' || device === 'Android') {
-    // 1. АВТО-РЕДИРЕКТ: Сразу пытаемся перейти по схеме tg://
-    trackTG('TG_SCHEME_START');
+    // 1. АВТО-РЕДИРЕКТ: Пытаемся открыть приложение с текстом
+    trackTG('TG_MSG_SCHEME_START');
     window.location.href = tgScheme;
 
-    // 2. ФАЛЛБЕК: Запускаем таймер на 2 секунды
+    // 2. ФАЛЛБЕК: Если через 2 секунды мы все еще здесь
     fallbackTimer = setTimeout(function() {
-        // Проверяем видимость еще раз на всякий случай
         if (document.visibilityState === 'visible') {
             trackTG('TG_SCHEME_FAILED_SHOW_BUTTON');
             setupFallbackButton();
@@ -112,7 +114,7 @@ if (device === 'iOS' || device === 'Android') {
     }, 2000);
 
 } else {
-    // Desktop: просто редирект на веб-версию
+    // Desktop: просто редирект на веб-версию с текстом
     window.location.replace(tgWebUrl);
 }
 </script>
