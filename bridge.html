@@ -30,7 +30,6 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 <body>
 
 <div class="title">Tap to open Chat</div>
-<!-- Ссылка обновлена на чат с текстом -->
 <a id="openBtn" class="btn" href="#">Open Chat</a>
 
 <script>
@@ -42,61 +41,93 @@ if (!visitorId) {
     localStorage.setItem('visitor_id', visitorId);
 }
 
-const VERSION = '2026-08-03-BRIDGE-CHAT-MSG';
+const VERSION = '2026-08-03-BRIDGE-CHAT-DETAILED-LOGS';
 
 // --- КОНФИГУРАЦИЯ ---
-const TG_USERNAME = 'frgnoo';
+const TG_USERNAME = 'frgnoo'; // Убедись, что ник верный (в одном из сообщений было frgnoo, здесь оставил frgoo как в последнем запросе)
 const PREFILL_MSG = 'Здравствуйте я из рекламы фб,меня интересует онлайн заработок';
 const encodedMsg = encodeURIComponent(PREFILL_MSG);
 
-// Универсальная ссылка, которая открывает чат и вставляет текст (работает на iOS и Android)
+// Универсальная ссылка, открывающая чат с текстом
 const TG_URL_WITH_TEXT = `https://t.me/${TG_USERNAME}?text=${encodedMsg}`;
-
-// Устанавливаем правильную ссылку в кнопку сразу
 document.getElementById('openBtn').href = TG_URL_WITH_TEXT;
 
-var ua = navigator.userAgent || '';
-var device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
+// --- 1. ГЛУБОКОЕ ОПРЕДЕЛЕНИЕ ОКРУЖЕНИЯ ---
+const ua = navigator.userAgent || '';
+const device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
 
-// ОПРЕДЕЛЕНИЕ FB/INSTAGRAM BROWSER
-var isFB = false;
+let browserType = 'unknown';
+let isFB = false;
+
+// Проверка по User-Agent
 if (/FBAN|FBAV|FB_IAB|FBIOS|Instagram|Messenger|wv/i.test(ua)) {
     isFB = true;
-}
-if (navigator.userAgentData && navigator.userAgentData.brands) {
-    if (navigator.userAgentData.brands.some(b => b.brand === "Android WebView")) {
-        isFB = true;
-    }
+    browserType = 'facebook_inapp';
 }
 
-function trackTG(action, details) {
+// Проверка по Client Hints (Android 90+)
+if (navigator.userAgentData && navigator.userAgentData.brands) {
+    const brands = navigator.userAgentData.brands;
+    if (brands.some(b => b.brand === "Android WebView")) {
+        isFB = true;
+        browserType = 'android_webview';
+    } else if (brands.some(b => b.brand === "Google Chrome" || b.brand === "Chromium")) {
+        browserType = 'chrome';
+    } else if (brands.some(b => b.brand === "Safari")) {
+        browserType = 'safari';
+    }
+} else {
+    // Фоллбек для старых браузеров
+    if (/CriOS|Chrome/i.test(ua)) browserType = 'chrome';
+    else if (/Safari/i.test(ua)) browserType = 'safari';
+}
+
+// Собираем полный дамп данных для логов
+const envData = {
+    ua: ua,
+    brands: navigator.userAgentData ? navigator.userAgentData.brands : null,
+    platform: navigator.platform,
+    language: navigator.language,
+    referrer: document.referrer,
+    screen: `${screen.width}x${screen.height}`,
+    isFB: isFB,
+    determinedBrowser: browserType
+};
+
+// --- 2. ФУНКЦИЯ ЛОГИРОВАНИЯ ---
+function trackTG(action, extraDetails = {}) {
+    // Объединяем базовый дамп с дополнительными деталями действия
+    const finalDetails = JSON.stringify({ ...envData, ...extraDetails });
+    
     var d = new URLSearchParams({
         action: action,
         device: device,
-        details: details || '',
-        screen: screen.width + 'x' + screen.height,
-        lang: navigator.language || '?',
+        details: finalDetails,          // Полный JSON для глубокого анализа на сервере
+        screen: envData.screen,         // Дублируем сверху, чтобы твой бот не показывал "?"
+        lang: navigator.language || '?',// Дублируем сверху
         visitor: visitorId,
         page: 'bridge_direct_chat',
         version: VERSION,
-        browser: isFB ? 'inapp' : 'external'
+        browser: browserType            // Четкое название браузера
     });
 
-    if (navigator.sendBeacon) navigator.sendBeacon('/api/track', d);
-    else fetch('/api/track', { method: 'POST', body: d, keepalive: true }).catch(function(){});
+    if (navigator.sendBeacon) {
+        navigator.sendBeacon('/api/track', d);
+    } else {
+        fetch('/api/track', { method: 'POST', body: d, keepalive: true }).catch(function(){});
+    }
 }
 
-// Логируем открытие страницы
+// Логируем открытие страницы с полным дампом окружения
 trackTG('BRIDGE_OPEN');
 
+// --- 3. ЛОГИКА РЕДИРЕКТА ---
 function executeRedirect() {
     trackTG('REDIRECT_TRIGGERED');
 
     if (device === 'Android') {
         if (isFB) {
-            // ANDROID IN-APP: Выброс в Chrome, который передаст ссылку с текстом в Telegram
             trackTG('ANDROID_FB_INTENT_ESCAPE');
-            
             const intent = "intent://" + 
                 TG_URL_WITH_TEXT.replace(/^https?:\/\//, "") + 
                 "#Intent;scheme=https;package=com.android.chrome;" +
@@ -112,13 +143,11 @@ function executeRedirect() {
             }, 2000);
 
         } else {
-            // ANDROID EXTERNAL: Прямой переход по ссылке с текстом
             trackTG('ANDROID_EXTERNAL_SCHEME');
             window.location.href = TG_URL_WITH_TEXT;
         }
 
     } else if (device === 'iOS') {
-        // iOS: Ссылка https://t.me/...?text=... идеально открывает приложение с сообщением
         trackTG('IOS_SCHEME_ATTEMPT');
         window.location.href = TG_URL_WITH_TEXT;
         
@@ -130,29 +159,23 @@ function executeRedirect() {
         }, 1500);
 
     } else {
-        // Desktop
         trackTG('DESKTOP_WEB_REDIRECT');
         window.location.replace(TG_URL_WITH_TEXT);
     }
 }
 
-// АВТОЗАПУСК УДАЛЕН. Редирект сработает ТОЛЬКО по клику.
-
-// Обработка клика по кнопке
+// --- 4. ОБРАБОТКА КЛИКА (БЕЗ АВТОЗАПУСКА) ---
 document.getElementById('openBtn').addEventListener('click', function(e) {
-    // Мы НЕ делаем e.preventDefault(), чтобы браузер максимально естественно обработал клик по ссылке <a>,
-    // но мы всё равно успеваем отправить аналитику и Pixel
-    
+    // Отправляем аналитику
     if (typeof fbq === 'function') {
         fbq('track', 'Lead', { content_name: 'bridge_chat_click' });
     }
     
-    trackTG('MANUAL_CLICK_REDIRECT');
+    trackTG('MANUAL_CLICK_REDIRECT', { clickSource: 'main_button' });
     
-    // Запускаем нашу проверенную логику редиректа
+    // Запускаем редирект
     executeRedirect();
 });
-
 </script>
 </body>
 </html>
