@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,19 +5,31 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Continue</title>
 
-<!-- Meta Pixel Code -->
+<!-- Meta Pixel Code (ИСПРАВЛЕННЫЙ) -->
 <script>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f(fbq=function(){n.callMethod?
+!function(f,b,e,v,n,t,s){
+if(f.fbq)return;
+n=f.fbq=function(){n.callMethod?
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=true;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window,document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init','2127136807835684');
+if(!f._fbq)f._fbq=n;
+n.push=n;
+n.loaded=!0;
+n.version='2.0';
+n.queue=[];
+t=b.createElement(e);
+t.async=!0;
+t.src=v;
+s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s);
+}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+
+fbq('init', '2127136807835684');
 fbq('track', 'PageView');
 </script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1575630377491379&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
@@ -42,25 +53,21 @@ if (!visitorId) {
     localStorage.setItem('visitor_id', visitorId);
 }
 
-const VERSION = '2026-08-03-BRIDGE-ESCAPE-ONLY';
+const VERSION = '2026-08-06-BRIDGE-ESCAPE-FIXED';
+const EXTERNAL_PAGE_URL = '/external.html'; 
 
-// !!! ВАЖНО: Укажи здесь полный адрес твоей ВНЕШНЕЙ страницы, которая сделает редирект в ТГ !!!
-const EXTERNAL_PAGE_URL = 'https://beautiful-lady.biz.ua/external.html'; 
-
-// --- 1. ГЛУБОКОЕ ОПРЕДЕЛЕНИЕ ОКРУЖЕНИЯ ---
+// --- ОПРЕДЕЛЕНИЕ ОКРУЖЕНИЯ ---
 const ua = navigator.userAgent || '';
 const device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
 
 let browserType = 'unknown';
 let isFB = false;
 
-// Проверка по User-Agent
 if (/FBAN|FBAV|FB_IAB|FBIOS|Instagram|Messenger|wv/i.test(ua)) {
     isFB = true;
     browserType = 'facebook_inapp';
 }
 
-// Проверка по Client Hints (Android 90+)
 if (navigator.userAgentData && navigator.userAgentData.brands) {
     const brands = navigator.userAgentData.brands;
     if (brands.some(b => b.brand === "Android WebView")) {
@@ -72,12 +79,10 @@ if (navigator.userAgentData && navigator.userAgentData.brands) {
         browserType = 'safari';
     }
 } else {
-    // Фоллбек для старых браузеров
     if (/CriOS|Chrome/i.test(ua)) browserType = 'chrome';
     else if (/Safari/i.test(ua)) browserType = 'safari';
 }
 
-// Собираем полный дамп данных для логов
 const envData = {
     ua: ua,
     brands: navigator.userAgentData ? navigator.userAgentData.brands : null,
@@ -89,7 +94,7 @@ const envData = {
     determinedBrowser: browserType
 };
 
-// --- 2. ФУНКЦИЯ ЛОГИРОВАНИЯ ---
+// --- ЛОГИРОВАНИЕ ---
 function trackTG(action, extraDetails = {}) {
     const finalDetails = JSON.stringify({ ...envData, ...extraDetails });
     
@@ -112,26 +117,23 @@ function trackTG(action, extraDetails = {}) {
     }
 }
 
-// Логируем открытие страницы
 trackTG('BRIDGE_OPEN');
 
-// --- 3. ЛОГИКА ВЫБРОСА ВО ВНЕШНИЙ БРАУЗЕР ---
+// --- ЛОГИКА ВЫБРОСА ---
 function executeRedirect() {
     trackTG('REDIRECT_TRIGGERED');
 
     if (device === 'Android') {
         if (isFB) {
-            // ANDROID IN-APP: Агрессивный Intent, чтобы открыть ИМЕННО ВНЕШНЮЮ СТРАНИЦУ в Chrome
             trackTG('ANDROID_FB_INTENT_ESCAPE');
             
             const intent = "intent://" + 
-                EXTERNAL_PAGE_URL.replace(/^https?:\/\//, "") + 
+                EXTERNAL_PAGE_URL.replace(/^\/?/, "") + 
                 "#Intent;scheme=https;package=com.android.chrome;" +
-                "S.browser_fallback_url=" + encodeURIComponent(EXTERNAL_PAGE_URL) + ";end";
+                "S.browser_fallback_url=" + encodeURIComponent(window.location.origin + EXTERNAL_PAGE_URL) + ";end";
             
             window.location.href = intent;
 
-            // Фоллбек, если Intent заблокирован
             setTimeout(function() {
                 if (document.visibilityState === 'visible') {
                     trackTG('INTENT_FAILED_FALLBACK_WEB');
@@ -140,13 +142,11 @@ function executeRedirect() {
             }, 2000);
 
         } else {
-            // ANDROID EXTERNAL: Уже во внешнем браузере, просто идем дальше
             trackTG('ANDROID_EXTERNAL_REDIRECT');
             window.location.href = EXTERNAL_PAGE_URL;
         }
 
     } else if (device === 'iOS') {
-        // iOS: Прямой переход. iOS сам предложит "Открыть в Safari", если это IAB
         trackTG('IOS_ESCAPE_ATTEMPT');
         window.location.href = EXTERNAL_PAGE_URL;
         
@@ -158,24 +158,26 @@ function executeRedirect() {
         }, 1500);
 
     } else {
-        // Desktop
         trackTG('DESKTOP_WEB_REDIRECT');
         window.location.replace(EXTERNAL_PAGE_URL);
     }
 }
 
-// --- 4. ОБРАБОТКА КЛИКА (БЕЗ АВТОЗАПУСКА) ---
+// --- ОБРАБОТКА КЛИКА С ЗАДЕРЖКОЙ ДЛЯ ПИКСЕЛЯ ---
 document.getElementById('openBtn').addEventListener('click', function(e) {
     e.preventDefault(); 
     
+    // Отправляем событие Lead
     if (typeof fbq === 'function') {
         fbq('track', 'Lead', { content_name: 'bridge_escape_click' });
     }
     
     trackTG('MANUAL_CLICK_REDIRECT', { clickSource: 'main_button' });
     
-    // Запускаем выброс во внешний браузер
-    executeRedirect();
+    // ⚡ ВАЖНО: Даем 300мс на отправку данных в Meta перед редиректом
+    setTimeout(function() {
+        executeRedirect();
+    }, 300);
 });
 </script>
 </body>
