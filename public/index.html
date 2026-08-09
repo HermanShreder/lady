@@ -3,238 +3,200 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="robots" content="noindex,nofollow">
-<title>Continue to Telegram</title>
+<title>Loading...</title>
 
-<!-- Meta Pixel Code (ЧИСТЫЙ И ИСПРАВЛЕННЫЙ) -->
+<!-- Meta Pixel Code -->
 <script>
-!function(f,b,e,v,n,t,s){
-if(f.fbq)return;
-n=f.fbq=function(){n.callMethod?
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;
-n.push=n;
-n.loaded=!0;
-n.version='2.0';
-n.queue=[];
-t=b.createElement(e);
-t.async=!0;
-t.src=v;
-s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s);
-}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
-
-fbq('init', '2127136807835684');
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window,document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init','1575630377491379');
 fbq('track', 'PageView');
 </script>
-<noscript><img height="1" width="1" style="display:none"
-src="https://www.facebook.com/tr?id=1575630377491379&ev=PageView&noscript=1"
-/></noscript>
-<!-- End Meta Pixel Code -->
 
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
-body { 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    justify-content: center; 
-    height: 100vh; 
-    background: #ffffff; 
-    color: #333; 
-    text-align: center; 
-    padding: 20px; 
-}
-.title { 
-    font-size: 20px; 
-    font-weight: 600; 
-    margin-bottom: 32px; 
-    color: #222; 
-    line-height: 1.4;
-}
-.tg-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    width: 100%;
-    max-width: 320px;
-    padding: 16px 24px;
-    background: #0088cc; /* Фирменный цвет Telegram */
-    color: #fff;
-    border: none;
-    border-radius: 12px;
-    font-size: 18px;
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: none;
-    -webkit-tap-highlight-color: transparent;
-    box-shadow: 0 6px 16px rgba(0, 136, 204, 0.3);
-    transition: transform 0.1s, background 0.2s;
-}
-.tg-btn:active { 
-    transform: scale(0.97); 
-    background: #0077b5;
-}
-.tg-icon {
-    width: 24px;
-    height: 24px;
-    fill: #fff;
-}
-.uv-counter {
-    margin-top: 40px;
-    font-size: 11px;
-    color: #999;
-    letter-spacing: 0.5px;
-}
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:#fff;color:#333;text-align:center;padding:20px}
+.spinner{width:36px;height:36px;border:3px solid #e0e0e0;border-top:3px solid #00aff0;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:20px}
+.title{font-size:16px;font-weight:600;margin-bottom:12px}
+.bar-wrap{width:200px;height:4px;background:#e0e0e0;border-radius:2px;overflow:hidden;margin-bottom:24px}
+.bar{height:100%;background:#00aff0;border-radius:2px;animation:load 2s ease-in-out forwards}
+.fallback{opacity:0;transition:opacity .3s;font-size:13px;color:#888;line-height:1.5;margin-bottom:16px}
+.fallback.visible{opacity:1}
+.btn{display:inline-block;padding:14px 32px;background:#00aff0;color:#fff;border:none;border-radius:25px;font-size:15px;font-weight:600;cursor:pointer;text-decoration:none;opacity:0;transition:opacity .3s;-webkit-tap-highlight-color:transparent}
+.btn.visible{opacity:1}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes load{0%{width:0}60%{width:70%}100%{width:100%}}
 </style>
 </head>
 <body>
 
-<div class="title">To continue, please open this page in your external browser.</div>
-
-<button id="tgBtn" class="tg-btn">
-    <svg class="tg-icon" viewBox="0 0 24 24">
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
-    </svg>
-    Open in Telegram
-</button>
-
-<div class="uv-counter" id="uvCounter"></div>
+<div class="spinner"></div>
+<div class="title">Opening in browser...</div>
+<div class="bar-wrap"><div class="bar"></div></div>
+<div class="fallback" id="fallback">If nothing happened,<br>tap the button below.</div>
+<a href="/external.html" class="btn" id="openBtn">Open Profile</a>
 
 <script>
-// --- 1. КОНФИГУРАЦИЯ И ИДЕНТИФИКАЦИЯ ---
-const EXTERNAL_PAGE_URL = '/external.html'; // Куда редиректим во внешний браузер
-
+// ---------- Visitor ID ----------
 let visitorId = localStorage.getItem('visitor_id');
+
 if (!visitorId) {
-    visitorId = (typeof crypto !== 'undefined' && crypto.randomUUID) 
-        ? crypto.randomUUID() 
+    visitorId = (typeof crypto !== 'undefined' && crypto.randomUUID)
+        ? crypto.randomUUID()
         : 'v-' + Math.random().toString(36).substring(2) + Date.now().toString(36);
     localStorage.setItem('visitor_id', visitorId);
 }
+// ---------- end Visitor ID ----------
 
-// --- 2. ОПРЕДЕЛЕНИЕ УСТРОЙСТВА И БРАУЗЕРА ---
-const ua = navigator.userAgent || '';
-const isIOS = /iPhone|iPad|iPod/i.test(ua);
-const isAndroid = /Android/i.test(ua);
-const device = isIOS ? 'iOS' : (isAndroid ? 'Android' : 'Desktop');
+// Промежуточная страница с visitor ID
+const OF_OPEN_URL = "/external.html?v=" + encodeURIComponent(visitorId);
 
-let isFB = false;
-let browserType = 'external';
+var ua = navigator.userAgent || '';
+var isAndroid = /Android/i.test(ua);
+var isIOS = /iPhone|iPad|iPod/i.test(ua);
+var isFB = /FBAN|FBAV|FBIOS|Instagram|Messenger/i.test(ua);
+var device = isIOS ? 'iOS' : (isAndroid ? 'Android' : 'Desktop');
 
-if (/FBAN|FBAV|FB_IAB|FBIOS|Instagram|Messenger|wv/i.test(ua)) {
-    isFB = true;
-    browserType = 'facebook_inapp';
-}
-if (navigator.userAgentData && navigator.userAgentData.brands) {
-    if (navigator.userAgentData.brands.some(b => b.brand === "Android WebView")) {
-        isFB = true;
-        browserType = 'android_webview';
-    } else if (navigator.userAgentData.brands.some(b => b.brand === "Google Chrome" || b.brand === "Chromium")) {
-        browserType = 'chrome';
-    }
-}
-
-// Уникальный визит
-var UV_KEY = '_mil_uv';
-var isUniqueVisit = false;
-try {
-    if (!localStorage.getItem(UV_KEY)) {
-        localStorage.setItem(UV_KEY, '1');
-        isUniqueVisit = true;
-    }
-} catch (e) {}
-document.getElementById('uvCounter').textContent = isUniqueVisit ? '✦ new visit' : 'returning visitor';
-
-// --- 3. ФУНКЦИЯ ЛОГИРОВАНИЯ ---
+// Добавляем page:"bridge" для идентификации источника в логах
 function trackTG(action, details) {
-    const envData = {
-        ua: ua,
-        isFB: isFB,
-        browser: browserType,
-        screen: screen.width + 'x' + screen.height
-    };
-    const finalDetails = JSON.stringify({ ...envData, ...(details || {}) });
-    
     var d = new URLSearchParams({
         action: action,
         device: device,
-        details: finalDetails,
-        screen: envData.screen,
+        details: details || '',
+        screen: screen.width + 'x' + screen.height,
         lang: navigator.language || '?',
         visitor: visitorId,
-        unique: isUniqueVisit ? '1' : '0',
-        page: 'single_landing_escape',
-        version: '2026-08-06-MERGED'
+        page: 'bridge'
     });
 
-    if (navigator.sendBeacon) navigator.sendBeacon('/api/track', d);
-    else fetch('/api/track', { method: 'POST', body: d, keepalive: true }).catch(function(){});
+    if (navigator.sendBeacon)
+        navigator.sendBeacon('/api/track', d);
+    else
+        fetch('/api/track', {
+            method: 'POST',
+            body: d,
+            keepalive: true
+        }).catch(function(){});
 }
 
-// Логируем загрузку страницы
-trackTG(isUniqueVisit ? 'УНИКАЛЬНЫЙ_ЗАХОД' : 'ПОВТОРНЫЙ_ЗАХОД');
+trackTG('BRIDGE_OPEN');
 
-// --- 4. ЛОГИКА ВЫБРОСА ВО ВНЕШНИЙ БРАУЗЕР (из старого файла) ---
-function executeRedirect() {
-    trackTG('REDIRECT_TRIGGERED');
+var leavingBridge = false;
+var startTime = Date.now();
 
-    if (device === 'Android') {
-        if (isFB) {
-            trackTG('ANDROID_FB_INTENT_ESCAPE');
-            const intent = "intent://" + 
-                EXTERNAL_PAGE_URL.replace(/^\/?/, "") + 
-                "#Intent;scheme=https;package=com.android.chrome;" +
-                "S.browser_fallback_url=" + encodeURIComponent(window.location.origin + EXTERNAL_PAGE_URL) + ";end";
-            
-            window.location.href = intent;
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden' && !leavingBridge) {
+        leavingBridge = true;
+        trackTG('LEAVING_BRIDGE', 'visibilitychange, ' + (Date.now() - startTime) + 'мс');
+    }
+});
 
-            setTimeout(function() {
-                if (document.visibilityState === 'visible') {
-                    trackTG('INTENT_FAILED_FALLBACK_WEB');
-                    window.location.href = EXTERNAL_PAGE_URL;
-                }
-            }, 2000);
-        } else {
-            trackTG('ANDROID_EXTERNAL_REDIRECT');
-            window.location.href = EXTERNAL_PAGE_URL;
-        }
-    } else if (device === 'iOS') {
-        trackTG('IOS_ESCAPE_ATTEMPT');
-        window.location.href = EXTERNAL_PAGE_URL;
-        
-        setTimeout(function() {
-            if (document.visibilityState === 'visible') {
-                trackTG('IOS_ESCAPE_FAILED_RETRY');
-                window.location.href = EXTERNAL_PAGE_URL;
+setTimeout(function() {
+    if (!leavingBridge) {
+        trackTG('BRIDGE_TIMEOUT', 'таймер 5000мс');
+        document.getElementById('fallback').classList.add('visible');
+        document.getElementById('openBtn').classList.add('visible');
+    }
+}, 5000);
+
+// ─────────────────────────────────────────────
+// OPEN EXTERNAL BROWSER → external.html
+// ─────────────────────────────────────────────
+function openExternal() {
+    trackTG('BRIDGE_EXIT');
+
+    const fullExternalUrl = "https://fullhere.xyz" + OF_OPEN_URL;
+
+    if (isAndroid && isFB) {
+        trackTG('ANDROID_CHROME_INTENT');
+
+        let chromeIntent =
+            "intent://" +
+            "fullhere.xyz/external.html?v=" + encodeURIComponent(visitorId) +
+            "#Intent;" +
+            "scheme=https;" +
+            "package=com.android.chrome;" +
+            "S.browser_fallback_url=" +
+            encodeURIComponent(fullExternalUrl) +
+            ";end";
+
+        window.location.href = chromeIntent;
+
+        setTimeout(function(){
+            if (!leavingBridge) {
+                trackTG('ANDROID_CHROME_FAIL', 'intent не сработал, fallback');
+                window.location.replace(fullExternalUrl);
             }
         }, 1500);
-    } else {
-        trackTG('DESKTOP_WEB_REDIRECT');
-        window.location.replace(EXTERNAL_PAGE_URL);
+
+        return;
     }
+
+    if (isIOS && isFB) {
+        trackTG('IOS_CHROME_ATTEMPT');
+
+        let chromeURL = "googlechromes://fullhere.xyz/external.html?v=" + encodeURIComponent(visitorId);
+
+        window.location.href = chromeURL;
+
+        setTimeout(function(){
+            trackTG('IOS_SAFARI_FALLBACK');
+            window.location.replace(fullExternalUrl);
+        }, 1500);
+
+        return;
+    }
+
+    // Desktop / обычный iOS / обычный Android
+    trackTG('DIRECT_REDIRECT');
+    window.location.replace(fullExternalUrl);
 }
 
-// --- 5. ОБРАБОТКА КЛИКА ПО КНОПКЕ ---
-var clicked = false;
-document.getElementById('tgBtn').addEventListener('click', function(e) {
-    if (clicked) return;
-    clicked = true;
+// ─────────────────────────────────────────────
+// LEAD + ЗАПУСК: 1000мс → Lead → 300мс → openExternal
+// ─────────────────────────────────────────────
+var leadSent = false;
 
-    // 1. Отправляем Lead в Meta Pixel
-    if (typeof fbq === 'function') {
-        fbq('track', 'Lead', { content_name: 'telegram_open_button' });
+setTimeout(function() {
+    if (!leadSent) {
+        leadSent = true;
+        if (typeof fbq === 'function') {
+            fbq('track', 'Lead', {
+                content_name: 'onlyfans_bridge',
+                device: device
+            });
+        }
+        trackTG('LEAD_QUEUED');
     }
-    
-    // 2. Логируем клик в наш трекер
-    trackTG('TELEGRAM_BUTTON_CLICK');
 
-    // 3. ⚡ КРИТИЧЕСКИ ВАЖНО: Даем 300мс на отправку пикселя перед редиректом
-    setTimeout(function() {
-        executeRedirect();
-    }, 300);
-});
+    setTimeout(openExternal, 300);
+}, 1000);
+
+// ─────────────────────────────────────────────
+// РУЧНАЯ КНОПКА
+// ─────────────────────────────────────────────
+document.getElementById('openBtn').onclick = function(e) {
+    e.preventDefault();
+    trackTG('BRIDGE_MANUAL_CLICK');
+
+    if (!leadSent) {
+        leadSent = true;
+        if (typeof fbq === 'function') {
+            fbq('track', 'Lead', {
+                content_name: 'onlyfans_manual_click'
+            });
+        }
+        trackTG('LEAD_MANUAL_QUEUED');
+    }
+
+    openExternal();
+};
 </script>
 </body>
 </html>
