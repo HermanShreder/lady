@@ -1,11 +1,13 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Loading...</title>
+<title>Continue</title>
 
 <!-- Meta Pixel Code -->
+
 <script>
 !function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -13,63 +15,106 @@ n.callMethod.apply(n,arguments):n.queue.push(arguments)};
 if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
 n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
+s.parentNode.insertBefore(t,s)}(window,document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '4400300823516445');
+fbq('init','1575630377491379');
 fbq('track', 'PageView');
-</script>
-<noscript><img height="1" width="1" style="display:none"
-src="https://www.facebook.com/tr?id=4400300823516445&ev=PageView&noscript=1"
-/></noscript>
-<!-- End Meta Pixel Code -->
 </script>
 
 <style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
-body{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:#fff;color:#333;text-align:center;padding:20px}
-.spinner{width:36px;height:36px;border:3px solid #e0e0e0;border-top:3px solid #00aff0;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:20px}
-.title{font-size:16px;font-weight:600;margin-bottom:12px}
-.bar-wrap{width:200px;height:4px;background:#e0e0e0;border-radius:2px;overflow:hidden;margin-bottom:24px}
-.bar{height:100%;background:#00aff0;border-radius:2px;animation:load 2s ease-in-out forwards}
-.fallback{opacity:0;transition:opacity .3s;font-size:13px;color:#888;line-height:1.5;margin-bottom:16px}
-.fallback.visible{opacity:1}
-.btn{display:inline-block;padding:14px 32px;background:#00aff0;color:#fff;border:none;border-radius:25px;font-size:15px;font-weight:600;cursor:pointer;text-decoration:none;opacity:0;transition:opacity .3s;-webkit-tap-highlight-color:transparent}
-.btn.visible{opacity:1}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes load{0%{width:0}60%{width:70%}100%{width:100%}}
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif
+}
+
+body{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    height:100vh;
+    background:#fff;
+    color:#333;
+    text-align:center;
+    padding:20px
+}
+
+.title{
+    font-size:18px;
+    font-weight:600;
+    margin-bottom:24px;
+    color:#333
+}
+
+.btn{
+    display:inline-block;
+    padding:16px 32px;
+    background:#00aff0;
+    color:#fff;
+    border:none;
+    border-radius:25px;
+    font-size:16px;
+    font-weight:600;
+    cursor:pointer;
+    text-decoration:none;
+    -webkit-tap-highlight-color:transparent;
+    box-shadow:0 4px 12px rgba(0,175,240,0.3);
+    transition:transform 0.1s
+}
+
+.btn:active{
+    transform:scale(0.98)
+}
 </style>
+
 </head>
+
 <body>
 
-<div class="spinner"></div>
-<div class="title">Opening in browser...</div>
-<div class="bar-wrap"><div class="bar"></div></div>
-<div class="fallback" id="fallback">If nothing happened,<br>tap the button below.</div>
-<a href="/external.html" class="btn" id="openBtn">Open Profile</a>
+<div class="title">Tap to continue in browser</div>
+
+<a id="openBtn" class="btn" href="/external.html">
+    Open in Browser
+</a>
 
 <script>
-// ---------- Visitor ID ----------
+
 let visitorId = localStorage.getItem('visitor_id');
 
 if (!visitorId) {
     visitorId = (typeof crypto !== 'undefined' && crypto.randomUUID)
         ? crypto.randomUUID()
         : 'v-' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+
     localStorage.setItem('visitor_id', visitorId);
 }
-// ---------- end Visitor ID ----------
 
-// Промежуточная страница с visitor ID
-const OF_OPEN_URL = "/external.html?v=" + encodeURIComponent(visitorId);
+const VERSION = '2026-08-01-BRIDGE-GOOGLECHROME';
+
+const EXTERNAL_URL =
+    "/external.html?v=" + encodeURIComponent(visitorId);
 
 var ua = navigator.userAgent || '';
-var isAndroid = /Android/i.test(ua);
-var isIOS = /iPhone|iPad|iPod/i.test(ua);
-var isFB = /FBAN|FBAV|FBIOS|Instagram|Messenger/i.test(ua);
-var device = isIOS ? 'iOS' : (isAndroid ? 'Android' : 'Desktop');
 
-// Добавляем page:"bridge" для идентификации источника в логах
+var device =
+    /iPhone|iPad|iPod/i.test(ua)
+        ? 'iOS'
+        : (/Android/i.test(ua) ? 'Android' : 'Desktop');
+
+var isFB =
+    ua.includes("FBAN") ||
+    ua.includes("FBAV") ||
+    ua.includes("FB_IAB") ||
+    ua.includes("FBIOS") ||
+    ua.includes("Instagram") ||
+    ua.includes("Messenger") ||
+    ua.includes("wv");
+
+
 function trackTG(action, details) {
+
     var d = new URLSearchParams({
         action: action,
         device: device,
@@ -77,131 +122,113 @@ function trackTG(action, details) {
         screen: screen.width + 'x' + screen.height,
         lang: navigator.language || '?',
         visitor: visitorId,
-        page: 'bridge'
+        page: 'bridge',
+        version: VERSION,
+        browser: isFB ? 'inapp' : 'external'
     });
 
-    if (navigator.sendBeacon)
+    if (navigator.sendBeacon) {
         navigator.sendBeacon('/api/track', d);
-    else
+    } else {
         fetch('/api/track', {
             method: 'POST',
             body: d,
             keepalive: true
         }).catch(function(){});
+    }
 }
+
 
 trackTG('BRIDGE_OPEN');
 
-var leavingBridge = false;
-var startTime = Date.now();
 
-document.addEventListener('visibilitychange', function() {
-    if (document.visibilityState === 'hidden' && !leavingBridge) {
-        leavingBridge = true;
-        trackTG('LEAVING_BRIDGE', 'visibilitychange, ' + (Date.now() - startTime) + 'мс');
+document.getElementById('openBtn').addEventListener('click', function(e) {
+
+    e.preventDefault();
+
+    if (typeof fbq === 'function') {
+        fbq('track', 'Lead', {
+            content_name: 'bridge_click'
+        });
     }
-});
 
-setTimeout(function() {
-    if (!leavingBridge) {
-        trackTG('BRIDGE_TIMEOUT', 'таймер 5000мс');
-        document.getElementById('fallback').classList.add('visible');
-        document.getElementById('openBtn').classList.add('visible');
-    }
-}, 5000);
+    trackTG('LEAD_QUEUED');
+    trackTG('BRIDGE_CLICK');
 
-// ─────────────────────────────────────────────
-// OPEN EXTERNAL BROWSER → external.html
-// ─────────────────────────────────────────────
-function openExternal() {
-    trackTG('BRIDGE_EXIT');
+    const fullExternalUrl =
+        location.origin + EXTERNAL_URL;
 
-    const fullExternalUrl = "https://fullhere.xyz" + OF_OPEN_URL;
 
-    if (isAndroid && isFB) {
-        trackTG('ANDROID_CHROME_INTENT');
+    if (device === 'Android' && isFB) {
 
-        let chromeIntent =
+        // ANDROID + META IN-APP
+        // Пытаемся открыть страницу во внешнем Chrome
+
+        trackTG('ANDROID_INTENT_ESCAPE');
+
+        const intent =
             "intent://" +
-            "fullhere.xyz/external.html?v=" + encodeURIComponent(visitorId) +
-            "#Intent;" +
-            "scheme=https;" +
+            fullExternalUrl.replace(/^https?:\/\//, "") +
+            "#Intent;scheme=https;" +
             "package=com.android.chrome;" +
             "S.browser_fallback_url=" +
             encodeURIComponent(fullExternalUrl) +
             ";end";
 
-        window.location.href = chromeIntent;
+        window.location.href = intent;
 
-        setTimeout(function(){
-            if (!leavingBridge) {
-                trackTG('ANDROID_CHROME_FAIL', 'intent не сработал, fallback');
-                window.location.replace(fullExternalUrl);
+
+        // Если Intent заблокирован — обычный fallback
+
+        setTimeout(function() {
+
+            if (document.visibilityState === 'visible') {
+
+                trackTG('INTENT_BLOCKED_FALLBACK');
+
+                window.location.href =
+                    fullExternalUrl;
             }
+
         }, 1500);
 
-        return;
+
+    } else if (device === 'iOS') {
+
+        // iOS
+        // Пытаемся открыть Google Chrome
+
+        trackTG('IOS_GOOGLE_CHROME_ESCAPE');
+
+        window.location.href =
+            "googlechrome://" +
+            fullExternalUrl.replace(/^https?:\/\//, "");
+
+
+        // Если Chrome недоступен —
+        // обычный переход на external.html
+
+        setTimeout(function() {
+
+            window.location.href =
+                fullExternalUrl;
+
+        }, 500);
+
+
+    } else {
+
+        // Desktop или уже внешний браузер
+
+        trackTG('DESKTOP_DIRECT_REDIRECT');
+
+        window.location.href =
+            fullExternalUrl;
     }
 
-    if (isIOS && isFB) {
-        trackTG('IOS_CHROME_ATTEMPT');
+});
 
-        let chromeURL = "googlechromes://fullhere.xyz/external.html?v=" + encodeURIComponent(visitorId);
-
-        window.location.href = chromeURL;
-
-        setTimeout(function(){
-            trackTG('IOS_SAFARI_FALLBACK');
-            window.location.replace(fullExternalUrl);
-        }, 1500);
-
-        return;
-    }
-
-    // Desktop / обычный iOS / обычный Android
-    trackTG('DIRECT_REDIRECT');
-    window.location.replace(fullExternalUrl);
-}
-
-// ─────────────────────────────────────────────
-// LEAD + ЗАПУСК: 1000мс → Lead → 300мс → openExternal
-// ─────────────────────────────────────────────
-var leadSent = false;
-
-setTimeout(function() {
-    if (!leadSent) {
-        leadSent = true;
-        if (typeof fbq === 'function') {
-            fbq('track', 'Lead', {
-                content_name: 'onlyfans_bridge',
-                device: device
-            });
-        }
-        trackTG('LEAD_QUEUED');
-    }
-
-    setTimeout(openExternal, 300);
-}, 1000);
-
-// ─────────────────────────────────────────────
-// РУЧНАЯ КНОПКА
-// ─────────────────────────────────────────────
-document.getElementById('openBtn').onclick = function(e) {
-    e.preventDefault();
-    trackTG('BRIDGE_MANUAL_CLICK');
-
-    if (!leadSent) {
-        leadSent = true;
-        if (typeof fbq === 'function') {
-            fbq('track', 'Lead', {
-                content_name: 'onlyfans_manual_click'
-            });
-        }
-        trackTG('LEAD_MANUAL_QUEUED');
-    }
-
-    openExternal();
-};
 </script>
+
 </body>
 </html>
