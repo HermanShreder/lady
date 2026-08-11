@@ -30,7 +30,7 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 <body>
 
 <div class="title">Tap to continue in browser</div>
-<a id="openBtn" class="btn" href="/external.html">Open in Browser</a>
+<a id="openBtn" class="btn" href="#">Open in Browser</a>
 
 <script>
 let visitorId = localStorage.getItem('visitor_id');
@@ -41,74 +41,140 @@ if (!visitorId) {
     localStorage.setItem('visitor_id', visitorId);
 }
 
-const VERSION = '2026-08-01-BRIDGE-GOOGLECHROME';
-const EXTERNAL_URL = "/external.html?v=" + encodeURIComponent(visitorId);
+const VERSION = '2026-08-03-BRIDGE-ESCAPE-ONLY';
 
-var ua = navigator.userAgent || '';
-var device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
-var isFB = ua.includes("FBAN") || ua.includes("FBAV") || ua.includes("FB_IAB") || ua.includes("FBIOS") || ua.includes("Instagram") || ua.includes("Messenger");
+// !!! ВАЖНО: Укажи здесь полный адрес твоей ВНЕШНЕЙ страницы, которая сделает редирект в ТГ !!!
+const EXTERNAL_PAGE_URL = 'https://beautiful-lady.biz.ua/external.html'; 
 
-function trackTG(action, details) {
+// --- 1. ГЛУБОКОЕ ОПРЕДЕЛЕНИЕ ОКРУЖЕНИЯ ---
+const ua = navigator.userAgent || '';
+const device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
+
+let browserType = 'unknown';
+let isFB = false;
+
+// Проверка по User-Agent
+if (/FBAN|FBAV|FB_IAB|FBIOS|Instagram|Messenger|wv/i.test(ua)) {
+    isFB = true;
+    browserType = 'facebook_inapp';
+}
+
+// Проверка по Client Hints (Android 90+)
+if (navigator.userAgentData && navigator.userAgentData.brands) {
+    const brands = navigator.userAgentData.brands;
+    if (brands.some(b => b.brand === "Android WebView")) {
+        isFB = true;
+        browserType = 'android_webview';
+    } else if (brands.some(b => b.brand === "Google Chrome" || b.brand === "Chromium")) {
+        browserType = 'chrome';
+    } else if (brands.some(b => b.brand === "Safari")) {
+        browserType = 'safari';
+    }
+} else {
+    // Фоллбек для старых браузеров
+    if (/CriOS|Chrome/i.test(ua)) browserType = 'chrome';
+    else if (/Safari/i.test(ua)) browserType = 'safari';
+}
+
+// Собираем полный дамп данных для логов
+const envData = {
+    ua: ua,
+    brands: navigator.userAgentData ? navigator.userAgentData.brands : null,
+    platform: navigator.platform,
+    language: navigator.language,
+    referrer: document.referrer,
+    screen: `${screen.width}x${screen.height}`,
+    isFB: isFB,
+    determinedBrowser: browserType
+};
+
+// --- 2. ФУНКЦИЯ ЛОГИРОВАНИЯ ---
+function trackTG(action, extraDetails = {}) {
+    const finalDetails = JSON.stringify({ ...envData, ...extraDetails });
+    
     var d = new URLSearchParams({
         action: action,
         device: device,
-        details: details || '',
-        screen: screen.width + 'x' + screen.height,
+        details: finalDetails,          
+        screen: envData.screen,         
         lang: navigator.language || '?',
         visitor: visitorId,
-        page: 'bridge',
+        page: 'bridge_escape',
         version: VERSION,
-        browser: isFB ? 'inapp' : 'external'
+        browser: browserType            
     });
 
-    if (navigator.sendBeacon) navigator.sendBeacon('/api/track', d);
-    else fetch('/api/track', { method: 'POST', body: d, keepalive: true }).catch(function(){});
+    if (navigator.sendBeacon) {
+        navigator.sendBeacon('/api/track', d);
+    } else {
+        fetch('/api/track', { method: 'POST', body: d, keepalive: true }).catch(function(){});
+    }
 }
 
+// Логируем открытие страницы
 trackTG('BRIDGE_OPEN');
 
-document.getElementById('openBtn').addEventListener('click', function(e) {
-    e.preventDefault();
+// --- 3. ЛОГИКА ВЫБРОСА ВО ВНЕШНИЙ БРАУЗЕР ---
+function executeRedirect() {
+    trackTG('REDIRECT_TRIGGERED');
 
-    if (typeof fbq === 'function') fbq('track', 'Lead', { content_name: 'bridge_click' });
-    trackTG('LEAD_QUEUED');
-    trackTG('BRIDGE_CLICK');
+    if (device === 'Android') {
+        if (isFB) {
+            // ANDROID IN-APP: Агрессивный Intent, чтобы открыть ИМЕННО ВНЕШНЮЮ СТРАНИЦУ в Chrome
+            trackTG('ANDROID_FB_INTENT_ESCAPE');
+            
+            const intent = "intent://" + 
+                EXTERNAL_PAGE_URL.replace(/^https?:\/\//, "") + 
+                "#Intent;scheme=https;package=com.android.chrome;" +
+                "S.browser_fallback_url=" + encodeURIComponent(EXTERNAL_PAGE_URL) + ";end";
+            
+            window.location.href = intent;
 
-    const fullExternalUrl = location.origin + EXTERNAL_URL;
+            // Фоллбек, если Intent заблокирован
+            setTimeout(function() {
+                if (document.visibilityState === 'visible') {
+                    trackTG('INTENT_FAILED_FALLBACK_WEB');
+                    window.location.href = EXTERNAL_PAGE_URL;
+                }
+            }, 2000);
 
-    if (device === 'Android' && isFB) {
-        // ANDROID: Выброс через Intent (НЕ ТРОГАЕМ, РАБОТАЕТ ОТЛИЧНО)
-        const intent = "intent://" + 
-            fullExternalUrl.replace(/^https?:\/\//, "") + 
-            "#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" + 
-            encodeURIComponent(fullExternalUrl) + ";end";
+        } else {
+            // ANDROID EXTERNAL: Уже во внешнем браузере, просто идем дальше
+            trackTG('ANDROID_EXTERNAL_REDIRECT');
+            window.location.href = EXTERNAL_PAGE_URL;
+        }
+
+    } else if (device === 'iOS') {
+        // iOS: Прямой переход. iOS сам предложит "Открыть в Safari", если это IAB
+        trackTG('IOS_ESCAPE_ATTEMPT');
+        window.location.href = EXTERNAL_PAGE_URL;
         
-        window.location.href = intent;
-
         setTimeout(function() {
             if (document.visibilityState === 'visible') {
-                trackTG('INTENT_BLOCKED_FALLBACK');
-                window.location.href = fullExternalUrl;
+                trackTG('IOS_ESCAPE_FAILED_RETRY');
+                window.location.href = EXTERNAL_PAGE_URL;
             }
         }, 1500);
 
-    } else if (device === 'iOS') {
-        // iOS: Принудительный вызов Google Chrome для выхода из Meta IAB
-        trackTG('IOS_GOOGLE_CHROME_ESCAPE');
-        
-        // 1. Пытаемся вызвать Google Chrome напрямую
-        window.location.href = "googlechrome://" + fullExternalUrl.replace(/^https?:\/\//, "");
-        
-        // 2. Страховка: если Chrome не установлен или вызов заблокирован, 
-        // через небольшую задержку делаем обычный переход (он откроется в Safari, если это IAB)
-        setTimeout(function() {
-             window.location.href = fullExternalUrl;
-        }, 500);
-
     } else {
-        // Desktop или уже внешний браузер
-        window.location.href = fullExternalUrl;
+        // Desktop
+        trackTG('DESKTOP_WEB_REDIRECT');
+        window.location.replace(EXTERNAL_PAGE_URL);
     }
+}
+
+// --- 4. ОБРАБОТКА КЛИКА (БЕЗ АВТОЗАПУСКА) ---
+document.getElementById('openBtn').addEventListener('click', function(e) {
+    e.preventDefault(); 
+    
+    if (typeof fbq === 'function') {
+        fbq('track', 'Lead', { content_name: 'bridge_escape_click' });
+    }
+    
+    trackTG('MANUAL_CLICK_REDIRECT', { clickSource: 'main_button' });
+    
+    // Запускаем выброс во внешний браузер
+    executeRedirect();
 });
 </script>
 </body>
