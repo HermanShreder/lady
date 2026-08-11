@@ -15,12 +15,14 @@ body{margin:0;display:flex;flex-direction:column;align-items:center;justify-cont
 <body>
 
 <div class="spinner" id="spinner"></div>
-
-<!-- Кнопка-фоллбек. Ведет на Fansly -->
-<a id="openBtn" class="btn" href="https://fansly.com/mommy_ashley_ts/t1">Open Link</a>
+<a id="openBtn" class="btn" href="#">Открыть Telegram</a>
 
 <script>
-const FANSLY_URL = "https://fansly.com/mommy_ashley_ts/t1";
+// !!! ЗАМЕНИ ЭТОТ ЮЗЕРНЕЙМ НА СВОЙ КАНАЛ ИЛИ БОТА !!!
+const TG_USERNAME = "MilaNoirOF"; 
+
+const tgScheme = "tg://resolve?domain=" + TG_USERNAME;
+const tgHttps = "https://t.me/" + TG_USERNAME;
 
 const params = new URLSearchParams(location.search);
 const visitorId = params.get('v') || localStorage.getItem('visitor_id') || 'unknown';
@@ -28,97 +30,108 @@ const visitorId = params.get('v') || localStorage.getItem('visitor_id') || 'unkn
 const ua = navigator.userAgent || '';
 const device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
 
-// Точная диагностика НОВОГО браузера
-function detectBrowser(ua) {
-    if (/FBAN|FBAV|FB_IAB|FBIOS|Instagram|Messenger/i.test(ua)) return 'facebook_inapp';
-    if (/Telegram/i.test(ua)) return 'telegram';
-    if (/Android/i.test(ua)) {
-        if (/SamsungBrowser/i.test(ua)) return 'samsung_android';
-        if (/EdgA/i.test(ua)) return 'edge_android';
-        if (/OPR/i.test(ua)) return 'opera_android';
-        if (/Firefox/i.test(ua)) return 'firefox_android';
-        if (/Chrome/i.test(ua)) return 'chrome_android';
-        return 'android_other';
-    }
-    if (/iPhone|iPad|iPod/i.test(ua)) {
-        if (/CriOS/i.test(ua)) return 'chrome_ios';
-        if (/FxiOS/i.test(ua)) return 'firefox_ios';
-        if (/EdgiOS/i.test(ua)) return 'edge_ios';
-        if (/Safari/i.test(ua)) return 'safari_ios';
-        return 'ios_other';
-    }
-    if (/Chrome/i.test(ua)) return 'chrome_desktop';
-    if (/Firefox/i.test(ua)) return 'firefox_desktop';
-    if (/Safari/i.test(ua)) return 'safari_desktop';
-    return 'other';
-}
+// Сбор всех данных об окружении
+const envData = {
+    ua: ua,
+    userAgentData: navigator.userAgentData ? {
+        brands: navigator.userAgentData.brands,
+        platform: navigator.userAgentData.platform,
+        mobile: navigator.userAgentData.mobile
+    } : null,
+    vendor: navigator.vendor,
+    platform: navigator.platform,
+    language: navigator.language,
+    referrer: document.referrer,
+    currentUrl: window.location.href,
+    screen: { width: screen.width, height: screen.height },
+    cookieEnabled: navigator.cookieEnabled,
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+};
 
-const currentBrowser = detectBrowser(ua);
+// Определение браузера для логов
+const browser = /Telegram/i.test(ua) ? "telegram" :
+                /FBAN|FBAV|FB_IAB|Instagram|Messenger/i.test(ua) ? "facebook" :
+                /CriOS|Chrome/i.test(ua) ? "chrome" :
+                /Safari/i.test(ua) ? "safari" : "other";
 
 function trackTG(action, details) {
     const body = new URLSearchParams({
         action: action,
-        device: device,
-        screen: screen.width + 'x' + screen.height,
-        lang: navigator.language || '?',
-        browser: currentBrowser, 
-        ua: ua, 
-        details: details || '', // Сюда теперь прилетит полный текст с User-Agent
+        device: device,          // <-- Передаем отдельно, чтобы не было "?"
+        screen: screen.width + 'x' + screen.height, // <-- Передаем отдельно
+        lang: navigator.language || '?',            // <-- Передаем отдельно
+        browser: browser,
+        details: details || '',
         visitor: visitorId,
         page: 'external',
-        version: '2026-08-11-EXTERNAL-FULL-TRACK'
+        version: '2026-08-01-EXTERNAL-FINAL'
     });
 
-    if (navigator.sendBeacon) navigator.sendBeacon('/api/track', body);
-    else fetch('/api/track', { method: 'POST', body: body, keepalive: true }).catch(()=>{});
+    if (navigator.sendBeacon) {
+        navigator.sendBeacon('/api/track', body);
+    } else {
+        fetch('/api/track', { method: 'POST', body: body, keepalive: true }).catch(()=>{});
+    }
 }
 
-// ---------------------------------------------------------
-// ГЛАВНЫЙ ЛОГ: ПРОВЕРЯЕМ, ВЫШЕЛ ЛИ ОН ИЗ FB
-// ---------------------------------------------------------
+// 1. Логируем загрузку страницы с полными данными
+trackTG('EXTERNAL_PAGE_LOADED', JSON.stringify(envData));
 
-// Собираем железобетонное доказательство (полный UA) в одну строку
-const proofString = "\nОпределен как: " + currentBrowser + "\nUser-Agent: " + ua;
+// 2. Функция попытки открытия через tg:// с фоллбеком (используется ТОЛЬКО для Android)
+function attemptOpenTelegram() {
+    trackTG('TG_OPEN_ATTEMPT');
+    window.location.href = tgScheme;
 
-if (currentBrowser === 'facebook_inapp') {
-    trackTG('ОСТАЛСЯ_ВО_ВНУТРЕННЕМ_БРАУЗЕРЕ', 'Внешний браузер не открылся. Работает внутри FB.' + proofString);
-} else {
-    // ТУТ В ТЕЛЕГУ ПРИЛЕТИТ ПОЛНЫЙ ЮЗЕР АГЕНТ
-    trackTG('УСПЕШНЫЙ_ВЫХОД_ВО_ВНЕШНИЙ_БРАУЗЕР', 'Сработал Intent, страница открыта снаружи!' + proofString);
+    // Если через 1.5 секунды страница все еще видна, значит приложение не открылось
+    setTimeout(function() {
+        if (document.visibilityState === 'visible') {
+            trackTG('TG_SCHEME_FAILED_FALLBACK');
+            window.location.replace(tgHttps);
+        }
+    }, 1500);
 }
 
-let fallbackTimer;
-
-function setupFallbackButton() {
+// 3. Разделение логики для iOS и Android
+if (device === 'iOS') {
+    // iOS: Safari блокирует автоматические редиректы и таймаут-фоллбеки.
+    // Самое надежное решение — использовать Universal Links по прямому клику.
     document.getElementById('spinner').style.display = 'none';
     const btn = document.getElementById('openBtn');
     btn.style.display = 'block';
+    btn.innerText = "Открыть в Telegram";
     
-    btn.addEventListener('click', function() {
-        trackTG('РУЧНОЙ_КЛИК_ПО_КНОПКЕ_FANSLY');
-    });
-}
+    btn.onclick = function(e) {
+        e.preventDefault();
+        trackTG('IOS_MANUAL_CLICK');
+        
+        // ПРЯМОЙ ПЕРЕХОД ПО HTTPS. 
+        // На iOS это сработает как Universal Link: если приложение есть, iOS сама предложит его открыть. 
+        // Если нет — откроет веб-версию. Safari НЕ заблокирует это, так как это прямой клик пользователя.
+        window.location.href = tgHttps;
+    };
 
-window.addEventListener('pagehide', function() {
-    clearTimeout(fallbackTimer);
-    trackTG('УХОД_НА_FANSLY_НАЧАЛСЯ');
-});
+} else if (device === 'Android') {
+    // Android: Мы уже в Chrome (спасибо bridge.html). Пробуем открыть приложение сразу через tg://.
+    attemptOpenTelegram();
 
-// Логика запуска
-if (device === 'iOS' || device === 'Android') {
-    trackTG('АВТО_РЕДИРЕКТ_НА_FANSLY');
-    window.location.href = FANSLY_URL;
-
-    fallbackTimer = setTimeout(function() {
+    // Если фоллбек сработал (приложение не открылось), показываем кнопку на всякий случай
+    setTimeout(function() {
         if (document.visibilityState === 'visible') {
-            trackTG('АВТО_РЕДИРЕКТ_ЗАБЛОКИРОВАН', 'Показываем ручную кнопку. ' + proofString);
-            setupFallbackButton();
+            document.getElementById('spinner').style.display = 'none';
+            const btn = document.getElementById('openBtn');
+            btn.style.display = 'block';
+            btn.innerText = "Открыть веб-версию Telegram";
+            btn.onclick = function(e) {
+                e.preventDefault();
+                trackTG('ANDROID_FALLBACK_CLICK');
+                window.location.replace(tgHttps);
+            };
         }
-    }, 1500);
+    }, 1600);
 
 } else {
-    trackTG('АВТО_РЕДИРЕКТ_НА_FANSLY');
-    window.location.replace(FANSLY_URL);
+    // Desktop: просто редирект
+    window.location.replace(tgHttps);
 }
 </script>
 </body>
