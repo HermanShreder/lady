@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -20,56 +19,55 @@ fbq('init', '2127136807835684');
 fbq('track', 'PageView');
 </script>
 <noscript><img height="1" width="1" style="display:none"
-src="https://www.facebook.com/tr?id=4400300823516445&ev=PageView&noscript=1"
+src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1"
 /></noscript>
 <!-- End Meta Pixel Code -->
-</script>
 
 <style>
-*{
-    box-sizing:border-box;
-    margin:0;
-    padding:0;
-    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-body{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    height:100vh;
-    background:#fff;
-    color:#333;
-    text-align:center;
-    padding:20px
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background: #fff;
+    color: #333;
+    text-align: center;
+    padding: 20px;
 }
 
-.title{
-    font-size:18px;
-    font-weight:600;
-    margin-bottom:24px;
-    color:#333
+.title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 24px;
+    color: #333;
 }
 
-.btn{
-    display:inline-block;
-    padding:16px 32px;
-    background:#00aff0;
-    color:#fff;
-    border:none;
-    border-radius:25px;
-    font-size:16px;
-    font-weight:600;
-    cursor:pointer;
-    text-decoration:none;
-    -webkit-tap-highlight-color:transparent;
-    box-shadow:0 4px 12px rgba(0,175,240,0.3);
-    transition:transform 0.1s
+.btn {
+    display: inline-block;
+    padding: 16px 32px;
+    background: #00aff0;
+    color: #fff;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 4px 12px rgba(0,175,240,0.3);
+    transition: transform 0.1s;
 }
 
-.btn:active{
-    transform:scale(0.98)
+.btn:active {
+    transform: scale(0.98);
 }
 </style>
 
@@ -79,12 +77,11 @@ body{
 
 <div class="title">Tap to continue in browser</div>
 
-<a id="openBtn" class="btn" href="/external.html">
+<a id="openBtn" class="btn">
     Open in Browser
 </a>
 
 <script>
-
 let visitorId = localStorage.getItem('visitor_id');
 
 if (!visitorId) {
@@ -95,15 +92,14 @@ if (!visitorId) {
     localStorage.setItem('visitor_id', visitorId);
 }
 
-const VERSION = '2026-08-01-BRIDGE-GOOGLECHROME';
+const VERSION = '2026-08-01-BRIDGE-GOOGLECHROME-V2';
 
-const EXTERNAL_URL =
-    "/external.html?v=" + encodeURIComponent(visitorId);
+const EXTERNAL_URL = "/external.html?v=" + encodeURIComponent(visitorId);
+const fullExternalUrl = location.origin + EXTERNAL_URL;
 
 var ua = navigator.userAgent || '';
 
-var device =
-    /iPhone|iPad|iPod/i.test(ua)
+var device = /iPhone|iPad|iPod/i.test(ua)
         ? 'iOS'
         : (/Android/i.test(ua) ? 'Android' : 'Desktop');
 
@@ -116,9 +112,7 @@ var isFB =
     ua.includes("Messenger") ||
     ua.includes("wv");
 
-
 function trackTG(action, details) {
-
     var d = new URLSearchParams({
         action: action,
         device: device,
@@ -131,6 +125,7 @@ function trackTG(action, details) {
         browser: isFB ? 'inapp' : 'external'
     });
 
+    // sendBeacon отлично подходит для событий, отправляемых прямо перед выгрузкой страницы
     if (navigator.sendBeacon) {
         navigator.sendBeacon('/api/track', d);
     } else {
@@ -142,14 +137,36 @@ function trackTG(action, details) {
     }
 }
 
-
 trackTG('BRIDGE_OPEN');
 
+const openBtn = document.getElementById('openBtn');
 
-document.getElementById('openBtn').addEventListener('click', function(e) {
+// 1. ПРИ ЗАГРУЗКЕ СТРАНИЦЫ: Формируем правильный href для кнопки
+if (device === 'Android' && isFB) {
+    // Нативный Intent для Android. 
+    // S.browser_fallback_url берёт на себя всю работу, если Chrome не открылся.
+    const intentUrl = 
+        'intent://' + 
+        fullExternalUrl.replace(/^https?:\/\//, '') + 
+        '#Intent;' +
+        'scheme=https;' +
+        'action=android.intent.action.VIEW;' +
+        'category=android.intent.category.BROWSABLE;' +
+        'package=com.android.chrome;' +
+        'S.browser_fallback_url=' + encodeURIComponent(fullExternalUrl) + 
+        ';end';
+        
+    openBtn.href = intentUrl;
+} else {
+    // Базовый fallback URL для Desktop и iOS
+    openBtn.href = fullExternalUrl;
+}
 
-    e.preventDefault();
 
+// 2. ОБРАБОТЧИК КЛИКА: Отправка событий и контроль перехода
+openBtn.addEventListener('click', function(e) {
+    
+    // Пиксель отправляем всегда при клике
     if (typeof fbq === 'function') {
         fbq('track', 'Lead', {
             content_name: 'bridge_click'
@@ -159,79 +176,41 @@ document.getElementById('openBtn').addEventListener('click', function(e) {
     trackTG('LEAD_QUEUED');
     trackTG('BRIDGE_CLICK');
 
-    const fullExternalUrl =
-        location.origin + EXTERNAL_URL;
-
-
     if (device === 'Android' && isFB) {
-
-        // ANDROID + META IN-APP
-        // Пытаемся открыть страницу во внешнем Chrome
-
-        trackTG('ANDROID_INTENT_ESCAPE');
-
-        const intent =
-            "intent://" +
-            fullExternalUrl.replace(/^https?:\/\//, "") +
-            "#Intent;scheme=https;" +
-            "package=com.android.chrome;" +
-            "S.browser_fallback_url=" +
-            encodeURIComponent(fullExternalUrl) +
-            ";end";
-
-        window.location.href = intent;
-
-
-        // Если Intent заблокирован — обычный fallback
-
-        setTimeout(function() {
-
-            if (document.visibilityState === 'visible') {
-
-                trackTG('INTENT_BLOCKED_FALLBACK');
-
-                window.location.href =
-                    fullExternalUrl;
-            }
-
-        }, 1500);
-
-
+        
+        // ВАЖНО: Мы НЕ делаем e.preventDefault() здесь!
+        // Android расценит это как прямой физический клик пользователя по intent://
+        // Трекинг fbq и trackTG всё равно успеет уйти, так как intent 
+        // обычно ставит текущую вкладку на паузу (уводит в фон), а не убивает сразу.
+        
+        trackTG('ANDROID_INTENT');
+        
     } else if (device === 'iOS') {
-
-        // iOS
-        // Пытаемся открыть Google Chrome
-
+        
+        // Для iOS блокируем дефолтный переход, так как у googlechrome:// 
+        // нет нативного fallback параметра. 
+        e.preventDefault();
+        
         trackTG('IOS_GOOGLE_CHROME_ESCAPE');
+        window.location.href = "googlechrome://" + fullExternalUrl.replace(/^https?:\/\//, "");
 
-        window.location.href =
-            "googlechrome://" +
-            fullExternalUrl.replace(/^https?:\/\//, "");
-
-
-        // Если Chrome недоступен —
-        // обычный переход на external.html
-
+        // Если Chrome на iOS не установлен, через 800мс просто откроем внешний сайт в текущем браузере
         setTimeout(function() {
-
-            window.location.href =
-                fullExternalUrl;
-
-        }, 500);
-
+            window.location.href = fullExternalUrl;
+        }, 800);
 
     } else {
-
+        
         // Desktop или уже внешний браузер
-
+        // Делаем preventDefault и задержку, чтобы Пиксель гарантированно успел отправить событие
+        e.preventDefault();
         trackTG('DESKTOP_DIRECT_REDIRECT');
-
-        window.location.href =
-            fullExternalUrl;
+        
+        setTimeout(function() {
+            window.location.href = fullExternalUrl;
+        }, 800);
     }
-
 });
-
 </script>
 
 </body>
