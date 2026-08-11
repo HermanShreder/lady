@@ -61,9 +61,9 @@ function trackTG(action, details) {
         device: device,
         screen: screen.width + 'x' + screen.height,
         lang: navigator.language || '?',
-        browser: currentBrowser, // Отправляем точное название внешнего браузера
-        ua: ua, // Отправляем реальный НОВЫЙ User-Agent
-        details: details || '',
+        browser: currentBrowser, 
+        ua: ua, 
+        details: details || '', // Сюда теперь прилетит полный текст с User-Agent
         visitor: visitorId,
         page: 'external',
         version: '2026-08-11-EXTERNAL-FULL-TRACK'
@@ -76,11 +76,15 @@ function trackTG(action, details) {
 // ---------------------------------------------------------
 // ГЛАВНЫЙ ЛОГ: ПРОВЕРЯЕМ, ВЫШЕЛ ЛИ ОН ИЗ FB
 // ---------------------------------------------------------
+
+// Собираем железобетонное доказательство (полный UA) в одну строку
+const proofString = "\nОпределен как: " + currentBrowser + "\nUser-Agent: " + ua;
+
 if (currentBrowser === 'facebook_inapp') {
-    trackTG('ОСТАЛСЯ_ВО_ВНУТРЕННЕМ_БРАУЗЕРЕ', 'Fallback сработал внутри FB. Внешний браузер не открылся.');
+    trackTG('ОСТАЛСЯ_ВО_ВНУТРЕННЕМ_БРАУЗЕРЕ', 'Внешний браузер не открылся. Работает внутри FB.' + proofString);
 } else {
-    // ВОТ ЭТО И ЕСТЬ НАСТОЯЩИЙ УСПЕХ!
-    trackTG('УСПЕШНЫЙ_ВЫХОД_ВО_ВНЕШНИЙ_БРАУЗЕР', 'Сработал Intent, страница загружена в ' + currentBrowser);
+    // ТУТ В ТЕЛЕГУ ПРИЛЕТИТ ПОЛНЫЙ ЮЗЕР АГЕНТ
+    trackTG('УСПЕШНЫЙ_ВЫХОД_ВО_ВНЕШНИЙ_БРАУЗЕР', 'Сработал Intent, страница открыта снаружи!' + proofString);
 }
 
 let fallbackTimer;
@@ -107,7 +111,7 @@ if (device === 'iOS' || device === 'Android') {
 
     fallbackTimer = setTimeout(function() {
         if (document.visibilityState === 'visible') {
-            trackTG('АВТО_РЕДИРЕКТ_ЗАБЛОКИРОВАН', 'Показываем ручную кнопку');
+            trackTG('АВТО_РЕДИРЕКТ_ЗАБЛОКИРОВАН', 'Показываем ручную кнопку. ' + proofString);
             setupFallbackButton();
         }
     }, 1500);
