@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -29,24 +28,68 @@ const visitorId = params.get('v') || localStorage.getItem('visitor_id') || 'unkn
 const ua = navigator.userAgent || '';
 const device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
 
-// Сбор данных об окружении
-const envData = {
-    ua: ua,
-    userAgentData: navigator.userAgentData ? { brands: navigator.userAgentData.brands, platform: navigator.userAgentData.platform, mobile: navigator.userAgentData.mobile } : null,
-    vendor: navigator.vendor,
-    platform: navigator.platform,
-    language: navigator.language,
-    referrer: document.referrer,
-    currentUrl: window.location.href,
-    screen: { width: screen.width, height: screen.height },
-    cookieEnabled: navigator.cookieEnabled,
-    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
-};
+// Точная диагностика браузера
+function detectBrowser(ua) {
+    // Facebook / Instagram / Messenger WebView
+    if (/FBAN|FBAV|FB_IAB|FBIOS|Instagram|Messenger/i.test(ua)) {
+        return 'facebook_inapp';
+    }
 
-const browser = /Telegram/i.test(ua) ? "telegram" :
-                /FBAN|FBAV|FB_IAB|Instagram|Messenger/i.test(ua) ? "facebook" :
-                /CriOS|Chrome/i.test(ua) ? "chrome" :
-                /Safari/i.test(ua) ? "safari" : "other";
+    if (/Telegram/i.test(ua)) {
+        return 'telegram';
+    }
+
+    // Android
+    if (/Android/i.test(ua)) {
+        if (/SamsungBrowser/i.test(ua)) {
+            return 'samsung_android';
+        }
+        if (/EdgA/i.test(ua)) {
+            return 'edge_android';
+        }
+        if (/OPR/i.test(ua)) {
+            return 'opera_android';
+        }
+        if (/Firefox/i.test(ua)) {
+            return 'firefox_android';
+        }
+        if (/Chrome/i.test(ua)) {
+            return 'chrome_android';
+        }
+        return 'android_other';
+    }
+
+    // iPhone / iPad
+    if (/iPhone|iPad|iPod/i.test(ua)) {
+        if (/CriOS/i.test(ua)) {
+            return 'chrome_ios';
+        }
+        if (/FxiOS/i.test(ua)) {
+            return 'firefox_ios';
+        }
+        if (/EdgiOS/i.test(ua)) {
+            return 'edge_ios';
+        }
+        if (/Safari/i.test(ua)) {
+            return 'safari_ios';
+        }
+        return 'ios_other';
+    }
+
+    if (/Chrome/i.test(ua)) {
+        return 'chrome_desktop';
+    }
+    if (/Firefox/i.test(ua)) {
+        return 'firefox_desktop';
+    }
+    if (/Safari/i.test(ua)) {
+        return 'safari_desktop';
+    }
+
+    return 'other';
+}
+
+const browser = detectBrowser(ua);
 
 function trackTG(action, details) {
     const body = new URLSearchParams({
@@ -54,7 +97,7 @@ function trackTG(action, details) {
         device: device,
         screen: screen.width + 'x' + screen.height,
         lang: navigator.language || '?',
-        browser: browser,
+        browser: browser, // Передаем точное название браузера
         details: details || '',
         visitor: visitorId,
         page: 'external',
@@ -65,7 +108,17 @@ function trackTG(action, details) {
     else fetch('/api/track', { method: 'POST', body: body, keepalive: true }).catch(()=>{});
 }
 
-trackTG('EXTERNAL_PAGE_LOADED', JSON.stringify(envData));
+// Отправляем EXTERNAL_OPEN с детальной инфой
+trackTG(
+    'EXTERNAL_OPEN',
+    JSON.stringify({
+        browser: browser,
+        ua: ua,
+        referrer: document.referrer,
+        currentUrl: window.location.href,
+        userAgentData: navigator.userAgentData || null
+    })
+);
 
 // Переменная для таймера, чтобы можно было его отменить
 let fallbackTimer;
@@ -82,9 +135,10 @@ function setupFallbackButton() {
     });
 }
 
-// Если браузер начал уход со страницы — отменяем показ кнопки
+// Если браузер начал уход со страницы — отменяем показ кнопки и фиксируем PAGEHIDE
 window.addEventListener('pagehide', function() {
     clearTimeout(fallbackTimer);
+    trackTG('EXTERNAL_PAGEHIDE');
 });
 
 // Логика запуска
@@ -109,4 +163,3 @@ if (device === 'iOS' || device === 'Android') {
 </script>
 </body>
 </html>
-```
