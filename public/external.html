@@ -28,68 +28,32 @@ const visitorId = params.get('v') || localStorage.getItem('visitor_id') || 'unkn
 const ua = navigator.userAgent || '';
 const device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
 
-// Точная диагностика браузера
+// Точная диагностика НОВОГО браузера
 function detectBrowser(ua) {
-    // Facebook / Instagram / Messenger WebView
-    if (/FBAN|FBAV|FB_IAB|FBIOS|Instagram|Messenger/i.test(ua)) {
-        return 'facebook_inapp';
-    }
-
-    if (/Telegram/i.test(ua)) {
-        return 'telegram';
-    }
-
-    // Android
+    if (/FBAN|FBAV|FB_IAB|FBIOS|Instagram|Messenger/i.test(ua)) return 'facebook_inapp';
+    if (/Telegram/i.test(ua)) return 'telegram';
     if (/Android/i.test(ua)) {
-        if (/SamsungBrowser/i.test(ua)) {
-            return 'samsung_android';
-        }
-        if (/EdgA/i.test(ua)) {
-            return 'edge_android';
-        }
-        if (/OPR/i.test(ua)) {
-            return 'opera_android';
-        }
-        if (/Firefox/i.test(ua)) {
-            return 'firefox_android';
-        }
-        if (/Chrome/i.test(ua)) {
-            return 'chrome_android';
-        }
+        if (/SamsungBrowser/i.test(ua)) return 'samsung_android';
+        if (/EdgA/i.test(ua)) return 'edge_android';
+        if (/OPR/i.test(ua)) return 'opera_android';
+        if (/Firefox/i.test(ua)) return 'firefox_android';
+        if (/Chrome/i.test(ua)) return 'chrome_android';
         return 'android_other';
     }
-
-    // iPhone / iPad
     if (/iPhone|iPad|iPod/i.test(ua)) {
-        if (/CriOS/i.test(ua)) {
-            return 'chrome_ios';
-        }
-        if (/FxiOS/i.test(ua)) {
-            return 'firefox_ios';
-        }
-        if (/EdgiOS/i.test(ua)) {
-            return 'edge_ios';
-        }
-        if (/Safari/i.test(ua)) {
-            return 'safari_ios';
-        }
+        if (/CriOS/i.test(ua)) return 'chrome_ios';
+        if (/FxiOS/i.test(ua)) return 'firefox_ios';
+        if (/EdgiOS/i.test(ua)) return 'edge_ios';
+        if (/Safari/i.test(ua)) return 'safari_ios';
         return 'ios_other';
     }
-
-    if (/Chrome/i.test(ua)) {
-        return 'chrome_desktop';
-    }
-    if (/Firefox/i.test(ua)) {
-        return 'firefox_desktop';
-    }
-    if (/Safari/i.test(ua)) {
-        return 'safari_desktop';
-    }
-
+    if (/Chrome/i.test(ua)) return 'chrome_desktop';
+    if (/Firefox/i.test(ua)) return 'firefox_desktop';
+    if (/Safari/i.test(ua)) return 'safari_desktop';
     return 'other';
 }
 
-const browser = detectBrowser(ua);
+const currentBrowser = detectBrowser(ua);
 
 function trackTG(action, details) {
     const body = new URLSearchParams({
@@ -97,67 +61,59 @@ function trackTG(action, details) {
         device: device,
         screen: screen.width + 'x' + screen.height,
         lang: navigator.language || '?',
-        browser: browser, // Передаем точное название браузера
+        browser: currentBrowser, // Отправляем точное название внешнего браузера
+        ua: ua, // Отправляем реальный НОВЫЙ User-Agent
         details: details || '',
         visitor: visitorId,
         page: 'external',
-        version: '2026-08-01-EXTERNAL-FANSLY-CLEAN'
+        version: '2026-08-11-EXTERNAL-FULL-TRACK'
     });
 
     if (navigator.sendBeacon) navigator.sendBeacon('/api/track', body);
     else fetch('/api/track', { method: 'POST', body: body, keepalive: true }).catch(()=>{});
 }
 
-// Отправляем EXTERNAL_OPEN с детальной инфой
-trackTG(
-    'EXTERNAL_OPEN',
-    JSON.stringify({
-        browser: browser,
-        ua: ua,
-        referrer: document.referrer,
-        currentUrl: window.location.href,
-        userAgentData: navigator.userAgentData || null
-    })
-);
+// ---------------------------------------------------------
+// ГЛАВНЫЙ ЛОГ: ПРОВЕРЯЕМ, ВЫШЕЛ ЛИ ОН ИЗ FB
+// ---------------------------------------------------------
+if (currentBrowser === 'facebook_inapp') {
+    trackTG('ОСТАЛСЯ_ВО_ВНУТРЕННЕМ_БРАУЗЕРЕ', 'Fallback сработал внутри FB. Внешний браузер не открылся.');
+} else {
+    // ВОТ ЭТО И ЕСТЬ НАСТОЯЩИЙ УСПЕХ!
+    trackTG('УСПЕШНЫЙ_ВЫХОД_ВО_ВНЕШНИЙ_БРАУЗЕР', 'Сработал Intent, страница загружена в ' + currentBrowser);
+}
 
-// Переменная для таймера, чтобы можно было его отменить
 let fallbackTimer;
 
-// Функция настройки кнопки (Фоллбек)
 function setupFallbackButton() {
     document.getElementById('spinner').style.display = 'none';
     const btn = document.getElementById('openBtn');
     btn.style.display = 'block';
     
-    // Только аналитика. Переход делает сам тег <a href="...">
     btn.addEventListener('click', function() {
-        trackTG('MANUAL_FALLBACK_CLICK');
+        trackTG('РУЧНОЙ_КЛИК_ПО_КНОПКЕ_FANSLY');
     });
 }
 
-// Если браузер начал уход со страницы — отменяем показ кнопки и фиксируем PAGEHIDE
 window.addEventListener('pagehide', function() {
     clearTimeout(fallbackTimer);
-    trackTG('EXTERNAL_PAGEHIDE');
+    trackTG('УХОД_НА_FANSLY_НАЧАЛСЯ');
 });
 
 // Логика запуска
 if (device === 'iOS' || device === 'Android') {
-    // 1. АВТО-РЕДИРЕКТ: Сразу пытаемся перейти на Fansly
-    trackTG('FANSLY_REDIRECT_ATTEMPT');
+    trackTG('АВТО_РЕДИРЕКТ_НА_FANSLY');
     window.location.href = FANSLY_URL;
 
-    // 2. ФАЛЛБЕК: Запускаем таймер
     fallbackTimer = setTimeout(function() {
-        // Проверяем видимость еще раз на всякий случай
         if (document.visibilityState === 'visible') {
-            trackTG('REDIRECT_FAILED_SHOW_BUTTON');
+            trackTG('АВТО_РЕДИРЕКТ_ЗАБЛОКИРОВАН', 'Показываем ручную кнопку');
             setupFallbackButton();
         }
     }, 1500);
 
 } else {
-    // Desktop: просто редирект
+    trackTG('АВТО_РЕДИРЕКТ_НА_FANSLY');
     window.location.replace(FANSLY_URL);
 }
 </script>
