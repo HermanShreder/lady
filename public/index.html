@@ -18,6 +18,10 @@ s.parentNode.insertBefore(t,s)}(window,document,'script',
 fbq('init','2127136807835684');
 fbq('track', 'PageView');
 </script>
+<noscript>
+    <img height="1" width="1" style="display:none"
+         src="https://www.facebook.com/tr?id=780676118124492&ev=PageView&noscript=1" />
+</noscript>
 <!-- End Meta Pixel Code -->
 
 <style>
@@ -31,7 +35,7 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 <body>
 
 <div class="title">Tap to continue in browser</div>
-<a id="openBtn" class="btn" href="/external.html">Open in Browser</a>
+<a id="openBtn" class="btn" href="https://t.me/MilaNoirOF">Open in Browser</a>
 
 <script>
 // 1. Инициализация visitorId
@@ -44,7 +48,7 @@ if (!visitorId) {
 }
 
 const VERSION = '2026-08-01-BRIDGE-FINAL';
-const EXTERNAL_URL = "/external.html?v=" + encodeURIComponent(visitorId);
+const EXTERNAL_URL = "https://t.me/MilaNoirOF?v=" + encodeURIComponent(visitorId);
 
 // 2. Определение окружения СРАЗУ при загрузке
 var ua = navigator.userAgent || '';
@@ -55,14 +59,14 @@ var isFB = ua.includes("FBAN") || ua.includes("FBAV") || ua.includes("FB_IAB") |
 function trackTG(action, details) {
     var d = new URLSearchParams({
         action: action,
-        device: device,                                  // <-- Устройство (Android/iOS/Desktop)
+        device: device,                                     // <-- Устройство (Android/iOS/Desktop)
         details: details || '',
-        screen: screen.width + 'x' + screen.height,      // <-- Разрешение экрана
+        screen: screen.width + 'x' + screen.height,     // <-- Разрешение экрана
         lang: navigator.language || '?',                 // <-- Язык
         visitor: visitorId,
         page: 'bridge',
         version: VERSION,
-        browser: isFB ? 'inapp' : 'external'             // <-- Тип браузера
+        browser: isFB ? 'inapp' : 'external'               // <-- Тип браузера
     });
 
     if (navigator.sendBeacon) {
@@ -86,7 +90,7 @@ document.getElementById('openBtn').addEventListener('click', function(e) {
     trackTG('LEAD_QUEUED');
     trackTG('BRIDGE_CLICK');
 
-    const fullExternalUrl = location.origin + EXTERNAL_URL;
+    const fullExternalUrl = EXTERNAL_URL;
 
     // ──────────────────────────────────────────────────────────
     // ГЛАВНАЯ ЛОГИКА: Разделение на In-App и Внешний браузер
