@@ -92,7 +92,7 @@ if (!visitorId) {
     localStorage.setItem('visitor_id', visitorId);
 }
 
-const VERSION = '2026-08-01-BRIDGE-GOOGLECHROME-V2';
+const VERSION = '2026-08-01-BRIDGE-HUMAN-LOGS';
 
 const EXTERNAL_URL = "/external.html?v=" + encodeURIComponent(visitorId);
 const fullExternalUrl = location.origin + EXTERNAL_URL;
@@ -125,7 +125,6 @@ function trackTG(action, details) {
         browser: isFB ? 'inapp' : 'external'
     });
 
-    // sendBeacon отлично подходит для событий, отправляемых прямо перед выгрузкой страницы
     if (navigator.sendBeacon) {
         navigator.sendBeacon('/api/track', d);
     } else {
@@ -137,14 +136,24 @@ function trackTG(action, details) {
     }
 }
 
-trackTG('BRIDGE_OPEN');
+// ---------------------------------------------------------
+// ОТСЛЕЖИВАНИЕ УСПЕШНОГО ВЫХОДА ИЗ FACEBOOK
+// ---------------------------------------------------------
+
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') {
+        trackTG('ПЕРЕХОД_ВО_ВНЕШНИЙ_БРАУЗЕР_УСПЕШНЫЙ', 'Приложение свернулось в фон, открылся внешний браузер');
+    }
+});
+
+// ---------------------------------------------------------
+
+trackTG('ПРОКЛАДКА_ОТКРЫТА');
 
 const openBtn = document.getElementById('openBtn');
 
-// 1. ПРИ ЗАГРУЗКЕ СТРАНИЦЫ: Формируем правильный href для кнопки
+// 1. Формируем правильный href
 if (device === 'Android' && isFB) {
-    // Нативный Intent для Android. 
-    // S.browser_fallback_url берёт на себя всю работу, если Chrome не открылся.
     const intentUrl = 
         'intent://' + 
         fullExternalUrl.replace(/^https?:\/\//, '') + 
@@ -158,53 +167,51 @@ if (device === 'Android' && isFB) {
         
     openBtn.href = intentUrl;
 } else {
-    // Базовый fallback URL для Desktop и iOS
     openBtn.href = fullExternalUrl;
 }
 
-
-// 2. ОБРАБОТЧИК КЛИКА: Отправка событий и контроль перехода
+// 2. ОБРАБОТЧИК КЛИКА
 openBtn.addEventListener('click', function(e) {
     
-    // Пиксель отправляем всегда при клике
     if (typeof fbq === 'function') {
         fbq('track', 'Lead', {
             content_name: 'bridge_click'
         });
     }
 
-    trackTG('LEAD_QUEUED');
-    trackTG('BRIDGE_CLICK');
+    trackTG('СОБЫТИЕ_ПИКСЕЛЯ_ОТПРАВЛЕНО');
+    trackTG('КЛИК_ПО_ССЫЛКЕ');
 
     if (device === 'Android' && isFB) {
         
-        // ВАЖНО: Мы НЕ делаем e.preventDefault() здесь!
-        // Android расценит это как прямой физический клик пользователя по intent://
-        // Трекинг fbq и trackTG всё равно успеет уйти, так как intent 
-        // обычно ставит текущую вкладку на паузу (уводит в фон), а не убивает сразу.
+        trackTG('ПОПЫТКА_ОТКРЫТЬ_ВНЕШНИЙ_БРАУЗЕР', 'Метод: Android Intent');
         
-        trackTG('ANDROID_INTENT');
+        // Если WebView заблокировал интент и страница осталась висеть
+        setTimeout(function() {
+            if (document.visibilityState === 'visible') {
+                trackTG('НЕ_УДАЛОСЬ_ОТКРЫТЬ_ВНЕШНИЙ_БРАУЗЕР', 'Причина: In-App браузер заблокировал Intent. ПЕРЕВОД НА ФОЛЛ БЕК (открытие внутри FB)');
+                window.location.href = fullExternalUrl;
+            }
+        }, 2000);
         
     } else if (device === 'iOS') {
         
-        // Для iOS блокируем дефолтный переход, так как у googlechrome:// 
-        // нет нативного fallback параметра. 
         e.preventDefault();
-        
-        trackTG('IOS_GOOGLE_CHROME_ESCAPE');
+        trackTG('ПОПЫТКА_ОТКРЫТЬ_ВНЕШНИЙ_БРАУЗЕР', 'Метод: googlechrome://');
         window.location.href = "googlechrome://" + fullExternalUrl.replace(/^https?:\/\//, "");
 
-        // Если Chrome на iOS не установлен, через 800мс просто откроем внешний сайт в текущем браузере
+        // Если Chrome не установлен или блокировка
         setTimeout(function() {
-            window.location.href = fullExternalUrl;
-        }, 800);
+            if (document.visibilityState === 'visible') {
+                trackTG('НЕ_УДАЛОСЬ_ОТКРЫТЬ_ВНЕШНИЙ_БРАУЗЕР', 'Причина: Chrome не установлен или iOS заблокировал переход. ПЕРЕВОД НА ФОЛЛ БЕК');
+                window.location.href = fullExternalUrl;
+            }
+        }, 1000);
 
     } else {
         
-        // Desktop или уже внешний браузер
-        // Делаем preventDefault и задержку, чтобы Пиксель гарантированно успел отправить событие
         e.preventDefault();
-        trackTG('DESKTOP_DIRECT_REDIRECT');
+        trackTG('ПЕРЕХОД_НА_СЛЕДУЮЩУЮ_СТРАНИЦУ', 'Браузер уже внешний или это Десктоп');
         
         setTimeout(function() {
             window.location.href = fullExternalUrl;
