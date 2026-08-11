@@ -88,29 +88,43 @@ if (!visitorId) {
     visitorId = (typeof crypto !== 'undefined' && crypto.randomUUID)
         ? crypto.randomUUID()
         : 'v-' + Math.random().toString(36).substring(2) + Date.now().toString(36);
-
     localStorage.setItem('visitor_id', visitorId);
 }
 
-const VERSION = '2026-08-01-BRIDGE-HUMAN-LOGS';
-
+const VERSION = '2026-08-11-BRIDGE-FULL-TRACK';
 const EXTERNAL_URL = "/external.html?v=" + encodeURIComponent(visitorId);
 const fullExternalUrl = location.origin + EXTERNAL_URL;
 
 var ua = navigator.userAgent || '';
+var device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
 
-var device = /iPhone|iPad|iPod/i.test(ua)
-        ? 'iOS'
-        : (/Android/i.test(ua) ? 'Android' : 'Desktop');
+// Точная диагностика текущего браузера
+function detectBrowser(ua) {
+    if (/FBAN|FBAV|FB_IAB|FBIOS|Instagram|Messenger/i.test(ua)) return 'facebook_inapp';
+    if (/Telegram/i.test(ua)) return 'telegram';
+    if (/Android/i.test(ua)) {
+        if (/SamsungBrowser/i.test(ua)) return 'samsung_android';
+        if (/EdgA/i.test(ua)) return 'edge_android';
+        if (/OPR/i.test(ua)) return 'opera_android';
+        if (/Firefox/i.test(ua)) return 'firefox_android';
+        if (/Chrome/i.test(ua)) return 'chrome_android';
+        return 'android_other';
+    }
+    if (/iPhone|iPad|iPod/i.test(ua)) {
+        if (/CriOS/i.test(ua)) return 'chrome_ios';
+        if (/FxiOS/i.test(ua)) return 'firefox_ios';
+        if (/EdgiOS/i.test(ua)) return 'edge_ios';
+        if (/Safari/i.test(ua)) return 'safari_ios';
+        return 'ios_other';
+    }
+    if (/Chrome/i.test(ua)) return 'chrome_desktop';
+    if (/Firefox/i.test(ua)) return 'firefox_desktop';
+    if (/Safari/i.test(ua)) return 'safari_desktop';
+    return 'other';
+}
 
-var isFB =
-    ua.includes("FBAN") ||
-    ua.includes("FBAV") ||
-    ua.includes("FB_IAB") ||
-    ua.includes("FBIOS") ||
-    ua.includes("Instagram") ||
-    ua.includes("Messenger") ||
-    ua.includes("wv");
+const currentBrowser = detectBrowser(ua);
+var isFB = (currentBrowser === 'facebook_inapp');
 
 function trackTG(action, details) {
     var d = new URLSearchParams({
@@ -122,33 +136,27 @@ function trackTG(action, details) {
         visitor: visitorId,
         page: 'bridge',
         version: VERSION,
-        browser: isFB ? 'inapp' : 'external'
+        browser: currentBrowser,
+        ua: ua // Отправляем реальный User-Agent внутреннего браузера
     });
 
     if (navigator.sendBeacon) {
         navigator.sendBeacon('/api/track', d);
     } else {
-        fetch('/api/track', {
-            method: 'POST',
-            body: d,
-            keepalive: true
-        }).catch(function(){});
+        fetch('/api/track', { method: 'POST', body: d, keepalive: true }).catch(function(){});
     }
 }
 
 // ---------------------------------------------------------
-// ОТСЛЕЖИВАНИЕ УСПЕШНОГО ВЫХОДА ИЗ FACEBOOK
+// ОБРАБОТКА СВОРАЧИВАНИЯ (ЭТО ЕЩЕ НЕ УСПЕХ!)
 // ---------------------------------------------------------
-
 document.addEventListener('visibilitychange', function() {
     if (document.visibilityState === 'hidden') {
-        trackTG('ПЕРЕХОД_ВО_ВНЕШНИЙ_БРАУЗЕР_УСПЕШНЫЙ', 'Приложение свернулось в фон, открылся внешний браузер');
+        trackTG('ВКЛАДКА_СВЕРНУТА', 'Ожидаем запуск внешнего браузера. Переход еще не подтвержден.');
     }
 });
 
-// ---------------------------------------------------------
-
-trackTG('ПРОКЛАДКА_ОТКРЫТА');
+trackTG('ПРОКЛАДКА_ОТКРЫТА', 'Браузер: ' + currentBrowser);
 
 const openBtn = document.getElementById('openBtn');
 
@@ -157,14 +165,8 @@ if (device === 'Android' && isFB) {
     const intentUrl = 
         'intent://' + 
         fullExternalUrl.replace(/^https?:\/\//, '') + 
-        '#Intent;' +
-        'scheme=https;' +
-        'action=android.intent.action.VIEW;' +
-        'category=android.intent.category.BROWSABLE;' +
-        'package=com.android.chrome;' +
-        'S.browser_fallback_url=' + encodeURIComponent(fullExternalUrl) + 
-        ';end';
-        
+        '#Intent;scheme=https;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;package=com.android.chrome;S.browser_fallback_url=' + 
+        encodeURIComponent(fullExternalUrl) + ';end';
     openBtn.href = intentUrl;
 } else {
     openBtn.href = fullExternalUrl;
@@ -174,36 +176,32 @@ if (device === 'Android' && isFB) {
 openBtn.addEventListener('click', function(e) {
     
     if (typeof fbq === 'function') {
-        fbq('track', 'Lead', {
-            content_name: 'bridge_click'
-        });
+        fbq('track', 'Lead', { content_name: 'bridge_click' });
     }
 
-    trackTG('СОБЫТИЕ_ПИКСЕЛЯ_ОТПРАВЛЕНО');
-    trackTG('КЛИК_ПО_ССЫЛКЕ');
+    trackTG('КЛИК_ПО_ССЫЛКЕ', 'Событие пикселя отправлено');
 
     if (device === 'Android' && isFB) {
         
         trackTG('ПОПЫТКА_ОТКРЫТЬ_ВНЕШНИЙ_БРАУЗЕР', 'Метод: Android Intent');
         
-        // Если WebView заблокировал интент и страница осталась висеть
+        // Спасательный таймер: если Intent заблокирован намертво
         setTimeout(function() {
             if (document.visibilityState === 'visible') {
-                trackTG('НЕ_УДАЛОСЬ_ОТКРЫТЬ_ВНЕШНИЙ_БРАУЗЕР', 'Причина: In-App браузер заблокировал Intent. ПЕРЕВОД НА ФОЛЛ БЕК (открытие внутри FB)');
+                trackTG('НЕ_УДАЛОСЬ_ОТКРЫТЬ_ВНЕШНИЙ_БРАУЗЕР', 'Причина: In-App браузер заблокировал Intent. ПЕРЕВОД НА ФОЛЛ БЕК (внутри FB)');
                 window.location.href = fullExternalUrl;
             }
         }, 2000);
         
-    } else if (device === 'iOS') {
+    } else if (device === 'iOS' && isFB) {
         
         e.preventDefault();
         trackTG('ПОПЫТКА_ОТКРЫТЬ_ВНЕШНИЙ_БРАУЗЕР', 'Метод: googlechrome://');
         window.location.href = "googlechrome://" + fullExternalUrl.replace(/^https?:\/\//, "");
 
-        // Если Chrome не установлен или блокировка
         setTimeout(function() {
             if (document.visibilityState === 'visible') {
-                trackTG('НЕ_УДАЛОСЬ_ОТКРЫТЬ_ВНЕШНИЙ_БРАУЗЕР', 'Причина: Chrome не установлен или iOS заблокировал переход. ПЕРЕВОД НА ФОЛЛ БЕК');
+                trackTG('НЕ_УДАЛОСЬ_ОТКРЫТЬ_ВНЕШНИЙ_БРАУЗЕР', 'Причина: Chrome не установлен или блокировка. ПЕРЕВОД НА ФОЛЛ БЕК');
                 window.location.href = fullExternalUrl;
             }
         }, 1000);
@@ -212,7 +210,6 @@ openBtn.addEventListener('click', function(e) {
         
         e.preventDefault();
         trackTG('ПЕРЕХОД_НА_СЛЕДУЮЩУЮ_СТРАНИЦУ', 'Браузер уже внешний или это Десктоп');
-        
         setTimeout(function() {
             window.location.href = fullExternalUrl;
         }, 800);
