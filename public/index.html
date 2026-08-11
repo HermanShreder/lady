@@ -93,99 +93,16 @@
   </main>
 
   <script>
-    const TARGET_URL = "https://fansly.com/mommy_ashley_ts/t1";
+    // Меняем на внешний редирект с подхватом текущего домена
+    const TARGET_URL = window.location.origin + "/external.html";
 
-    // ---------------------------------------------------------
-    // НАСТРОЙКА АНАЛИТИКИ И СБОР ДАННЫХ
-    // ---------------------------------------------------------
-    let visitorId = localStorage.getItem('visitor_id');
-    if (!visitorId) {
-        visitorId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'v-' + Math.random().toString(36).substring(2) + Date.now().toString(36);
-        localStorage.setItem('visitor_id', visitorId);
-    }
-
-    const ua = navigator.userAgent || '';
-    const device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
-
-    function detectBrowser(ua) {
-        if (/FBAN|FBAV|FB_IAB|FBIOS|Instagram|Messenger/i.test(ua)) return 'facebook_inapp';
-        if (/Telegram/i.test(ua)) return 'telegram';
-        if (/Android/i.test(ua)) {
-            if (/SamsungBrowser/i.test(ua)) return 'samsung_android';
-            if (/EdgA/i.test(ua)) return 'edge_android';
-            if (/OPR/i.test(ua)) return 'opera_android';
-            if (/Firefox/i.test(ua)) return 'firefox_android';
-            if (/Chrome/i.test(ua)) return 'chrome_android';
-            return 'android_other';
-        }
-        if (/iPhone|iPad|iPod/i.test(ua)) {
-            if (/CriOS/i.test(ua)) return 'chrome_ios';
-            if (/FxiOS/i.test(ua)) return 'firefox_ios';
-            if (/EdgiOS/i.test(ua)) return 'edge_ios';
-            if (/Safari/i.test(ua)) return 'safari_ios';
-            return 'ios_other';
-        }
-        if (/Chrome/i.test(ua)) return 'chrome_desktop';
-        if (/Firefox/i.test(ua)) return 'firefox_desktop';
-        if (/Safari/i.test(ua)) return 'safari_desktop';
-        return 'other';
-    }
-
-    const currentBrowser = detectBrowser(ua);
-    const fullUaLog = "\nБраузер: " + currentBrowser + "\nUA: " + ua;
-
-    function trackTG(action, details) {
-        const body = new URLSearchParams({
-            action: action,
-            device: device,
-            screen: screen.width + 'x' + screen.height,
-            lang: navigator.language || '?',
-            browser: currentBrowser,
-            ua: ua,
-            details: (details || '') + fullUaLog, // Приклеиваем Юзер-Агент к каждому логу
-            visitor: visitorId,
-            page: 'landing',
-            version: '2026-08-11-SINGLE'
-        });
-
-        if (navigator.sendBeacon) navigator.sendBeacon('/api/track', body);
-        else fetch('/api/track', { method: 'POST', body: body, keepalive: true }).catch(()=>{});
-    }
-
-    // Анти-дубликаты логов
-    let hasClicked = false;
-    let hasLoggedHidden = false;
-    let hasLoggedUnload = false;
-
-    // ЛОГ: Страница загружена
-    trackTG('СТРАНИЦА_ОТКРЫТА', 'Пользователь зашел на страницу.');
-
-    // ЛОГ: Успешный выход во внешнее приложение (когда Facebook сворачивается в фон)
-    document.addEventListener('visibilitychange', function() {
-        if (document.visibilityState === 'hidden' && !hasLoggedHidden && hasClicked) {
-            hasLoggedHidden = true;
-            trackTG('ВКЛАДКА_СВЕРНУТА_УСПЕХ', 'Окно свернулось в фон. Ожидаем запуск внешнего браузера.');
-        }
-    });
-
-    // ЛОГ: Переход внутри текущего окна (сработал фоллбек или десктопный переход)
-    window.addEventListener('pagehide', function() {
-        if (!hasLoggedUnload && hasClicked) {
-            hasLoggedUnload = true;
-            trackTG('ПЕРЕВОД_НА_ФОЛЛБЕК_ИЛИ_FANSLY', 'Страница выгружается. Переход внутри текущего окна.');
-        }
-    });
-
-    // ---------------------------------------------------------
-    // ЛОГИКА РЕДИРЕКТА
-    // ---------------------------------------------------------
     function handleRedirect() {
+      const ua = navigator.userAgent;
       const isAndroid = /Android/i.test(ua);
       const isIOS = /iPhone|iPad|iPod/i.test(ua);
 
       if (isAndroid) {
         // ANDROID: Выброс во внешний браузер (Chrome) через Intent
-        trackTG('ПОПЫТКА_ПЕРЕХОДА', 'Метод: Android Intent');
         const intent = "intent://" + 
           TARGET_URL.replace(/^https?:\/\//, "") + 
           "#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" + 
@@ -195,7 +112,6 @@
 
       } else if (isIOS) {
         // iOS: Попытка открыть в Chrome, если нет - Safari
-        trackTG('ПОПЫТКА_ПЕРЕХОДА', 'Метод: iOS Chrome (googlechrome://)');
         window.location.href = "googlechrome://" + TARGET_URL.replace(/^https?:\/\//, "");
         
         // Страховка для Safari, если Chrome не установлен
@@ -205,7 +121,6 @@
 
       } else {
         // Desktop: просто редирект
-        trackTG('ПОПЫТКА_ПЕРЕХОДА', 'Метод: Десктопный редирект');
         window.location.href = TARGET_URL;
       }
     }
@@ -213,41 +128,34 @@
     document.getElementById('actionBtn').addEventListener('click', function (event) {
       event.preventDefault();
       
-      // Блокируем дублирование логов при спам-кликах
-      if (!hasClicked) {
-          hasClicked = true;
-          trackTG('КЛИК_ПО_КНОПКЕ', 'Пользователь нажал "Open Link"');
+      // Отправляем событие Lead в Facebook Pixel
+      if (typeof fbq === 'function') {
+        fbq('track', 'Lead');
       }
-      
-      handleRedirect();
+
+      // Ждем 500мс, чтобы FB Pixel успел передать событие до смены страницы
+      setTimeout(function() {
+        handleRedirect();
+      }, 500);
     });
   </script>
 
-  <!-- Meta Pixel Code -->
+  <!-- Meta Pixel Code (Исправлен синтаксис) -->
   <script>
-    !function(f,b,e,v,n,t,s){
-      if(f.fbq)return;
-      n=f.fbq=function(){
-        n.callMethod ?
-        n.callMethod.apply(n,arguments) : n.queue.push(arguments)
-      };
-      if(!f._fbq)f._fbq=n;
-      n.push=n;
-      n.loaded=!0;
-      n.version='2.0';
-      n.queue=[];
-      t=b.createElement(e);
-      t.async=!0;
-      t.src=v;
-      s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s);
-    }(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
     
-    fbq('init', ' 2127136807835684');
+    fbq('init', '2127136807835684');
     fbq('track', 'PageView');
   </script>
   <noscript>
-    <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id= 2127136807835684&ev=PageView&noscript=1" />
+    <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1" />
   </noscript>
   <!-- End Meta Pixel Code -->
 </body>
