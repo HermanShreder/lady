@@ -18,6 +18,7 @@ s.parentNode.insertBefore(t,s)}(window,document,'script',
 fbq('init','2127136807835684');
 fbq('track', 'PageView');
 </script>
+<!-- End Meta Pixel Code -->
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
@@ -33,6 +34,7 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 <a id="openBtn" class="btn" href="/external.html">Open in Browser</a>
 
 <script>
+// 1. Инициализация visitorId
 let visitorId = localStorage.getItem('visitor_id');
 if (!visitorId) {
     visitorId = (typeof crypto !== 'undefined' && crypto.randomUUID)
@@ -41,87 +43,58 @@ if (!visitorId) {
     localStorage.setItem('visitor_id', visitorId);
 }
 
-const VERSION = '2026-08-01-BRIDGE-GOOGLECHROME';
+const VERSION = '2026-08-01-BRIDGE-FINAL';
 const EXTERNAL_URL = "/external.html?v=" + encodeURIComponent(visitorId);
 
+// 2. Определение окружения СРАЗУ при загрузке
 var ua = navigator.userAgent || '';
 var device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
+var isFB = ua.includes("FBAN") || ua.includes("FBAV") || ua.includes("FB_IAB") || ua.includes("FBIOS") || ua.includes("Instagram") || ua.includes("Messenger");
 
-// Точная диагностика браузера
-function detectBrowser(ua) {
-    if (/FBAN|FBAV|FB_IAB|FBIOS|Instagram|Messenger/i.test(ua)) return 'facebook_inapp';
-    if (/Telegram/i.test(ua)) return 'telegram';
-    if (/Android/i.test(ua)) {
-        if (/SamsungBrowser/i.test(ua)) return 'samsung_android';
-        if (/EdgA/i.test(ua)) return 'edge_android';
-        if (/OPR/i.test(ua)) return 'opera_android';
-        if (/Firefox/i.test(ua)) return 'firefox_android';
-        if (/Chrome/i.test(ua)) return 'chrome_android';
-        return 'android_other';
-    }
-    if (/iPhone|iPad|iPod/i.test(ua)) {
-        if (/CriOS/i.test(ua)) return 'chrome_ios';
-        if (/FxiOS/i.test(ua)) return 'firefox_ios';
-        if (/EdgiOS/i.test(ua)) return 'edge_ios';
-        if (/Safari/i.test(ua)) return 'safari_ios';
-        return 'ios_other';
-    }
-    if (/Chrome/i.test(ua)) return 'chrome_desktop';
-    if (/Firefox/i.test(ua)) return 'firefox_desktop';
-    if (/Safari/i.test(ua)) return 'safari_desktop';
-    return 'other';
-}
-
-const currentBrowser = detectBrowser(ua);
-var isFB = (currentBrowser === 'facebook_inapp');
-const fullUaLog = "\nОпределен как: " + currentBrowser + "\nUA: " + ua;
-
+// 3. Функция трекинга с ПОЛНЫМ набором параметров (чтобы в логах не было "?")
 function trackTG(action, details) {
     var d = new URLSearchParams({
         action: action,
-        device: device,
-        // Добавляем инфу о браузере в каждый лог, чтобы 100% видно было в ТГ
-        details: (details || '') + fullUaLog, 
-        screen: screen.width + 'x' + screen.height,
-        lang: navigator.language || '?',
+        device: device,                                  // <-- Устройство (Android/iOS/Desktop)
+        details: details || '',
+        screen: screen.width + 'x' + screen.height,      // <-- Разрешение экрана
+        lang: navigator.language || '?',                 // <-- Язык
         visitor: visitorId,
         page: 'bridge',
         version: VERSION,
-        browser: currentBrowser,
-        ua: ua
+        browser: isFB ? 'inapp' : 'external'             // <-- Тип браузера
     });
 
-    if (navigator.sendBeacon) navigator.sendBeacon('/api/track', d);
-    else fetch('/api/track', { method: 'POST', body: d, keepalive: true }).catch(function(){});
+    if (navigator.sendBeacon) {
+        navigator.sendBeacon('/api/track', d);
+    } else {
+        fetch('/api/track', { method: 'POST', body: d, keepalive: true }).catch(function(){});
+    }
 }
 
-// Отслеживаем, нажимал ли человек кнопку
-let hasClicked = false;
-let hasLoggedHidden = false;
+// Логируем открытие страницы (теперь со всеми данными)
+trackTG('BRIDGE_OPEN');
 
-// Логгируем факт сворачивания страницы (успешный вызов внешнего браузера)
-document.addEventListener('visibilitychange', function() {
-    if (document.visibilityState === 'hidden' && hasClicked && !hasLoggedHidden) {
-        hasLoggedHidden = true;
-        trackTG('ВКЛАДКА_СВЕРНУТА_УСПЕХ', 'Окно свернулось в фон. Вероятно, открылся внешний браузер.');
-    }
-});
-
-trackTG('BRIDGE_OPEN', 'Страница-прокладка открыта');
-
+// 4. Обработка клика по кнопке
 document.getElementById('openBtn').addEventListener('click', function(e) {
-    e.preventDefault();
-    hasClicked = true;
+    e.preventDefault(); // Останавливаем стандартный переход, чтобы контролировать процесс
 
-    if (typeof fbq === 'function') fbq('track', 'Lead', { content_name: 'bridge_click' });
-    trackTG('LEAD_QUEUED', 'Событие пикселя поставлено в очередь');
-    trackTG('BRIDGE_CLICK', 'Клик по кнопке');
+    // Отправка Lead в Meta Pixel
+    if (typeof fbq === 'function') {
+        fbq('track', 'Lead', { content_name: 'bridge_click' });
+    }
+    trackTG('LEAD_QUEUED');
+    trackTG('BRIDGE_CLICK');
 
     const fullExternalUrl = location.origin + EXTERNAL_URL;
 
+    // ──────────────────────────────────────────────────────────
+    // ГЛАВНАЯ ЛОГИКА: Разделение на In-App и Внешний браузер
+    // ──────────────────────────────────────────────────────────
+    
     if (device === 'Android' && isFB) {
-        // ANDROID: Выброс через Intent (НЕ ТРОГАЕМ, РАБОТАЕТ ОТЛИЧНО)
-        trackTG('ПОПЫТКА_ПЕРЕХОДА', 'Метод: Android Intent');
+        // СЦЕНАРИЙ А: Мы внутри Facebook/Instagram на Android.
+        // Пытаемся агрессивно вытолкнуть пользователя в Chrome через Intent.
         const intent = "intent://" + 
             fullExternalUrl.replace(/^https?:\/\//, "") + 
             "#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" + 
@@ -129,32 +102,18 @@ document.getElementById('openBtn').addEventListener('click', function(e) {
         
         window.location.href = intent;
 
+        // СТРАХОВКА: Если Meta заблокировал Intent, пользователь останется на этой странице.
+        // Проверяем через 1.5 секунды: если страница все еще видна, включаем "План Б".
         setTimeout(function() {
             if (document.visibilityState === 'visible') {
-                trackTG('INTENT_BLOCKED_FALLBACK', 'Причина: In-App браузер заблокировал Intent. ПЕРЕВОД НА ФОЛЛ БЕК (открытие внутри FB)');
-                window.location.href = fullExternalUrl;
+                trackTG('INTENT_BLOCKED_FALLBACK'); // Логируем срабатывание страховки
+                window.location.href = fullExternalUrl; // Принудительный обычный переход
             }
         }, 1500);
 
-    } else if (device === 'iOS') {
-        // iOS: Принудительный вызов Google Chrome для выхода из Meta IAB
-        trackTG('IOS_GOOGLE_CHROME_ESCAPE', 'Метод: googlechrome://');
-        
-        // 1. Пытаемся вызвать Google Chrome напрямую
-        window.location.href = "googlechrome://" + fullExternalUrl.replace(/^https?:\/\//, "");
-        
-        // 2. Страховка: если Chrome не установлен или вызов заблокирован, 
-        // через небольшую задержку делаем обычный переход (он откроется в Safari, если это IAB)
-        setTimeout(function() {
-             if (document.visibilityState === 'visible') {
-                 trackTG('IOS_CHROME_НЕТ_ОБЫЧНЫЙ_ПЕРЕХОД', 'Причина: Chrome не установлен или заблокирован. ПЕРЕВОД НА ФОЛЛ БЕК');
-                 window.location.href = fullExternalUrl;
-             }
-        }, 500);
-
     } else {
-        // Desktop или уже внешний браузер
-        trackTG('ОБЫЧНЫЙ_ПЕРЕХОД', 'Браузер уже внешний или это Desktop. Обычный редирект.');
+        // СЦЕНАРИЙ Б: Пользователь УЖЕ во внешнем браузере (или это iOS/Desktop).
+        // Никаких Intent, никаких таймаутов. Просто мгновенный и безопасный переход.
         window.location.href = fullExternalUrl;
     }
 });
