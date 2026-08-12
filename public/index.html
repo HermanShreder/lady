@@ -15,7 +15,7 @@ n.queue=[];t=b.createElement(e);t.async=true;
 t.src=v;s=b.getElementsByTagName(e)[0];
 s.parentNode.insertBefore(t,s)}(window,document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init','2127136807835684');
+fbq('init','780676118124492');
 fbq('track', 'PageView');
 </script>
 <noscript>
@@ -35,10 +35,17 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 <body>
 
 <div class="title">Tap to continue in browser</div>
-<a id="openBtn" class="btn" href="https://t.me/MilaNoirOF">Open in Browser</a>
+<!-- В href на всякий случай ставим прямую ссылку для тех, у кого отключен JS -->
+<a id="openBtn" class="btn" href="https://fansly.com/mommy_ashley_ts/t1">Open in Browser</a>
+
+<!-- Подключаем библиотеку для определения InApp браузеров -->
+<script src="https://unpkg.com/@jhrunning/inappbrowserescaper/dist/browser/inappbrowserescaper.js"></script>
 
 <script>
-// 1. Инициализация visitorId
+// Ваша целевая ссылка
+const TARGET_URL = "https://fansly.com/mommy_ashley_ts/t1"; 
+
+// 1. Инициализация visitorId для логов
 let visitorId = localStorage.getItem('visitor_id');
 if (!visitorId) {
     visitorId = (typeof crypto !== 'undefined' && crypto.randomUUID)
@@ -47,26 +54,23 @@ if (!visitorId) {
     localStorage.setItem('visitor_id', visitorId);
 }
 
-const VERSION = '2026-08-01-BRIDGE-FINAL';
-const EXTERNAL_URL = "https://t.me/MilaNoirOF?v=" + encodeURIComponent(visitorId);
-
-// 2. Определение окружения СРАЗУ при загрузке
+// 2. Определение окружения
 var ua = navigator.userAgent || '';
-var device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
-var isFB = ua.includes("FBAN") || ua.includes("FBAV") || ua.includes("FB_IAB") || ua.includes("FBIOS") || ua.includes("Instagram") || ua.includes("Messenger");
+var isIOS = /iPhone|iPad|iPod/i.test(ua);
+var isAndroid = /Android/i.test(ua);
+var device = isIOS ? 'iOS' : (isAndroid ? 'Android' : 'Desktop');
 
-// 3. Функция трекинга с ПОЛНЫМ набором параметров (чтобы в логах не было "?")
+// 3. Функция трекинга (оставил вашу старую логику для сбора логов)
 function trackTG(action, details) {
     var d = new URLSearchParams({
         action: action,
-        device: device,                                     // <-- Устройство (Android/iOS/Desktop)
+        device: device,
         details: details || '',
-        screen: screen.width + 'x' + screen.height,     // <-- Разрешение экрана
-        lang: navigator.language || '?',                 // <-- Язык
+        screen: screen.width + 'x' + screen.height,
+        lang: navigator.language || '?',
         visitor: visitorId,
         page: 'bridge',
-        version: VERSION,
-        browser: isFB ? 'inapp' : 'external'               // <-- Тип браузера
+        version: '2026-08-01-BRIDGE-FINAL'
     });
 
     if (navigator.sendBeacon) {
@@ -76,50 +80,67 @@ function trackTG(action, details) {
     }
 }
 
-// Логируем открытие страницы (теперь со всеми данными)
-trackTG('BRIDGE_OPEN');
-
-// 4. Обработка клика по кнопке
-document.getElementById('openBtn').addEventListener('click', function(e) {
-    e.preventDefault(); // Останавливаем стандартный переход, чтобы контролировать процесс
-
-    // Отправка Lead в Meta Pixel
-    if (typeof fbq === 'function') {
-        fbq('track', 'Lead', { content_name: 'bridge_click' });
-    }
-    trackTG('LEAD_QUEUED');
-    trackTG('BRIDGE_CLICK');
-
-    const fullExternalUrl = EXTERNAL_URL;
-
-    // ──────────────────────────────────────────────────────────
-    // ГЛАВНАЯ ЛОГИКА: Разделение на In-App и Внешний браузер
-    // ──────────────────────────────────────────────────────────
-    
-    if (device === 'Android' && isFB) {
-        // СЦЕНАРИЙ А: Мы внутри Facebook/Instagram на Android.
-        // Пытаемся агрессивно вытолкнуть пользователя в Chrome через Intent.
+// 4. ГЛАВНАЯ ФУНКЦИЯ ВЫБРОСА ВО ВНЕШНИЙ БРАУЗЕР
+function forceExternalRedirect() {
+    if (isAndroid) {
+        // Android: Выкидываем принудительно в Chrome через Intent
         const intent = "intent://" + 
-            fullExternalUrl.replace(/^https?:\/\//, "") + 
+            TARGET_URL.replace(/^https?:\/\//, "") + 
             "#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" + 
-            encodeURIComponent(fullExternalUrl) + ";end";
-        
+            encodeURIComponent(TARGET_URL) + ";end";
         window.location.href = intent;
 
-        // СТРАХОВКА: Если Meta заблокировал Intent, пользователь останется на этой странице.
-        // Проверяем через 1.5 секунды: если страница все еще видна, включаем "План Б".
+        // Страховка
         setTimeout(function() {
             if (document.visibilityState === 'visible') {
-                trackTG('INTENT_BLOCKED_FALLBACK'); // Логируем срабатывание страховки
-                window.location.href = fullExternalUrl; // Принудительный обычный переход
+                window.location.href = TARGET_URL; 
             }
         }, 1500);
 
+    } else if (isIOS) {
+        // iOS: Пытаемся открыть приложение Chrome, если его нет - через полсекунды открываем Safari
+        window.location.href = "googlechrome://" + TARGET_URL.replace(/^https?:\/\//, "");
+        setTimeout(() => {
+             window.location.href = TARGET_URL;
+        }, 500);
     } else {
-        // СЦЕНАРИЙ Б: Пользователь УЖЕ во внешнем браузере (или это iOS/Desktop).
-        // Никаких Intent, никаких таймаутов. Просто мгновенный и безопасный переход.
-        window.location.href = fullExternalUrl;
+        // ПК или другие устройства
+        window.location.href = TARGET_URL;
     }
+}
+
+// 5. АВТОЗАПУСК ПРИ ЗАГРУЗКЕ
+window.addEventListener('load', function() {
+    trackTG('BRIDGE_OPEN');
+    
+    var lib = window.InAppBrowserEscaper;
+    var Det = lib ? lib.InAppBrowserDetector : null;
+
+    // Проверяем, находимся ли мы внутри Facebook/Instagram
+    if (Det && Det.isInAppBrowser()) {
+        trackTG('INAPP_DETECTED', Det.analyze().appName || 'Unknown');
+        // Пытаемся выкинуть автоматически без клика
+        forceExternalRedirect();
+    } else {
+        // Пользователь уже в нормальном браузере (Chrome, Safari). 
+        // Не показываем ему кнопку, сразу перенаправляем на Fansly.
+        trackTG('NORMAL_BROWSER_DIRECT_REDIRECT');
+        window.location.href = TARGET_URL;
+    }
+});
+
+// 6. ОБРАБОТКА КЛИКА ПО КНОПКЕ (Запасной план)
+// Сработает, если автовыброс заблокирован соцсетью и юзер остался на странице
+document.getElementById('openBtn').addEventListener('click', function(e) {
+    e.preventDefault(); 
+
+    if (typeof fbq === 'function') {
+        fbq('track', 'Lead', { content_name: 'bridge_click' });
+    }
+    trackTG('BRIDGE_CLICK');
+
+    // Запускаем ту же функцию выброса по клику
+    forceExternalRedirect();
 });
 </script>
 </body>
