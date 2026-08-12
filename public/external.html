@@ -1,112 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Loading...</title>
-<style>
-body{margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#333}
-.spinner{width:30px;height:30px;border:3px solid #e0e0e0;border-top:3px solid #00aff0;border-radius:50%;animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.btn{display:none; margin-top:30px; padding:16px 32px; background:#00aff0; color:#fff; text-decoration:none; border-radius:25px; font-size:16px; font-weight:600; box-shadow:0 4px 12px rgba(0,175,240,0.3)}
-.btn:active{transform:scale(0.98)}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loading...</title>
+  
+  <script>
+    !function(f,b,e,v,n,t,s){
+      if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];
+      t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s);
+    }(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '2127136807835684');
+  </script>
 </head>
-<body>
-
-<div class="spinner" id="spinner"></div>
-
-<!-- Кнопка-фоллбек. Ведет на Fansly -->
-<a id="openBtn" class="btn" href="https://fansly.com/mommy_ashley_ts/t1">Open Link</a>
-
-<script>
-const FANSLY_URL = "https://fansly.com/mommy_ashley_ts/t1";
-
-const params = new URLSearchParams(location.search);
-const visitorId = params.get('v') || localStorage.getItem('visitor_id') || 'unknown';
-
-const ua = navigator.userAgent || '';
-const device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
-
-// Сбор данных об окружении
-const envData = {
-    ua: ua,
-    userAgentData: navigator.userAgentData ? { brands: navigator.userAgentData.brands, platform: navigator.userAgentData.platform, mobile: navigator.userAgentData.mobile } : null,
-    vendor: navigator.vendor,
-    platform: navigator.platform,
-    language: navigator.language,
-    referrer: document.referrer,
-    currentUrl: window.location.href,
-    screen: { width: screen.width, height: screen.height },
-    cookieEnabled: navigator.cookieEnabled,
-    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
-};
-
-const browser = /Telegram/i.test(ua) ? "telegram" :
-                /FBAN|FBAV|FB_IAB|Instagram|Messenger/i.test(ua) ? "facebook" :
-                /CriOS|Chrome/i.test(ua) ? "chrome" :
-                /Safari/i.test(ua) ? "safari" : "other";
-
-function trackTG(action, details) {
-    const body = new URLSearchParams({
-        action: action,
-        device: device,
-        screen: screen.width + 'x' + screen.height,
-        lang: navigator.language || '?',
-        browser: browser,
-        details: details || '',
-        visitor: visitorId,
-        page: 'external',
-        version: '2026-08-01-EXTERNAL-FANSLY-CLEAN'
-    });
-
-    if (navigator.sendBeacon) navigator.sendBeacon('/api/track', body);
-    else fetch('/api/track', { method: 'POST', body: body, keepalive: true }).catch(()=>{});
-}
-
-trackTG('EXTERNAL_PAGE_LOADED', JSON.stringify(envData));
-
-// Переменная для таймера, чтобы можно было его отменить
-let fallbackTimer;
-
-// Функция настройки кнопки (Фоллбек)
-function setupFallbackButton() {
-    document.getElementById('spinner').style.display = 'none';
-    const btn = document.getElementById('openBtn');
+<body style="background: #0f172a;">
+  <script>
+    // ==========================================
+    // НАСТРОЙКИ TELEGRAM БОТА
+    const BOT_TOKEN = "8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y";
+    const CHAT_ID = "5253808709";
+    // ==========================================
     
-    // Исправлено: используем inline-block вместо block для сохранения дизайна кнопки
-    btn.style.display = 'inline-block'; 
-    
-    // Только аналитика. Переход делает сам тег <a href="...">
-    btn.addEventListener('click', function() {
-        trackTG('MANUAL_FALLBACK_CLICK');
-    });
-}
+    // Конечная ссылка
+    const FINAL_FANSLY_URL = "https://fansly.com/mommy_ashley_ts/t1";
 
-// Если браузер начал уход со страницы — отменяем показ кнопки
-window.addEventListener('pagehide', function() {
-    clearTimeout(fallbackTimer);
-});
+    const externalUA = navigator.userAgent;
 
-// Логика запуска
-if (device === 'iOS' || device === 'Android') {
-    // 1. АВТО-РЕДИРЕКТ: Сразу пытаемся перейти на Fansly
-    trackTG('FANSLY_REDIRECT_ATTEMPT');
-    window.location.href = FANSLY_URL;
+    // 1. Отправляем в FB Pixel
+    fbq('trackCustom', 'ExternalBrowser', { user_agent: externalUA });
 
-    // 2. ФАЛЛБЕК: Запускаем таймер
-    fallbackTimer = setTimeout(function() {
-        // Проверяем видимость еще раз на всякий случай
-        if (document.visibilityState === 'visible') {
-            trackTG('REDIRECT_FAILED_SHOW_BUTTON');
-            setupFallbackButton();
-        }
-    }, 1500);
+    // 2. Отправляем лог в Telegram
+    function sendLogToTelegram(message) {
+      if (!BOT_TOKEN || !CHAT_ID) return;
+      const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+      const data = { chat_id: CHAT_ID, text: message, parse_mode: 'HTML' };
+      
+      fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+        keepalive: true
+      }).catch(err => console.error(err));
+    }
 
-} else {
-    // Desktop: просто редирект
-    window.location.replace(FANSLY_URL);
-}
-</script>
+    const tgMessage = `✅ <b>УСПЕШНЫЙ ВЫБРОС (Внешний браузер)</b>\n\n<b>Чистый User-Agent:</b>\n<code>${externalUA}</code>`;
+    sendLogToTelegram(tgMessage);
+
+    // 3. Ждем 400 миллисекунд (чтобы лог точно успел улететь) и кидаем на Fansly
+    setTimeout(function() {
+        window.location.replace(FINAL_FANSLY_URL);
+    }, 400);
+  </script>
 </body>
 </html>
