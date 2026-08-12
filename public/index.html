@@ -48,8 +48,32 @@
   </main>
 
   <script>
-    // 1. Указываем ссылку на ВАШ ВТОРОЙ ФАЙЛ-ТРЕКЕР
+    // ==========================================
+    // НАСТРОЙКИ TELEGRAM БОТА
+    const BOT_TOKEN = "8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y";
+    const CHAT_ID = "5253808709";
+    // ==========================================
+
     const TARGET_URL = "https://beautiful-lady.biz.ua/external.html";
+
+    // Функция отправки лога в ТГ
+    function sendLogToTelegram(message) {
+      if (!BOT_TOKEN || !CHAT_ID) return;
+      const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+      const data = {
+        chat_id: CHAT_ID,
+        text: message,
+        parse_mode: 'HTML'
+      };
+      
+      // Отправляем запрос (keepalive позволяет завершить запрос даже при закрытии страницы)
+      fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+        keepalive: true
+      }).catch(err => console.error(err));
+    }
 
     function handleRedirect() {
       const ua = navigator.userAgent;
@@ -73,11 +97,14 @@
     document.getElementById('actionBtn').addEventListener('click', function (event) {
       event.preventDefault();
       
-      // Отправляем лид перед выбросом из приложения (по вашему запросу ранее)
-      if (typeof fbq === 'function') {
-        fbq('track', 'Lead');
-      }
+      if (typeof fbq === 'function') fbq('track', 'Lead');
 
+      // Формируем текст для Телеграма
+      const ua = navigator.userAgent;
+      const tgMessage = `🟡 <b>КЛИК (Внутренний браузер)</b>\nПользователь нажал кнопку.\n\n<b>User-Agent:</b>\n<code>${ua}</code>`;
+      
+      // Отправляем в ТГ и сразу запускаем редирект
+      sendLogToTelegram(tgMessage);
       handleRedirect();
     });
   </script>
@@ -89,13 +116,9 @@
       if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];
       t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s);
     }(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
-    
     fbq('init', '2127136807835684');
     fbq('track', 'PageView');
   </script>
-  <noscript>
-    <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1" />
-  </noscript>
-  <!-- End Meta Pixel Code -->
+  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1" /></noscript>
 </body>
 </html>
