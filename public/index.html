@@ -35,7 +35,6 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 <body>
 
 <div class="title">Tap to continue in browser</div>
-<!-- В href на всякий случай ставим прямую ссылку для тех, у кого отключен JS -->
 <a id="openBtn" class="btn" href="https://fansly.com/mommy_ashley_ts/t1">Open in Browser</a>
 
 <!-- Подключаем библиотеку для определения InApp браузеров -->
@@ -60,7 +59,7 @@ var isIOS = /iPhone|iPad|iPod/i.test(ua);
 var isAndroid = /Android/i.test(ua);
 var device = isIOS ? 'iOS' : (isAndroid ? 'Android' : 'Desktop');
 
-// 3. Функция трекинга (оставил вашу старую логику для сбора логов)
+// 3. Функция трекинга
 function trackTG(action, details) {
     var d = new URLSearchParams({
         action: action,
@@ -90,7 +89,7 @@ function forceExternalRedirect() {
             encodeURIComponent(TARGET_URL) + ";end";
         window.location.href = intent;
 
-        // Страховка
+        // Страховка на случай отсутствия Chrome
         setTimeout(function() {
             if (document.visibilityState === 'visible') {
                 window.location.href = TARGET_URL; 
@@ -109,37 +108,33 @@ function forceExternalRedirect() {
     }
 }
 
-// 5. АВТОЗАПУСК ПРИ ЗАГРУЗКЕ
+// 5. ЛОГИРОВАНИЕ ПРИ ЗАГРУЗКЕ (БЕЗ АВТО-РЕДИРЕКТА)
 window.addEventListener('load', function() {
     trackTG('BRIDGE_OPEN');
     
     var lib = window.InAppBrowserEscaper;
     var Det = lib ? lib.InAppBrowserDetector : null;
 
-    // Проверяем, находимся ли мы внутри Facebook/Instagram
+    // Просто собираем статистику (внутри приложения мы или нет)
     if (Det && Det.isInAppBrowser()) {
         trackTG('INAPP_DETECTED', Det.analyze().appName || 'Unknown');
-        // Пытаемся выкинуть автоматически без клика
-        forceExternalRedirect();
     } else {
-        // Пользователь уже в нормальном браузере (Chrome, Safari). 
-        // Не показываем ему кнопку, сразу перенаправляем на Fansly.
-        trackTG('NORMAL_BROWSER_DIRECT_REDIRECT');
-        window.location.href = TARGET_URL;
+        trackTG('NORMAL_BROWSER_DETECTED');
     }
+    // Автоматического перехода здесь больше нет! Скрипт ждет действий пользователя.
 });
 
-// 6. ОБРАБОТКА КЛИКА ПО КНОПКЕ (Запасной план)
-// Сработает, если автовыброс заблокирован соцсетью и юзер остался на странице
+// 6. ОБРАБОТКА КЛИКА ПО КНОПКЕ
 document.getElementById('openBtn').addEventListener('click', function(e) {
-    e.preventDefault(); 
+    e.preventDefault(); // Останавливаем обычный переход, чтобы сработала наша сложная логика
 
+    // Отправляем событие в Pixel
     if (typeof fbq === 'function') {
         fbq('track', 'Lead', { content_name: 'bridge_click' });
     }
     trackTG('BRIDGE_CLICK');
 
-    // Запускаем ту же функцию выброса по клику
+    // Запускаем функцию выброса ТОЛЬКО по клику пользователя
     forceExternalRedirect();
 });
 </script>
