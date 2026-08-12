@@ -15,14 +15,12 @@ body{margin:0;display:flex;flex-direction:column;align-items:center;justify-cont
 <body>
 
 <div class="spinner" id="spinner"></div>
-<a id="openBtn" class="btn" href="#">Открыть Telegram</a>
+
+<!-- Кнопка-фоллбек. Ведет на Fansly -->
+<a id="openBtn" class="btn" href="https://fansly.com/mommy_ashley_ts/t1">Open Link</a>
 
 <script>
-// !!! ЗАМЕНИ ЭТОТ ЮЗЕРНЕЙМ НА СВОЙ КАНАЛ ИЛИ БОТА !!!
-const TG_USERNAME = "MilaNoirOF"; 
-
-const tgScheme = "tg://resolve?domain=" + TG_USERNAME;
-const tgHttps = "https://t.me/" + TG_USERNAME;
+const FANSLY_URL = "https://fansly.com/mommy_ashley_ts/t1";
 
 const params = new URLSearchParams(location.search);
 const visitorId = params.get('v') || localStorage.getItem('visitor_id') || 'unknown';
@@ -30,14 +28,10 @@ const visitorId = params.get('v') || localStorage.getItem('visitor_id') || 'unkn
 const ua = navigator.userAgent || '';
 const device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
 
-// Сбор всех данных об окружении
+// Сбор данных об окружении
 const envData = {
     ua: ua,
-    userAgentData: navigator.userAgentData ? {
-        brands: navigator.userAgentData.brands,
-        platform: navigator.userAgentData.platform,
-        mobile: navigator.userAgentData.mobile
-    } : null,
+    userAgentData: navigator.userAgentData ? { brands: navigator.userAgentData.brands, platform: navigator.userAgentData.platform, mobile: navigator.userAgentData.mobile } : null,
     vendor: navigator.vendor,
     platform: navigator.platform,
     language: navigator.language,
@@ -48,7 +42,6 @@ const envData = {
     timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
 };
 
-// Определение браузера для логов
 const browser = /Telegram/i.test(ua) ? "telegram" :
                 /FBAN|FBAV|FB_IAB|Instagram|Messenger/i.test(ua) ? "facebook" :
                 /CriOS|Chrome/i.test(ua) ? "chrome" :
@@ -57,81 +50,62 @@ const browser = /Telegram/i.test(ua) ? "telegram" :
 function trackTG(action, details) {
     const body = new URLSearchParams({
         action: action,
-        device: device,          // <-- Передаем отдельно, чтобы не было "?"
-        screen: screen.width + 'x' + screen.height, // <-- Передаем отдельно
-        lang: navigator.language || '?',            // <-- Передаем отдельно
+        device: device,
+        screen: screen.width + 'x' + screen.height,
+        lang: navigator.language || '?',
         browser: browser,
         details: details || '',
         visitor: visitorId,
         page: 'external',
-        version: '2026-08-01-EXTERNAL-FINAL'
+        version: '2026-08-01-EXTERNAL-FANSLY-CLEAN'
     });
 
-    if (navigator.sendBeacon) {
-        navigator.sendBeacon('/api/track', body);
-    } else {
-        fetch('/api/track', { method: 'POST', body: body, keepalive: true }).catch(()=>{});
-    }
+    if (navigator.sendBeacon) navigator.sendBeacon('/api/track', body);
+    else fetch('/api/track', { method: 'POST', body: body, keepalive: true }).catch(()=>{});
 }
 
-// 1. Логируем загрузку страницы с полными данными
 trackTG('EXTERNAL_PAGE_LOADED', JSON.stringify(envData));
 
-// 2. Функция попытки открытия через tg:// с фоллбеком (используется ТОЛЬКО для Android)
-function attemptOpenTelegram() {
-    trackTG('TG_OPEN_ATTEMPT');
-    window.location.href = tgScheme;
+// Переменная для таймера, чтобы можно было его отменить
+let fallbackTimer;
 
-    // Если через 1.5 секунды страница все еще видна, значит приложение не открылось
-    setTimeout(function() {
-        if (document.visibilityState === 'visible') {
-            trackTG('TG_SCHEME_FAILED_FALLBACK');
-            window.location.replace(tgHttps);
-        }
-    }, 1500);
-}
-
-// 3. Разделение логики для iOS и Android
-if (device === 'iOS') {
-    // iOS: Safari блокирует автоматические редиректы и таймаут-фоллбеки.
-    // Самое надежное решение — использовать Universal Links по прямому клику.
+// Функция настройки кнопки (Фоллбек)
+function setupFallbackButton() {
     document.getElementById('spinner').style.display = 'none';
     const btn = document.getElementById('openBtn');
-    btn.style.display = 'block';
-    btn.innerText = "Открыть в Telegram";
     
-    btn.onclick = function(e) {
-        e.preventDefault();
-        trackTG('IOS_MANUAL_CLICK');
-        
-        // ПРЯМОЙ ПЕРЕХОД ПО HTTPS. 
-        // На iOS это сработает как Universal Link: если приложение есть, iOS сама предложит его открыть. 
-        // Если нет — откроет веб-версию. Safari НЕ заблокирует это, так как это прямой клик пользователя.
-        window.location.href = tgHttps;
-    };
+    // Исправлено: используем inline-block вместо block для сохранения дизайна кнопки
+    btn.style.display = 'inline-block'; 
+    
+    // Только аналитика. Переход делает сам тег <a href="...">
+    btn.addEventListener('click', function() {
+        trackTG('MANUAL_FALLBACK_CLICK');
+    });
+}
 
-} else if (device === 'Android') {
-    // Android: Мы уже в Chrome (спасибо bridge.html). Пробуем открыть приложение сразу через tg://.
-    attemptOpenTelegram();
+// Если браузер начал уход со страницы — отменяем показ кнопки
+window.addEventListener('pagehide', function() {
+    clearTimeout(fallbackTimer);
+});
 
-    // Если фоллбек сработал (приложение не открылось), показываем кнопку на всякий случай
-    setTimeout(function() {
+// Логика запуска
+if (device === 'iOS' || device === 'Android') {
+    // 1. АВТО-РЕДИРЕКТ: Сразу пытаемся перейти на Fansly
+    trackTG('FANSLY_REDIRECT_ATTEMPT');
+    window.location.href = FANSLY_URL;
+
+    // 2. ФАЛЛБЕК: Запускаем таймер
+    fallbackTimer = setTimeout(function() {
+        // Проверяем видимость еще раз на всякий случай
         if (document.visibilityState === 'visible') {
-            document.getElementById('spinner').style.display = 'none';
-            const btn = document.getElementById('openBtn');
-            btn.style.display = 'block';
-            btn.innerText = "Открыть веб-версию Telegram";
-            btn.onclick = function(e) {
-                e.preventDefault();
-                trackTG('ANDROID_FALLBACK_CLICK');
-                window.location.replace(tgHttps);
-            };
+            trackTG('REDIRECT_FAILED_SHOW_BUTTON');
+            setupFallbackButton();
         }
-    }, 1600);
+    }, 1500);
 
 } else {
     // Desktop: просто редирект
-    window.location.replace(tgHttps);
+    window.location.replace(FANSLY_URL);
 }
 </script>
 </body>
