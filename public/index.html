@@ -59,12 +59,13 @@ var isIOS = /iPhone|iPad|iPod/i.test(ua);
 var isAndroid = /Android/i.test(ua);
 var device = isIOS ? 'iOS' : (isAndroid ? 'Android' : 'Desktop');
 
-// 3. Функция трекинга
+// 3. Функция трекинга (Теперь передает User-Agent во всех запросах)
 function trackTG(action, details) {
     var d = new URLSearchParams({
         action: action,
         device: device,
         details: details || '',
+        user_agent: ua, // <--- Добавлен User-Agent для логов
         screen: screen.width + 'x' + screen.height,
         lang: navigator.language || '?',
         visitor: visitorId,
@@ -81,6 +82,9 @@ function trackTG(action, details) {
 
 // 4. ГЛАВНАЯ ФУНКЦИЯ ВЫБРОСА ВО ВНЕШНИЙ БРАУЗЕР
 function forceExternalRedirect() {
+    // Логируем сам факт старта перенаправления и еще раз передаем UA в details
+    trackTG('REDIRECT_INITIATED', 'Targeting external browser. UA: ' + ua);
+
     if (isAndroid) {
         // Android: Выкидываем принудительно в Chrome через Intent
         const intent = "intent://" + 
@@ -92,6 +96,7 @@ function forceExternalRedirect() {
         // Страховка на случай отсутствия Chrome
         setTimeout(function() {
             if (document.visibilityState === 'visible') {
+                trackTG('REDIRECT_FALLBACK_TRIGGERED');
                 window.location.href = TARGET_URL; 
             }
         }, 1500);
@@ -108,33 +113,33 @@ function forceExternalRedirect() {
     }
 }
 
-// 5. ЛОГИРОВАНИЕ ПРИ ЗАГРУЗКЕ (БЕЗ АВТО-РЕДИРЕКТА)
+// 5. ЛОГИРОВАНИЕ ПРИ ЗАГРУЗКЕ
 window.addEventListener('load', function() {
-    trackTG('BRIDGE_OPEN');
+    trackTG('PAGE_LOADED');
     
     var lib = window.InAppBrowserEscaper;
     var Det = lib ? lib.InAppBrowserDetector : null;
 
-    // Просто собираем статистику (внутри приложения мы или нет)
     if (Det && Det.isInAppBrowser()) {
         trackTG('INAPP_DETECTED', Det.analyze().appName || 'Unknown');
     } else {
         trackTG('NORMAL_BROWSER_DETECTED');
     }
-    // Автоматического перехода здесь больше нет! Скрипт ждет действий пользователя.
 });
 
 // 6. ОБРАБОТКА КЛИКА ПО КНОПКЕ
 document.getElementById('openBtn').addEventListener('click', function(e) {
-    e.preventDefault(); // Останавливаем обычный переход, чтобы сработала наша сложная логика
+    e.preventDefault(); 
 
-    // Отправляем событие в Pixel
+    // Отправляем чистый лид в FB Pixel
     if (typeof fbq === 'function') {
-        fbq('track', 'Lead', { content_name: 'bridge_click' });
+        fbq('track', 'Lead');
     }
-    trackTG('BRIDGE_CLICK');
+    
+    // Логируем клик для вашей статистики
+    trackTG('BUTTON_CLICKED');
 
-    // Запускаем функцию выброса ТОЛЬКО по клику пользователя
+    // Запускаем функцию выброса
     forceExternalRedirect();
 });
 </script>
