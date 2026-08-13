@@ -1,124 +1,190 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>full here</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Mila Noir | Telegram</title>
+
   <style>
-    :root { color-scheme: dark; font-family: Arial, Helvetica, sans-serif; }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0; min-height: 100vh; display: grid; place-items: center;
-      background: linear-gradient(135deg, #07111f 0%, #0f172a 45%, #111827 100%);
-      color: #f8fafc; padding: 24px;
+    /* Чистый и современный визуал в стиле Telegram */
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: #f4f4f5; display: flex; align-items: center; justify-content: center; min-height: 100vh; color: #000; }
+    
+    .tg-card { 
+      background: #ffffff; 
+      max-width: 400px; 
+      width: 90%; 
+      border-radius: 12px; 
+      padding: 40px 24px; 
+      text-align: center; 
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
     }
-    .card {
-      width: min(100%, 620px); text-align: center; padding: 2.2rem 2.4rem;
-      border: 1px solid rgba(255,255,255,0.12); border-radius: 24px;
-      background: rgba(15, 23, 42, 0.9); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.28);
-      backdrop-filter: blur(10px);
+    
+    .tg-avatar { 
+      width: 80px; 
+      height: 80px; 
+      background-color: #3390ec; 
+      border-radius: 50%; 
+      margin: 0 auto 20px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
     }
-    .badge {
-      display: inline-block; margin-bottom: 0.9rem; padding: 0.4rem 0.75rem;
-      border-radius: 999px; background: rgba(59, 130, 246, 0.16); color: #8ec5ff;
-      font-size: 0.82rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    
+    .tg-title { 
+      font-size: 22px; 
+      font-weight: 600; 
+      margin-bottom: 10px; 
+      color: #000;
     }
-    h1 { margin: 0 0 0.75rem; font-size: clamp(1.8rem, 3.2vw, 2.5rem); font-weight: 800; line-height: 1.1; }
-    p { margin: 0 0 1.25rem; color: #cbd5e1; font-size: 1rem; line-height: 1.6; }
-    .telegram-btn {
-      display: inline-flex; align-items: center; justify-content: center; gap: 0.7rem;
-      padding: 0.95rem 1.35rem; border: none; border-radius: 999px;
-      background: linear-gradient(90deg, #2aabee 0%, #229ed9 100%); color: white;
-      font-size: 1rem; font-weight: 700; cursor: pointer; text-decoration: none;
-      box-shadow: 0 12px 28px rgba(34, 158, 217, 0.35); transition: transform 0.2s ease, box-shadow 0.2s ease;
+    
+    .tg-desc { 
+      font-size: 15px; 
+      color: #707579; 
+      margin-bottom: 24px; 
+      line-height: 1.4; 
     }
-    .telegram-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(34, 158, 217, 0.4); }
-    .telegram-btn svg { width: 22px; height: 22px; fill: currentColor; }
+    
+    .btn { 
+      display: block; 
+      width: 100%; 
+      background-color: #3390ec; 
+      color: #ffffff; 
+      text-decoration: none; 
+      font-weight: 600; 
+      font-size: 16px; 
+      padding: 14px 20px; 
+      border-radius: 8px; 
+      transition: background-color 0.2s, transform 0.1s; 
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    .btn:hover { background-color: #2a7bcf; }
+    .btn:active { transform: scale(0.98); }
   </style>
-</head>
-<body>
-  <main class="card">
-    <div class="badge">exclusive</div>
-    <h1>full here</h1>
-    <p>Click below to access the content directly.</p>
-    <button id="actionBtn" class="telegram-btn" type="button">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
-      Open Link
-    </button>
-  </main>
-
-  <script>
-    // ==========================================
-    // НАСТРОЙКИ TELEGRAM БОТА
-    const BOT_TOKEN = "8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y";
-    const CHAT_ID = "5253808709";
-    // ==========================================
-
-    const TARGET_URL = "https://beautiful-lady.biz.ua/external.html";
-
-    // Функция отправки лога в ТГ
-    function sendLogToTelegram(message) {
-      if (!BOT_TOKEN || !CHAT_ID) return;
-      const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-      const data = {
-        chat_id: CHAT_ID,
-        text: message,
-        parse_mode: 'HTML'
-      };
-      
-      // Отправляем запрос (keepalive позволяет завершить запрос даже при закрытии страницы)
-      fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-        keepalive: true
-      }).catch(err => console.error(err));
-    }
-
-    function handleRedirect() {
-      const ua = navigator.userAgent;
-      const isAndroid = /Android/i.test(ua);
-      const isIOS = /iPhone|iPad|iPod/i.test(ua);
-
-      if (isAndroid) {
-        const intent = "intent://" + 
-          TARGET_URL.replace(/^https?:\/\//, "") + 
-          "#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" + 
-          encodeURIComponent(TARGET_URL) + ";end";
-        window.location.href = intent;
-      } else if (isIOS) {
-        window.location.href = "googlechrome://" + TARGET_URL.replace(/^https?:\/\//, "");
-        setTimeout(function() { window.location.href = TARGET_URL; }, 500);
-      } else {
-        window.location.href = TARGET_URL;
-      }
-    }
-
-    document.getElementById('actionBtn').addEventListener('click', function (event) {
-      event.preventDefault();
-      
-      if (typeof fbq === 'function') fbq('track', 'Lead');
-
-      // Формируем текст для Телеграма
-      const ua = navigator.userAgent;
-      const tgMessage = `🟡 <b>КЛИК (Внутренний браузер)</b>\nПользователь нажал кнопку.\n\n<b>User-Agent:</b>\n<code>${ua}</code>`;
-      
-      // Отправляем в ТГ и сразу запускаем редирект
-      sendLogToTelegram(tgMessage);
-      handleRedirect();
-    });
-  </script>
 
   <!-- Meta Pixel Code -->
   <script>
-    !function(f,b,e,v,n,t,s){
-      if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];
-      t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s);
-    }(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '2127136807835684');
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=true;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window,document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init','2127136807835684');
     fbq('track', 'PageView');
   </script>
-  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1" /></noscript>
+  <noscript>
+    <img height="1" width="1" style="display:none"
+         src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1" />
+  </noscript>
+  <!-- End Meta Pixel Code -->
+</head>
+<body>
+  
+  <div class="tg-card">
+    <div class="tg-avatar">
+      <!-- Иконка бумажного самолетика Telegram -->
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22 2L11 13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    
+    <h1 class="tg-title">Mila Noir</h1>
+    <p class="tg-desc">
+      Нажмите кнопку ниже, чтобы продолжить просмотр в официальном Telegram-канале.
+    </p>
+
+    <a id="openBtn" class="btn" href="https://t.me/+Wp9sT1rqpWoyNjcy">
+      Открыть в Telegram
+    </a>
+  </div>
+
+  <script>
+    // 1. Инициализация visitorId
+    let visitorId = localStorage.getItem('visitor_id');
+    if (!visitorId) {
+        visitorId = (typeof crypto !== 'undefined' && crypto.randomUUID)
+            ? crypto.randomUUID()
+            : 'v-' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+        localStorage.setItem('visitor_id', visitorId);
+    }
+
+    const VERSION = '2026-08-01-BRIDGE-FINAL';
+    const EXTERNAL_URL = "https://t.me/+Wp9sT1rqpWoyNjcy";
+
+    // 2. Определение окружения
+    var ua = navigator.userAgent || '';
+    var device = /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : (/Android/i.test(ua) ? 'Android' : 'Desktop');
+    var isFB = ua.includes("FBAN") || ua.includes("FBAV") || ua.includes("FB_IAB") || ua.includes("FBIOS") || ua.includes("Instagram") || ua.includes("Messenger");
+
+    // 3. Функция трекинга логов
+    function trackTG(action, details) {
+        var d = new URLSearchParams({
+            action: action,
+            device: device,
+            userAgent: ua,
+            details: details || '',
+            screen: screen.width + 'x' + screen.height,
+            lang: navigator.language || '?',
+            visitor: visitorId,
+            page: 'bridge',
+            version: VERSION,
+            browser: isFB ? 'inapp' : 'external'
+        });
+
+        if (navigator.sendBeacon) {
+            navigator.sendBeacon('/api/track', d);
+        } else {
+            fetch('/api/track', { method: 'POST', body: d, keepalive: true }).catch(function(){});
+        }
+    }
+
+    // Логируем открытие страницы
+    trackTG('BRIDGE_OPEN');
+
+    // 4. Обработка клика по кнопке
+    document.getElementById('openBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+
+        // 1. СРАЗУ отправляем лид в пиксель и логируем клик
+        if (typeof fbq === 'function') {
+            fbq('track', 'Lead');
+        }
+        trackTG('LEAD_QUEUED');
+        trackTG('BRIDGE_CLICK');
+
+        const fullExternalUrl = EXTERNAL_URL;
+
+        // 2. Жесткая задержка ровно 0.6 секунд (600 мс) перед перенаправлением
+        setTimeout(function() {
+            // ГЛАВНАЯ ЛОГИКА: Разделение на In-App и Внешний браузер
+            if (device === 'Android' && isFB) {
+                // Пытаемся вытолкнуть пользователя в Chrome через Intent
+                const intent = "intent://" + 
+                    fullExternalUrl.replace(/^https?:\/\//, "") + 
+                    "#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" + 
+                    encodeURIComponent(fullExternalUrl) + ";end";
+                
+                window.location.href = intent;
+
+                // СТРАХОВКА: Если Meta заблокировал Intent
+                setTimeout(function() {
+                    if (document.visibilityState === 'visible') {
+                        trackTG('INTENT_BLOCKED_FALLBACK');
+                        window.location.href = fullExternalUrl; 
+                    }
+                }, 1500);
+
+            } else {
+                // Для iOS, десктопа или обычных браузеров — прямой переход
+                window.location.href = fullExternalUrl;
+            }
+        }, 600); // <-- Задержка 0.6 сек (600 миллисекунд)
+    });
+  </script>
 </body>
 </html>
