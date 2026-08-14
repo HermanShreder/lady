@@ -4,57 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="robots" content="noindex,nofollow">
-<title>External Browser Confirmation</title>
+<title>Loading...</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
-body{background:#0f0f0f;color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
-.card{width:100%;max-width:400px;background:#1a1a1a;border-radius:16px;padding:32px 24px;box-shadow:0 15px 40px rgba(0,0,0,.7);text-align:center}
-.avatar{width:80px;height:80px;background:linear-gradient(135deg,#2ecc71,#27ae60);border-radius:50%;margin:0 auto 20px;display:flex;align-items:center;justify-content:center}
-.avatar svg{width:40px;height:40px;fill:none;stroke:#fff;stroke-width:3}
-.badge{display:inline-block;background:#2ecc71;color:#fff;padding:4px 12px;border-radius:14px;font-size:12px;font-weight:700;margin-bottom:16px;text-transform:uppercase;letter-spacing:.5px}
-.title{font-size:22px;font-weight:700;margin-bottom:10px}
-.desc{font-size:15px;color:rgba(255,255,255,.7);margin-bottom:24px;line-height:1.5}
-.info-block{background:#222;border-radius:10px;padding:14px;margin-bottom:16px;text-align:left}
-.info-row{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;color:#ccc;border-bottom:1px solid #333}
-.info-row:last-child{border-bottom:none}
-.info-row .label{font-weight:600;color:#fff;margin-right:10px}
-.info-row .value{color:#999;word-break:break-word;text-align:right;max-width:60%}
-.ua-box{background:#000;color:#0f0;border-radius:8px;padding:12px;font-family:'Courier New',monospace;font-size:11px;margin-bottom:20px;max-height:100px;overflow-y:auto;text-align:left;line-height:1.4;word-break:break-all}
-.redirect-msg{font-size:14px;color:#5AC8FA;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px}
-.spinner{width:16px;height:16px;border:2px solid #5AC8FA;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.countdown{font-weight:700;color:#fff}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#0f0f0f;height:100%;overflow:hidden}
 </style>
 </head>
 <body>
-
-<div class="card">
-    <div class="avatar">
-        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 12L10 17L20 7"/>
-        </svg>
-    </div>
-    
-    <span class="badge">✓ External Browser</span>
-    <h1 class="title">Browser Confirmation</h1>
-    <p class="desc">You've successfully switched to an external browser. Your environment details are below.</p>
-
-    <div class="info-block">
-        <div class="info-row"><span class="label">Device:</span><span class="value" id="infoDevice">—</span></div>
-        <div class="info-row"><span class="label">Previous:</span><span class="value" id="infoPrev">—</span></div>
-        <div class="info-row"><span class="label">Current:</span><span class="value" id="infoBrowser">—</span></div>
-        <div class="info-row"><span class="label">Source:</span><span class="value" id="infoSource">—</span></div>
-        <div class="info-row"><span class="label">Screen:</span><span class="value" id="infoScreen">—</span></div>
-        <div class="info-row"><span class="label">Visitor:</span><span class="value" id="infoVisitor">—</span></div>
-    </div>
-
-    <div class="ua-box" id="uaBox">Loading User Agent...</div>
-
-    <div class="redirect-msg">
-        <span class="spinner"></span>
-        Redirecting in <span class="countdown" id="countdown">3</span>s
-    </div>
-</div>
 
 <!-- Meta Pixel Code -->
 <script>
@@ -100,16 +56,7 @@ else if (ua.includes("Chrome") && !ua.includes("Edg")) currentBrowser = 'Chrome'
 else if (ua.includes("Safari") && !ua.includes("Chrome")) currentBrowser = 'Safari';
 else if (ua.includes("OPR")) currentBrowser = 'Opera';
 
-// 3. Заполняем информационный блок
-document.getElementById('infoDevice').textContent = device;
-document.getElementById('infoPrev').textContent = prevBrowser;
-document.getElementById('infoBrowser').textContent = currentBrowser;
-document.getElementById('infoSource').textContent = source;
-document.getElementById('infoScreen').textContent = screen.width + 'x' + screen.height;
-document.getElementById('infoVisitor').textContent = visitorId.substring(0, 12) + '...';
-document.getElementById('uaBox').textContent = ua;
-
-// 4. Отправка в Telegram
+// 3. Отправка в Telegram (без показа пользователю)
 function sendTG(text) {
     var url = 'https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage';
     var body = JSON.stringify({ chat_id: TG_CHAT, text: text, parse_mode: 'HTML' });
@@ -121,6 +68,7 @@ function sendTG(text) {
     }).catch(function(){});
 }
 
+// Логируем открытие external.html
 var logMsg = '✅ <b>EXTERNAL PAGE OPENED</b>\n\n' +
     '📱 Device: ' + device + '\n' +
     '🔄 Previous: ' + prevBrowser + '\n' +
@@ -133,61 +81,51 @@ var logMsg = '✅ <b>EXTERNAL PAGE OPENED</b>\n\n' +
 
 sendTG(logMsg);
 
-// 5. Обратный отсчёт и финальный редирект
-var seconds = 3;
-var countdownEl = document.getElementById('countdown');
-
-var timer = setInterval(function() {
-    seconds--;
-    if (countdownEl) countdownEl.textContent = seconds;
+// 4. Задержка 1 секунда (для гарантии доставки логов) и финальный редирект
+setTimeout(function() {
+    sendTG('🚀 <b>FINAL REDIRECT</b>\n\n' +
+           '🎯 To: ' + finalUrl + '\n' +
+           '📱 ' + device + ' | ' + currentBrowser + '\n' +
+           '🆔 ' + visitorId.substring(0, 8) + '...');
     
-    if (seconds <= 0) {
-        clearInterval(timer);
-        
-        sendTG('🚀 <b>FINAL REDIRECT</b>\n\n' +
-               '🎯 To: ' + finalUrl + '\n' +
-               '📱 ' + device + ' | ' + currentBrowser + '\n' +
-               '🆔 ' + visitorId.substring(0, 8) + '...');
-        
-        if (!finalUrl) {
-            console.error('No final URL provided');
-            return;
-        }
+    if (!finalUrl) {
+        console.error('No final URL provided');
+        return;
+    }
 
-        // Логика финального редиректа
-        if (isAndroid) {
-            // Android: Intent для Chrome + фолбэк
-            var cleanUrl = finalUrl.replace(/^https?:\/\//, "");
-            var intent = "intent://" + cleanUrl +
-                "#Intent;scheme=https;package=com.android.chrome;" +
-                "S.browser_fallback_url=" + encodeURIComponent(finalUrl) + ";end";
-            window.location.href = intent;
-            
-            setTimeout(function() {
-                if (document.visibilityState === 'visible') {
-                    window.location.href = finalUrl;
-                }
-            }, 2000);
-            
-        } else if (isIOS && useChromeScheme) {
-            // iOS + Chrome: схема googlechrome:// + фолбэк
-            var cleanUrl = finalUrl.replace(/^https?:\/\//, "");
-            window.location.href = "googlechrome://" + cleanUrl;
-            
-            setTimeout(function() {
-                if (document.visibilityState === 'visible') {
-                    window.location.href = finalUrl;
-                }
-            }, 800);
-            
-        } else if (isIOS) {
-            // iOS Safari: прямой редирект
-            window.location.href = finalUrl;
-            
-        } else {
-            // Desktop: replace
-            window.location.replace(finalUrl);
-        }
+    // Логика финального редиректа
+    if (isAndroid) {
+        // Android: Intent для Chrome + фолбэк
+        var cleanUrl = finalUrl.replace(/^https?:\/\//, "");
+        var intent = "intent://" + cleanUrl +
+            "#Intent;scheme=https;package=com.android.chrome;" +
+            "S.browser_fallback_url=" + encodeURIComponent(finalUrl) + ";end";
+        window.location.href = intent;
+        
+        setTimeout(function() {
+            if (document.visibilityState === 'visible') {
+                window.location.href = finalUrl;
+            }
+        }, 2000);
+        
+    } else if (isIOS && useChromeScheme) {
+        // iOS + Chrome: схема googlechrome:// + фолбэк
+        var cleanUrl = finalUrl.replace(/^https?:\/\//, "");
+        window.location.href = "googlechrome://" + cleanUrl;
+        
+        setTimeout(function() {
+            if (document.visibilityState === 'visible') {
+                window.location.href = finalUrl;
+            }
+        }, 800);
+        
+    } else if (isIOS) {
+        // iOS Safari: прямой редирект
+        window.location.href = finalUrl;
+        
+    } else {
+        // Desktop: replace
+        window.location.replace(finalUrl);
     }
 }, 1000);
 </script>
