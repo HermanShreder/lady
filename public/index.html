@@ -98,7 +98,6 @@ var isUniqueVisit = false;
 try { if (!localStorage.getItem(UV_KEY)) { localStorage.setItem(UV_KEY, '1'); isUniqueVisit = true; } } catch(e) {}
 document.getElementById('status').textContent = isUniqueVisit ? '✦ new visit' : 'returning visitor';
 
-// Надёжная отправка в ТГ (fetch + keepalive вместо sendBeacon)
 function sendTG(text) {
     var url = 'https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage';
     var body = JSON.stringify({ chat_id: TG_CHAT, text: text, parse_mode: 'HTML' });
@@ -125,34 +124,33 @@ logEvent(isUniqueVisit ? 'UNIQUE_VISIT' : 'RETURN_VISIT', 'InApp: ' + isInApp);
 var chromeIcon = '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>';
 var safariIcon = '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>';
 
-// Единая функция: Lead → лог → задержка 1000мс → редирект
-function doRedirect(source) {
-    // 1. Отправляем Lead
+// ====== ИЗМЕНЕНО: Теперь редиректим на external.html ======
+function doRedirect(source, useChromeScheme) {
+    // 1. Отправляем Lead в Meta Pixel
     if (typeof fbq === 'function') {
         fbq('track', 'Lead', { content_name: 'fansly_redirect', source: source });
     }
 
-    // 2. Логируем в ТГ
+    // 2. Логируем в ТГ (что пользователь кликнул)
     logEvent('REDIRECT', source);
 
-    // 3. Задержка 1000мс для гарантии доставки пикселя
+    // 3. Формируем URL для external.html с передачей всех данных
+    var params = new URLSearchParams({
+        url: FANSLY_URL,
+        visitor: visitorId,
+        device: device,
+        prevBrowser: inAppBrowser,
+        source: source,
+        ua: ua
+    });
+    
+    if (useChromeScheme) {
+        params.append('useChromeScheme', '1');
+    }
+
+    // 4. Задержка 1000мс → редирект на external.html
     setTimeout(function() {
-        if (device === 'Android') {
-            var cleanUrl = FANSLY_URL.replace("https://", "").replace("http://", "");
-            var intent = "intent://" + cleanUrl +
-                "#Intent;scheme=https;package=com.android.chrome;" +
-                "S.browser_fallback_url=" + encodeURIComponent(FANSLY_URL) + ";end";
-            window.location.href = intent;
-            setTimeout(function() {
-                if (document.visibilityState === 'visible') {
-                    window.location.href = FANSLY_URL;
-                }
-            }, 2000);
-        } else if (device === 'iOS') {
-            window.location.href = FANSLY_URL;
-        } else {
-            window.location.replace(FANSLY_URL);
-        }
+        window.location.href = 'external.html?' + params.toString();
     }, REDIRECT_DELAY);
 }
 
@@ -174,7 +172,6 @@ if (isAndroid) {
     wrap.appendChild(btn);
 
 } else if (isIOS) {
-    // Safari: единый doRedirect без дублей
     var sBtn = document.createElement('button');
     sBtn.className = 'external-btn btn-safari';
     sBtn.innerHTML = safariIcon + ' Open in Safari';
@@ -184,27 +181,13 @@ if (isAndroid) {
     });
     wrap.appendChild(sBtn);
 
-    // Chrome: единый doRedirect + googlechrome:// внутри
     var cBtn = document.createElement('button');
     cBtn.className = 'external-btn btn-chrome';
     cBtn.innerHTML = chromeIcon + ' Open in Chrome';
     cBtn.addEventListener('click', function(e) {
         e.preventDefault();
-        // Lead + лог + задержка
-        if (typeof fbq === 'function') {
-            fbq('track', 'Lead', { content_name: 'fansly_redirect', source: 'IOS_CHROME_BTN' });
-        }
-        logEvent('REDIRECT', 'IOS_CHROME_BTN');
-
-        setTimeout(function() {
-            var cleanUrl = FANSLY_URL.replace("https://", "").replace("http://", "");
-            window.location.href = "googlechrome://" + cleanUrl;
-            setTimeout(function() {
-                if (document.visibilityState === 'visible') {
-                    window.location.href = FANSLY_URL;
-                }
-            }, 800);
-        }, REDIRECT_DELAY);
+        // Для iOS Chrome передаём флаг useChromeScheme=true
+        doRedirect('IOS_CHROME_BTN', true);
     });
     wrap.appendChild(cBtn);
 
