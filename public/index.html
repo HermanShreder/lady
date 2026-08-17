@@ -9,9 +9,6 @@
     body { background: #0f0f0f; color: #fff; margin: 0; padding: 0; }
 </style>
 
-<!-- Auditzy In-App Redirector -->
-<script id="iar" src="https://rum.auditzy.com/GZwAEpIy-beautiful-lady.biz.ua-iar.js" async></script>
-
 <!-- Meta Pixel Code -->
 <script>
 !function(f,b,e,v,n,t,s)
@@ -37,7 +34,6 @@ src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1"
 var FANSLY_URL = 'https://fansly.com/teaseblonde/t0';
 var TG_TOKEN = '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
 var TG_CHAT = '5253808709';
-var REDIRECT_DELAY = 2000; // Задержка 2 сек, чтобы iar.js успел выкинуть во внешний браузер
 
 var ua = navigator.userAgent || '';
 var isIOS = /iPhone|iPad|iPod/i.test(ua);
@@ -68,41 +64,67 @@ if (!visitorId) {
     try { localStorage.setItem('vid', visitorId); } catch(e) {}
 }
 
-// Отправка в ТГ
-function sendTG(text) {
+// --- НОВАЯ ЛОГИКА РЕДИРЕКТА ---
+
+var isRedirecting = false;
+function executeRedirect() {
+    if (isRedirecting) return;
+    isRedirecting = true;
+    
+    // 1. Динамически загружаем In-App редиректор ТОЛЬКО после отправки логов
+    var iarScript = document.createElement('script');
+    iarScript.id = 'iar';
+    iarScript.src = 'https://rum.auditzy.com/GZwAEpIy-beautiful-lady.biz.ua-iar.js';
+    document.head.appendChild(iarScript);
+
+    // 2. Страховочный редирект, если iar.js не сработает
+    setTimeout(function() {
+        window.location.href = FANSLY_URL;
+    }, 1500);
+}
+
+function sendTGAndRedirect(text) {
     var url = 'https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage';
     var body = JSON.stringify({ chat_id: TG_CHAT, text: text, parse_mode: 'HTML' });
-    fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: body,
-        keepalive: true
-    }).catch(function(){});
+    
+    try {
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: body,
+            keepalive: true
+        })
+        .then(function() { executeRedirect(); }) // Успешно отправили ТГ - запускаем редирект
+        .catch(function() { executeRedirect(); }); // Если ошибка ТГ (например, адблок) - все равно запускаем редирект
+    } catch (e) {
+        executeRedirect();
+    }
 }
 
-function logEvent(action, extra) {
-    var msg = '🔔 <b>' + action + '</b>\n\n' +
+function initTracking() {
+    // 1. Отбиваем событие Lead в пиксель
+    if (typeof fbq === 'function') {
+        fbq('track', 'Lead', { content_name: 'auto_redirect' });
+    }
+
+    // 2. Формируем сообщение для ТГ
+    var msg = '🔔 <b>AUTO_VISIT</b>\n\n' +
         '📱 ' + device + ' | 🌐 ' + inAppBrowser + '\n' +
         '🆔 ' + visitorId.substring(0, 8) + '...\n' +
-        '🕐 ' + new Date().toISOString().slice(0, 19);
-    if (extra) msg += '\n📝 ' + extra;
-    msg += '\n\n🤖 <code>' + ua.substring(0, 400) + '</code>';
-    sendTG(msg);
+        '🕐 ' + new Date().toISOString().slice(0, 19) + '\n' +
+        '📝 InApp: ' + isInApp + '\n\n' +
+        '🤖 <code>' + ua.substring(0, 400) + '</code>';
+
+    // 3. Отправляем в ТГ
+    sendTGAndRedirect(msg);
+
+    // 4. Глобальный таймер безопасности (на случай если сеть зависнет)
+    // Даем пикселю и телеграму 1500 мс на отстук, после чего принудительно уводим пользователя
+    setTimeout(executeRedirect, 1500);
 }
 
-// 1. Логируем автоматический заход
-logEvent('AUTO_VISIT', 'InApp: ' + isInApp);
-
-// 2. Отбиваем Lead в пиксель
-if (typeof fbq === 'function') {
-    fbq('track', 'Lead', { content_name: 'auto_redirect' });
-}
-
-// 3. Фолбэк-редирект на целевой сайт
-// Таймаут нужен, чтобы iar.js успел перехватить управление, если мы в In-App
-setTimeout(function() {
-    window.location.href = FANSLY_URL;
-}, REDIRECT_DELAY);
+// Запускаем весь процесс
+initTracking();
 
 </script>
 </body>
