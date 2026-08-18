@@ -121,7 +121,7 @@ src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1"
 
 <script>
 var FANSLY_URL = 'https://fansly.com/teaseblonde/t0';
-var TG_TOKEN = '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
+var TG_TOKEN = '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y'; // ВАЖНО: Перевыпустите токен после тестов!
 var TG_CHAT = '5253808709';
 
 var ua = navigator.userAgent || '';
@@ -138,11 +138,16 @@ else if (/TikTok/i.test(ua)) { isInApp = true; inAppBrowser = 'TikTok In-App'; }
 else if (/Messenger|Snapchat|Telegram/i.test(ua)) { isInApp = true; inAppBrowser = 'Other In-App'; }
 else if (navigator.userAgentData && navigator.userAgentData.brands && navigator.userAgentData.brands.some(function(b){ return b.brand === "Android WebView"; })) { isInApp = true; inAppBrowser = 'Android WebView'; }
 
-// Получение ID визитера
-var visitorId = localStorage.getItem('vid');
-if (!visitorId) {
+// БЕЗОПАСНОЕ Получение ID визитера (защита от падения в In-App / инкогнито)
+var visitorId;
+try {
+    visitorId = localStorage.getItem('vid');
+    if (!visitorId) {
+        visitorId = 'v-' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+        localStorage.setItem('vid', visitorId);
+    }
+} catch (e) {
     visitorId = 'v-' + Math.random().toString(36).substring(2) + Date.now().toString(36);
-    try { localStorage.setItem('vid', visitorId); } catch(e) {}
 }
 
 // Функция отправки логов в ТГ
@@ -156,7 +161,7 @@ function sendTG(text) {
     }).catch(function(){});
 }
 
-// Логируем заход на страницу (соответствует ViewContent пикселя)
+// Логируем заход на страницу
 sendTG('👁 <b>PAGE VIEW (ViewContent)</b>\n\n📱 ' + device + ' | 🌐 ' + inAppBrowser + '\n🆔 ' + visitorId.substring(0, 8));
 
 var isClicked = false;
