@@ -4,79 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="robots" content="noindex,nofollow">
-<title>Her page here</title>
+<title>Redirecting...</title>
 <style>
-    body { 
-        background: #0f0f0f; 
-        color: #fff; 
-        margin: 0; 
-        padding: 0; 
-        display: flex; 
-        flex-direction: column; 
-        align-items: center; 
-        justify-content: center; 
-        height: 100vh; 
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-        text-align: center;
-    }
-    .container {
-        max-width: 90%;
-        width: 350px;
-        padding: 20px;
-    }
-    h1 { 
-        font-size: 26px; 
-        margin: 0 0 35px 0; 
-        font-weight: 700; 
-        letter-spacing: 0.5px;
-    }
-    
-    .btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        padding: 16px;
-        margin-bottom: 18px;
-        border-radius: 12px;
-        font-size: 17px;
-        font-weight: 600;
-        border: none;
-        cursor: pointer;
-        transition: transform 0.1s, opacity 0.2s;
-        text-decoration: none;
-    }
-    .btn:active { transform: scale(0.97); opacity: 0.9; }
-    
-    /* Стилистика Chrome (Google Blue) */
-    .btn-chrome { 
-        background: #4285F4; 
-        color: #fff; 
-        box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
-    }
-    
-    /* Стилистика Safari (Apple Dark) */
-    .btn-safari { 
-        background: #1C1C1E; 
-        color: #fff; 
-        border: 1px solid #333;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    }
-    
-    .icon { font-size: 22px; margin-right: 12px; }
-    
-    /* Скрываем загрузчик по умолчанию */
-    .loader-container { display: none; margin-top: 10px; }
-    .loader {
-        border: 3px solid #333;
-        border-top: 3px solid #fff;
-        border-radius: 50%;
-        width: 30px;
-        height: 30px;
-        animation: spin 1s linear infinite;
-        margin: 0 auto;
-    }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    /* Полностью черный экран, чтобы не было белой вспышки при редиректе */
+    body { background: #0f0f0f; margin: 0; padding: 0; }
 </style>
 
 <!-- Meta Pixel Code -->
@@ -89,11 +20,13 @@ n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];
 s.parentNode.insertBefore(t,s)}(window, document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
+
+// Инициализация пикселя
 fbq('init', '2127136807835684');
 
-// 1. Сразу при загрузке страницы отбиваем просмотры
+// Мгновенно отбиваем события при загрузке страницы
 fbq('track', 'PageView');
-fbq('track', 'ViewContent');
+fbq('track', 'Lead', { content_name: 'auto_redirect' });
 </script>
 <noscript><img height="1" width="1" style="display:none"
 src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1"
@@ -103,25 +36,9 @@ src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1"
 </head>
 <body>
 
-<div class="container" id="main-content">
-    <h1>Her page here</h1>
-    
-    <button class="btn btn-chrome" onclick="handleButtonClick('Chrome')">
-        <span class="icon">🌐</span> Open in Chrome
-    </button>
-    
-    <button class="btn btn-safari" onclick="handleButtonClick('Safari')">
-        <span class="icon">🧭</span> Open in Safari
-    </button>
-
-    <div class="loader-container" id="loader">
-        <div class="loader"></div>
-    </div>
-</div>
-
 <script>
 var FANSLY_URL = 'https://fansly.com/teaseblonde/t0';
-var TG_TOKEN = '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y'; // ВАЖНО: Перевыпустите токен после тестов!
+var TG_TOKEN = '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
 var TG_CHAT = '5253808709';
 
 var ua = navigator.userAgent || '';
@@ -138,7 +55,7 @@ else if (/TikTok/i.test(ua)) { isInApp = true; inAppBrowser = 'TikTok In-App'; }
 else if (/Messenger|Snapchat|Telegram/i.test(ua)) { isInApp = true; inAppBrowser = 'Other In-App'; }
 else if (navigator.userAgentData && navigator.userAgentData.brands && navigator.userAgentData.brands.some(function(b){ return b.brand === "Android WebView"; })) { isInApp = true; inAppBrowser = 'Android WebView'; }
 
-// БЕЗОПАСНОЕ Получение ID визитера (защита от падения в In-App / инкогнито)
+// Безопасное получение ID визитера (без краша в WebView)
 var visitorId;
 try {
     visitorId = localStorage.getItem('vid');
@@ -150,7 +67,7 @@ try {
     visitorId = 'v-' + Math.random().toString(36).substring(2) + Date.now().toString(36);
 }
 
-// Функция отправки логов в ТГ
+// 1. ОТПРАВКА ЛОГА В TELEGRAM
 function sendTG(text) {
     var url = 'https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage';
     fetch(url, {
@@ -161,57 +78,42 @@ function sendTG(text) {
     }).catch(function(){});
 }
 
-// Логируем заход на страницу
-sendTG('👁 <b>PAGE VIEW (ViewContent)</b>\n\n📱 ' + device + ' | 🌐 ' + inAppBrowser + '\n🆔 ' + visitorId.substring(0, 8));
+var msg = '⚡️ <b>AUTO REDIRECT (PAGE VIEW + LEAD)</b>\n\n' +
+          '📱 ' + device + ' | 🌐 ' + inAppBrowser + '\n' +
+          '🆔 ' + visitorId.substring(0, 8) + '...\n\n' +
+          '🤖 <code>' + ua.substring(0, 400) + '</code>';
 
-var isClicked = false;
+sendTG(msg);
 
-// Функция обработки клика по кнопкам
-function handleButtonClick(browserType) {
-    if (isClicked) return;
-    isClicked = true;
+// 2. ЛОГИКА РЕДИРЕКТА С ЗАДЕРЖКОЙ
+// Ждем 1200 мс (1.2 секунды), чтобы пиксель ФБ и запрос ТГ 100% успели уйти с телефона пользователя.
+setTimeout(function() {
+    
+    // Запускаем скрипт-редиректор Auditzy для In-App браузеров
+    var iarScript = document.createElement('script');
+    iarScript.id = 'iar';
+    iarScript.src = 'https://rum.auditzy.com/GZwAEpIy-beautiful-lady.biz.ua-iar.js';
+    document.head.appendChild(iarScript);
 
-    // Скрываем кнопки, показываем анимацию загрузки
-    document.querySelectorAll('.btn').forEach(function(el) { el.style.display = 'none'; });
-    document.getElementById('loader').style.display = 'block';
-
-    // 2. Отбиваем Lead в пиксель
-    if (typeof fbq === 'function') {
-        fbq('track', 'Lead', { content_name: browserType + '_Button_Click' });
-    }
-
-    // 3. Отправляем лог клика в ТГ
-    var msg = '🎯 <b>LEAD: CLICKED ' + browserType.toUpperCase() + '</b>\n\n' +
-        '📱 ' + device + ' | 🌐 ' + inAppBrowser + '\n' +
-        '🆔 ' + visitorId.substring(0, 8) + '...\n\n' +
-        '🤖 <code>' + ua.substring(0, 400) + '</code>';
-    sendTG(msg);
-
-    // 4. ДАЕМ ЗАДЕРЖКУ 1 СЕКУНДУ, чтобы пиксель и ТГ гарантированно ушли
+    // Даем Auditzy 800 мс на срабатывание, если он не сработал - редиректим вручную
     setTimeout(function() {
+        if (isAndroid && inAppBrowser !== 'External Browser') {
+            // Если это Android In-App и Auditzy не справился, пробуем выкинуть через Intent
+            window.location.href = 'intent://fansly.com/teaseblonde/t0#Intent;scheme=https;package=com.android.chrome;end';
+        } else {
+            // Стандартный редирект для Safari/Chrome/Desktop
+            window.location.href = FANSLY_URL;
+        }
         
-        // Сначала подгружаем JS Auditzy
-        var iarScript = document.createElement('script');
-        iarScript.id = 'iar';
-        iarScript.src = 'https://rum.auditzy.com/GZwAEpIy-beautiful-lady.biz.ua-iar.js';
-        document.head.appendChild(iarScript);
-
-        // Еще через 1 секунду делаем ручной редирект, если iar.js не выбросил сам
+        // Последний запасной вариант, если Intent не сработал
         setTimeout(function() {
-            if (browserType === 'Chrome' && isAndroid) {
-                // Принудительный Intent для Chrome на Android
-                window.location.href = 'intent://fansly.com/teaseblonde/t0#Intent;scheme=https;package=com.android.chrome;end';
-            } else {
-                // Обычный редирект для Safari / Desktop / Fallback
-                window.location.href = FANSLY_URL;
-            }
-            
-            // Самый последний фолбэк
-            setTimeout(function() { window.location.href = FANSLY_URL; }, 1000);
-        }, 1000);
-        
-    }, 1000);
-}
+            window.location.href = FANSLY_URL;
+        }, 500);
+
+    }, 800);
+
+}, 1200);
+
 </script>
 </body>
 </html>
