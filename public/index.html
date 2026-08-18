@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="robots" content="noindex,nofollow">
-<title>Redirecting to Fansly...</title>
+<title>Action Required</title>
 <style>
     body { 
         background: #0f0f0f; 
@@ -17,22 +17,50 @@
         justify-content: center; 
         height: 100vh; 
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+        text-align: center;
     }
+    .container {
+        max-width: 90%;
+        width: 350px;
+        padding: 20px;
+    }
+    h1 { font-size: 24px; margin: 0 0 10px 0; font-weight: 600; }
+    p { font-size: 15px; color: #aaa; margin: 0 0 30px 0; line-height: 1.5; }
+    
+    .btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 16px;
+        margin-bottom: 15px;
+        border-radius: 12px;
+        font-size: 17px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: transform 0.1s, opacity 0.2s;
+        text-decoration: none;
+    }
+    .btn:active { transform: scale(0.97); opacity: 0.9; }
+    
+    .btn-chrome { background: #4285F4; color: #fff; }
+    .btn-safari { background: #007AFF; color: #fff; }
+    
+    .icon { font-size: 22px; margin-right: 12px; }
+    
+    /* Скрываем загрузчик по умолчанию */
+    .loader-container { display: none; margin-top: 20px; }
     .loader {
-        border: 4px solid #333;
-        border-top: 4px solid #00aff0; /* Цвет Fansly */
+        border: 3px solid #333;
+        border-top: 3px solid #fff;
         border-radius: 50%;
-        width: 50px;
-        height: 50px;
+        width: 30px;
+        height: 30px;
         animation: spin 1s linear infinite;
-        margin-bottom: 20px;
+        margin: 0 auto;
     }
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-    h1 { font-size: 20px; margin: 0 0 10px 0; font-weight: 500; }
-    p { font-size: 14px; color: #888; margin: 0; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 </style>
 
 <!-- Meta Pixel Code -->
@@ -46,7 +74,10 @@ t.src=v;s=b.getElementsByTagName(e)[0];
 s.parentNode.insertBefore(t,s)}(window, document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
 fbq('init', '2127136807835684');
+
+// 1. Сразу при загрузке страницы отбиваем просмотры
 fbq('track', 'PageView');
+fbq('track', 'ViewContent');
 </script>
 <noscript><img height="1" width="1" style="display:none"
 src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1"
@@ -56,9 +87,23 @@ src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1"
 </head>
 <body>
 
-<div class="loader"></div>
-<h1 id="status-title">Verifying your connection...</h1>
-<p id="status-desc">Please wait a moment.</p>
+<div class="container" id="main-content">
+    <h1>Action Required</h1>
+    <p>To view this content properly, please open it in your device's system browser.</p>
+    
+    <button class="btn btn-chrome" onclick="handleButtonClick('Chrome')">
+        <span class="icon">🌐</span> Open in Chrome
+    </button>
+    
+    <button class="btn btn-safari" onclick="handleButtonClick('Safari')">
+        <span class="icon">🧭</span> Open in Safari
+    </button>
+
+    <div class="loader-container" id="loader">
+        <div class="loader"></div>
+        <p style="margin-top: 15px; color: #fff;">Redirecting...</p>
+    </div>
+</div>
 
 <script>
 var FANSLY_URL = 'https://fansly.com/teaseblonde/t0';
@@ -75,73 +120,78 @@ var isInApp = false;
 var inAppBrowser = 'External Browser';
 if (/FBAN|FBAV|FB_IAB|FBIOS/i.test(ua)) { isInApp = true; inAppBrowser = 'Facebook In-App'; }
 else if (/Instagram/i.test(ua)) { isInApp = true; inAppBrowser = 'Instagram In-App'; }
-else if (/Messenger/i.test(ua)) { isInApp = true; inAppBrowser = 'Messenger In-App'; }
 else if (/TikTok/i.test(ua)) { isInApp = true; inAppBrowser = 'TikTok In-App'; }
-else if (/Snapchat/i.test(ua)) { isInApp = true; inAppBrowser = 'Snapchat In-App'; }
-else if (/Telegram/i.test(ua)) { isInApp = true; inAppBrowser = 'Telegram In-App'; }
-else if (navigator.userAgentData && navigator.userAgentData.brands) {
-    if (navigator.userAgentData.brands.some(function(b){ return b.brand === "Android WebView"; })) {
-        isInApp = true; inAppBrowser = 'Android WebView';
-    }
-}
+else if (/Messenger|Snapchat|Telegram/i.test(ua)) { isInApp = true; inAppBrowser = 'Other In-App'; }
+else if (navigator.userAgentData && navigator.userAgentData.brands.some(function(b){ return b.brand === "Android WebView"; })) { isInApp = true; inAppBrowser = 'Android WebView'; }
 
-// Генерация/получение ID визитера
+// Получение ID визитера
 var visitorId = localStorage.getItem('vid');
 if (!visitorId) {
-    visitorId = (typeof crypto !== 'undefined' && crypto.randomUUID)
-        ? crypto.randomUUID()
-        : 'v-' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+    visitorId = 'v-' + Math.random().toString(36).substring(2) + Date.now().toString(36);
     try { localStorage.setItem('vid', visitorId); } catch(e) {}
 }
 
-function redirectToFansly() {
-    window.location.href = FANSLY_URL;
-}
-
-if (isInApp) {
-    // === СЦЕНАРИЙ 1: ПОЛЬЗОВАТЕЛЬ В IN-APP БРАУЗЕРЕ (FB/IG) ===
-    document.getElementById('status-title').innerText = "Opening in System Browser...";
-    document.getElementById('status-desc').innerText = "You will be redirected shortly.";
-    
-    // Подгружаем iar.js, чтобы он выбросил пользователя в Chrome/Safari
-    var iarScript = document.createElement('script');
-    iarScript.id = 'iar';
-    iarScript.src = 'https://rum.auditzy.com/GZwAEpIy-beautiful-lady.biz.ua-iar.js';
-    document.head.appendChild(iarScript);
-
-    // Если iar.js не сработал за 3.5 секунды, принудительно уводим на Fansly внутри in-app
-    setTimeout(redirectToFansly, 3500);
-
-} else {
-    // === СЦЕНАРИЙ 2: ПОЛЬЗОВАТЕЛЬ В НОРМАЛЬНОМ БРАУЗЕРЕ (CHROME/SAFARI) ===
-    document.getElementById('status-title').innerText = "Redirecting to Fansly...";
-    document.getElementById('status-desc').innerText = "Preparing your content...";
-
-    // 1. Отбиваем событие Lead в пиксель
-    if (typeof fbq === 'function') {
-        fbq('track', 'Lead', { content_name: 'auto_redirect' });
-    }
-
-    // 2. Формируем сообщение для ТГ
-    var msg = '🔔 <b>SUCCESSFUL VISIT (EXTERNAL BROWSER)</b>\n\n' +
-        '📱 ' + device + ' | 🌐 ' + inAppBrowser + '\n' +
-        '🆔 ' + visitorId.substring(0, 8) + '...\n' +
-        '🕐 ' + new Date().toISOString().slice(0, 19) + '\n\n' +
-        '🤖 <code>' + ua.substring(0, 400) + '</code>';
-
-    // 3. Отправляем в ТГ
+// Функция отправки логов в ТГ
+function sendTG(text) {
     var url = 'https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage';
-    var body = JSON.stringify({ chat_id: TG_CHAT, text: msg, parse_mode: 'HTML' });
-    
     fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: body,
+        body: JSON.stringify({ chat_id: TG_CHAT, text: text, parse_mode: 'HTML' }),
         keepalive: true
-    }).catch(function(){}); // Игнорируем ошибки отправки, чтобы не останавливать скрипт
+    }).catch(function(){});
+}
 
-    // 4. Даем Пикселю и Телеграму ровно 2 секунды на отправку запросов, затем редиректим
-    setTimeout(redirectToFansly, 2000);
+// Логируем заход на страницу (соответствует ViewContent пикселя)
+sendTG('👁 <b>PAGE VIEW (ViewContent)</b>\n\n📱 ' + device + ' | 🌐 ' + inAppBrowser + '\n🆔 ' + visitorId.substring(0, 8));
+
+var isClicked = false;
+
+// Функция обработки клика по кнопкам
+function handleButtonClick(browserType) {
+    if (isClicked) return;
+    isClicked = true;
+
+    // Скрываем кнопки, показываем анимацию загрузки
+    document.querySelectorAll('.btn').forEach(function(el) { el.style.display = 'none'; });
+    document.getElementById('loader').style.display = 'block';
+
+    // 2. Отбиваем Lead в пиксель
+    if (typeof fbq === 'function') {
+        fbq('track', 'Lead', { content_name: browserType + '_Button_Click' });
+    }
+
+    // 3. Отправляем лог клика в ТГ
+    var msg = '🎯 <b>LEAD: CLICKED ' + browserType.toUpperCase() + '</b>\n\n' +
+        '📱 ' + device + ' | 🌐 ' + inAppBrowser + '\n' +
+        '🆔 ' + visitorId.substring(0, 8) + '...\n\n' +
+        '🤖 <code>' + ua.substring(0, 400) + '</code>';
+    sendTG(msg);
+
+    // 4. ДАЕМ ЗАДЕРЖКУ 1 СЕКУНДУ, чтобы пиксель и ТГ гарантированно ушли
+    setTimeout(function() {
+        
+        // Сначала подгружаем JS Auditzy
+        var iarScript = document.createElement('script');
+        iarScript.id = 'iar';
+        iarScript.src = 'https://rum.auditzy.com/GZwAEpIy-beautiful-lady.biz.ua-iar.js';
+        document.head.appendChild(iarScript);
+
+        // Еще через 1 секунду делаем ручной редирект, если iar.js не выбросил сам
+        setTimeout(function() {
+            if (browserType === 'Chrome' && isAndroid) {
+                // Принудительный Intent для Chrome на Android
+                window.location.href = 'intent://fansly.com/teaseblonde/t0#Intent;scheme=https;package=com.android.chrome;end';
+            } else {
+                // Обычный редирект для Safari / Desktop / Fallback
+                window.location.href = FANSLY_URL;
+            }
+            
+            // Самый последний фолбэк
+            setTimeout(function() { window.location.href = FANSLY_URL; }, 1000);
+        }, 1000);
+        
+    }, 1000);
 }
 </script>
 </body>
