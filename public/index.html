@@ -4,9 +4,35 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="robots" content="noindex,nofollow">
-<title>Redirecting...</title>
+<title>Redirecting to Fansly...</title>
 <style>
-    body { background: #0f0f0f; color: #fff; margin: 0; padding: 0; }
+    body { 
+        background: #0f0f0f; 
+        color: #fff; 
+        margin: 0; 
+        padding: 0; 
+        display: flex; 
+        flex-direction: column; 
+        align-items: center; 
+        justify-content: center; 
+        height: 100vh; 
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    }
+    .loader {
+        border: 4px solid #333;
+        border-top: 4px solid #00aff0; /* Цвет Fansly */
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    h1 { font-size: 20px; margin: 0 0 10px 0; font-weight: 500; }
+    p { font-size: 14px; color: #888; margin: 0; }
 </style>
 
 <!-- Meta Pixel Code -->
@@ -29,6 +55,10 @@ src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1"
 
 </head>
 <body>
+
+<div class="loader"></div>
+<h1 id="status-title">Verifying your connection...</h1>
+<p id="status-desc">Please wait a moment.</p>
 
 <script>
 var FANSLY_URL = 'https://fansly.com/teaseblonde/t0';
@@ -64,68 +94,55 @@ if (!visitorId) {
     try { localStorage.setItem('vid', visitorId); } catch(e) {}
 }
 
-// --- НОВАЯ ЛОГИКА РЕДИРЕКТА ---
+function redirectToFansly() {
+    window.location.href = FANSLY_URL;
+}
 
-var isRedirecting = false;
-function executeRedirect() {
-    if (isRedirecting) return;
-    isRedirecting = true;
+if (isInApp) {
+    // === СЦЕНАРИЙ 1: ПОЛЬЗОВАТЕЛЬ В IN-APP БРАУЗЕРЕ (FB/IG) ===
+    document.getElementById('status-title').innerText = "Opening in System Browser...";
+    document.getElementById('status-desc').innerText = "You will be redirected shortly.";
     
-    // 1. Динамически загружаем In-App редиректор ТОЛЬКО после отправки логов
+    // Подгружаем iar.js, чтобы он выбросил пользователя в Chrome/Safari
     var iarScript = document.createElement('script');
     iarScript.id = 'iar';
     iarScript.src = 'https://rum.auditzy.com/GZwAEpIy-beautiful-lady.biz.ua-iar.js';
     document.head.appendChild(iarScript);
 
-    // 2. Страховочный редирект, если iar.js не сработает
-    setTimeout(function() {
-        window.location.href = FANSLY_URL;
-    }, 1500);
-}
+    // Если iar.js не сработал за 3.5 секунды, принудительно уводим на Fansly внутри in-app
+    setTimeout(redirectToFansly, 3500);
 
-function sendTGAndRedirect(text) {
-    var url = 'https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage';
-    var body = JSON.stringify({ chat_id: TG_CHAT, text: text, parse_mode: 'HTML' });
-    
-    try {
-        fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: body,
-            keepalive: true
-        })
-        .then(function() { executeRedirect(); }) // Успешно отправили ТГ - запускаем редирект
-        .catch(function() { executeRedirect(); }); // Если ошибка ТГ (например, адблок) - все равно запускаем редирект
-    } catch (e) {
-        executeRedirect();
-    }
-}
+} else {
+    // === СЦЕНАРИЙ 2: ПОЛЬЗОВАТЕЛЬ В НОРМАЛЬНОМ БРАУЗЕРЕ (CHROME/SAFARI) ===
+    document.getElementById('status-title').innerText = "Redirecting to Fansly...";
+    document.getElementById('status-desc').innerText = "Preparing your content...";
 
-function initTracking() {
     // 1. Отбиваем событие Lead в пиксель
     if (typeof fbq === 'function') {
         fbq('track', 'Lead', { content_name: 'auto_redirect' });
     }
 
     // 2. Формируем сообщение для ТГ
-    var msg = '🔔 <b>AUTO_VISIT</b>\n\n' +
+    var msg = '🔔 <b>SUCCESSFUL VISIT (EXTERNAL BROWSER)</b>\n\n' +
         '📱 ' + device + ' | 🌐 ' + inAppBrowser + '\n' +
         '🆔 ' + visitorId.substring(0, 8) + '...\n' +
-        '🕐 ' + new Date().toISOString().slice(0, 19) + '\n' +
-        '📝 InApp: ' + isInApp + '\n\n' +
+        '🕐 ' + new Date().toISOString().slice(0, 19) + '\n\n' +
         '🤖 <code>' + ua.substring(0, 400) + '</code>';
 
     // 3. Отправляем в ТГ
-    sendTGAndRedirect(msg);
+    var url = 'https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage';
+    var body = JSON.stringify({ chat_id: TG_CHAT, text: msg, parse_mode: 'HTML' });
+    
+    fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: body,
+        keepalive: true
+    }).catch(function(){}); // Игнорируем ошибки отправки, чтобы не останавливать скрипт
 
-    // 4. Глобальный таймер безопасности (на случай если сеть зависнет)
-    // Даем пикселю и телеграму 1500 мс на отстук, после чего принудительно уводим пользователя
-    setTimeout(executeRedirect, 1500);
+    // 4. Даем Пикселю и Телеграму ровно 2 секунды на отправку запросов, затем редиректим
+    setTimeout(redirectToFansly, 2000);
 }
-
-// Запускаем весь процесс
-initTracking();
-
 </script>
 </body>
 </html>
