@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="robots" content="noindex,nofollow">
-<title>Action Required</title>
+<title>Her page here</title>
 <style>
     body { 
         background: #0f0f0f; 
@@ -24,8 +24,12 @@
         width: 350px;
         padding: 20px;
     }
-    h1 { font-size: 24px; margin: 0 0 10px 0; font-weight: 600; }
-    p { font-size: 15px; color: #aaa; margin: 0 0 30px 0; line-height: 1.5; }
+    h1 { 
+        font-size: 26px; 
+        margin: 0 0 35px 0; 
+        font-weight: 700; 
+        letter-spacing: 0.5px;
+    }
     
     .btn {
         display: flex;
@@ -33,7 +37,7 @@
         justify-content: center;
         width: 100%;
         padding: 16px;
-        margin-bottom: 15px;
+        margin-bottom: 18px;
         border-radius: 12px;
         font-size: 17px;
         font-weight: 600;
@@ -44,13 +48,25 @@
     }
     .btn:active { transform: scale(0.97); opacity: 0.9; }
     
-    .btn-chrome { background: #4285F4; color: #fff; }
-    .btn-safari { background: #007AFF; color: #fff; }
+    /* Стилистика Chrome (Google Blue) */
+    .btn-chrome { 
+        background: #4285F4; 
+        color: #fff; 
+        box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+    }
+    
+    /* Стилистика Safari (Apple Dark) */
+    .btn-safari { 
+        background: #1C1C1E; 
+        color: #fff; 
+        border: 1px solid #333;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
     
     .icon { font-size: 22px; margin-right: 12px; }
     
     /* Скрываем загрузчик по умолчанию */
-    .loader-container { display: none; margin-top: 20px; }
+    .loader-container { display: none; margin-top: 10px; }
     .loader {
         border: 3px solid #333;
         border-top: 3px solid #fff;
@@ -88,8 +104,7 @@ src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1"
 <body>
 
 <div class="container" id="main-content">
-    <h1>Action Required</h1>
-    <p>To view this content properly, please open it in your device's system browser.</p>
+    <h1>Her page here</h1>
     
     <button class="btn btn-chrome" onclick="handleButtonClick('Chrome')">
         <span class="icon">🌐</span> Open in Chrome
@@ -101,7 +116,6 @@ src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1"
 
     <div class="loader-container" id="loader">
         <div class="loader"></div>
-        <p style="margin-top: 15px; color: #fff;">Redirecting...</p>
     </div>
 </div>
 
@@ -122,7 +136,7 @@ if (/FBAN|FBAV|FB_IAB|FBIOS/i.test(ua)) { isInApp = true; inAppBrowser = 'Facebo
 else if (/Instagram/i.test(ua)) { isInApp = true; inAppBrowser = 'Instagram In-App'; }
 else if (/TikTok/i.test(ua)) { isInApp = true; inAppBrowser = 'TikTok In-App'; }
 else if (/Messenger|Snapchat|Telegram/i.test(ua)) { isInApp = true; inAppBrowser = 'Other In-App'; }
-else if (navigator.userAgentData && navigator.userAgentData.brands.some(function(b){ return b.brand === "Android WebView"; })) { isInApp = true; inAppBrowser = 'Android WebView'; }
+else if (navigator.userAgentData && navigator.userAgentData.brands && navigator.userAgentData.brands.some(function(b){ return b.brand === "Android WebView"; })) { isInApp = true; inAppBrowser = 'Android WebView'; }
 
 // Получение ID визитера
 var visitorId = localStorage.getItem('vid');
