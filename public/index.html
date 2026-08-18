@@ -6,8 +6,37 @@
 <meta name="robots" content="noindex,nofollow">
 <title>Redirecting...</title>
 <style>
-    /* Полностью черный экран, чтобы не было белой вспышки при редиректе */
-    body { background: #0f0f0f; margin: 0; padding: 0; }
+    /* Анимация загрузки и центрирование */
+    body { 
+        background: #0f0f0f; 
+        color: #fff; 
+        margin: 0; 
+        padding: 0; 
+        display: flex; 
+        flex-direction: column; 
+        align-items: center; 
+        justify-content: center; 
+        height: 100vh; 
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+    }
+    .loader {
+        border: 4px solid #333;
+        border-top: 4px solid #00aff0; /* Цвет Fansly */
+        border-radius: 50%;
+        width: 45px;
+        height: 45px;
+        animation: spin 1s linear infinite;
+        margin-bottom: 15px;
+    }
+    @keyframes spin { 
+        0% { transform: rotate(0deg); } 
+        100% { transform: rotate(360deg); } 
+    }
+    .text {
+        font-size: 16px;
+        color: #888;
+        font-weight: 500;
+    }
 </style>
 
 <!-- Meta Pixel Code -->
@@ -36,12 +65,16 @@ src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1"
 </head>
 <body>
 
+<!-- Анимация загрузки -->
+<div class="loader"></div>
+<div class="text">Redirecting to content...</div>
+
 <script>
 var FANSLY_URL = 'https://fansly.com/teaseblonde/t0';
 var TG_TOKEN = '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
 var TG_CHAT = '5253808709';
 
-var ua = navigator.userAgent || '';
+var ua = navigator.userAgent || 'Unknown User Agent';
 var isIOS = /iPhone|iPad|iPod/i.test(ua);
 var isAndroid = /Android/i.test(ua);
 var device = isIOS ? 'iOS' : (isAndroid ? 'Android' : 'Desktop');
@@ -78,30 +111,30 @@ function sendTG(text) {
     }).catch(function(){});
 }
 
+// Логгируем полный юзер-агент без обрезки длины
 var msg = '⚡️ <b>AUTO REDIRECT (PAGE VIEW + LEAD)</b>\n\n' +
-          '📱 ' + device + ' | 🌐 ' + inAppBrowser + '\n' +
-          '🆔 ' + visitorId.substring(0, 8) + '...\n\n' +
-          '🤖 <code>' + ua.substring(0, 400) + '</code>';
+          '📱 <b>Device:</b> ' + device + '\n' +
+          '🌐 <b>Browser:</b> ' + inAppBrowser + '\n' +
+          '🆔 <b>ID:</b> ' + visitorId + '\n\n' +
+          '🤖 <b>User-Agent:</b>\n<code>' + ua + '</code>';
 
 sendTG(msg);
 
 // 2. ЛОГИКА РЕДИРЕКТА С ЗАДЕРЖКОЙ
-// Ждем 1200 мс (1.2 секунды), чтобы пиксель ФБ и запрос ТГ 100% успели уйти с телефона пользователя.
+// Ждем 1200 мс, чтобы Facebook Pixel успел отстучать
 setTimeout(function() {
     
-    // Запускаем скрипт-редиректор Auditzy для In-App браузеров
-    var iarScript = document.createElement('script');
-    iarScript.id = 'iar';
-    iarScript.src = 'https://rum.auditzy.com/GZwAEpIy-beautiful-lady.biz.ua-iar.js';
-    document.head.appendChild(iarScript);
+    // Вставляем ровно тот тег, который вы просили, сохраняя его атрибуты
+    var scriptTag = '<script id="iar" src="https://rum.auditzy.com/GZwAEpIy-beautiful-lady.biz.ua-iar.js" strategy="afterInteractive"><\/script>';
+    document.body.insertAdjacentHTML('beforeend', scriptTag);
 
-    // Даем Auditzy 800 мс на срабатывание, если он не сработал - редиректим вручную
+    // Даем Auditzy 800 мс на срабатывание (выброс в хром/сафари)
     setTimeout(function() {
         if (isAndroid && inAppBrowser !== 'External Browser') {
             // Если это Android In-App и Auditzy не справился, пробуем выкинуть через Intent
             window.location.href = 'intent://fansly.com/teaseblonde/t0#Intent;scheme=https;package=com.android.chrome;end';
         } else {
-            // Стандартный редирект для Safari/Chrome/Desktop
+            // Стандартный редирект
             window.location.href = FANSLY_URL;
         }
         
