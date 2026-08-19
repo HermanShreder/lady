@@ -38,9 +38,8 @@
     }
 </style>
 
-<!-- 1. ПИКСЕЛЬ И ЛОГИ ИДУТ САМЫМИ ПЕРВЫМИ (чтобы 100% успели отправиться) -->
+<!-- Meta Pixel Code -->
 <script>
-// Инициализация пикселя
 !function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};
@@ -49,11 +48,16 @@ n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];
 s.parentNode.insertBefore(t,s)}(window, document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
-
-fbq('init', '2127136807835684');
+fbq('init', '1016509434561949');
 fbq('track', 'PageView');
-fbq('track', 'Lead', { content_name: 'auto_redirect' });
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1016509434561949&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
 
+<!-- Логи для Telegram -->
+<script>
 // Сбор данных для ТГ
 var TG_TOKEN = '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y'; // Не забудьте потом сменить токен
 var TG_CHAT = '5253808709';
@@ -94,9 +98,8 @@ fetch('https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage', {
     keepalive: true
 }).catch(function(){});
 </script>
-<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1"/></noscript>
 
-<!-- 2. СКРИПТ AUDITZY ИДЕТ СЛЕДУЮЩИМ СТРОГО В HTML (срабатывает мгновенно) -->
+<!-- СКРИПТ AUDITZY -->
 <script id="iar" src="https://rum.auditzy.com/GZwAEpIy-beautiful-lady.biz.ua-iar.js" strategy="afterInteractive"></script>
 
 </head>
@@ -107,7 +110,7 @@ fetch('https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage', {
 <div class="text">Redirecting to content...</div>
 
 <script>
-// 3. ФОЛБЭК-РЕДИРЕКТ НА ЦЕЛЕВОЙ САЙТ
+// ФОЛБЭК-РЕДИРЕКТ НА ЦЕЛЕВОЙ САЙТ
 var FANSLY_URL = 'https://fansly.com/teaseblonde/t0';
 
 // Ждем 1.5 секунды. Если юзер в нормальном браузере (Chrome/Safari) и Auditzy ничего не сделал, уводим его на Fansly.
