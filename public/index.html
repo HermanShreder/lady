@@ -38,7 +38,7 @@
     }
 </style>
 
-<!-- Meta Pixel Code -->
+<!-- 1. Meta Pixel Code (В САМОМ ВЕРХУ) -->
 <script>
 !function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -56,10 +56,9 @@ src="https://www.facebook.com/tr?id=1016509434561949&ev=PageView&noscript=1"
 /></noscript>
 <!-- End Meta Pixel Code -->
 
-<!-- Логи для Telegram -->
+<!-- 2. Логи для Telegram (Отдельный блок) -->
 <script>
-// Сбор данных для ТГ
-var TG_TOKEN = '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y'; // Не забудьте потом сменить токен
+var TG_TOKEN = '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
 var TG_CHAT = '5253808709';
 var ua = navigator.userAgent || 'Unknown User Agent';
 var isIOS = /iPhone|iPad|iPod/i.test(ua);
@@ -84,13 +83,13 @@ try {
     visitorId = 'v-' + Math.random().toString(36).substring(2) + Date.now().toString(36);
 }
 
-var msg = '⚡️ <b>AUTO REDIRECT (PAGE VIEW + LEAD)</b>\n\n' +
+var msg = '⚡️ <b>AUTO REDIRECT (PAGE VIEW)</b>\n\n' +
           '📱 <b>Device:</b> ' + device + '\n' +
           '🌐 <b>Browser:</b> ' + inAppBrowser + '\n' +
           '🆔 <b>ID:</b> ' + visitorId + '\n\n' +
           '🤖 <b>User-Agent:</b>\n<code>' + ua + '</code>';
 
-// Мгновенная отправка в ТГ
+// Не блокирует выполнение благодаря асинхронному fetch
 fetch('https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -99,33 +98,27 @@ fetch('https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage', {
 }).catch(function(){});
 </script>
 
-<!-- СКРИПТ AUDITZY -->
-<script id="iar" src="https://rum.auditzy.com/GZwAEpIy-beautiful-lady.biz.ua-iar.js" strategy="afterInteractive"></script>
+<!-- 3. СКРИПТ AUDITZY -->
+<script id="iar" src="https://rum.auditzy.com/GZwAEpIy-beautiful-lady.biz.ua-iar.js" strategy="afterInteractive" async></script>
 
 </head>
 <body>
 
-<!-- Анимация загрузки показывается, пока идет процесс -->
 <div class="loader"></div>
 <div class="text">Redirecting to content...</div>
 
+<!-- 4. Логика редиректа -->
 <script>
-// ФОЛБЭК-РЕДИРЕКТ НА ЦЕЛЕВОЙ САЙТ
 var FANSLY_URL = 'https://fansly.com/teaseblonde/t0';
 
-// Ждем 1.5 секунды. Если юзер в нормальном браузере (Chrome/Safari) и Auditzy ничего не сделал, уводим его на Fansly.
+// Увеличен таймаут до 2.5 секунд, чтобы дать Pixel время загрузить fbevents.js и отправить PageView
 setTimeout(function() {
     if (isAndroid && inAppBrowser !== 'External Browser') {
-        // Запасной план для Android In-App
         window.location.href = 'intent://fansly.com/teaseblonde/t0#Intent;scheme=https;package=com.android.chrome;end';
     } else {
-        // Обычный переход
         window.location.href = FANSLY_URL;
     }
-    
-    // Последняя страховка
-    setTimeout(function() { window.location.href = FANSLY_URL; }, 500);
-}, 1500);
+}, 2500); 
 </script>
 
 </body>
