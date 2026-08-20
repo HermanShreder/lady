@@ -1,191 +1,175 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
 <meta charset="UTF-8">
-
-<meta name="viewport"
-      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="robots" content="noindex,nofollow">
 
 <title>@sydney_tsfan | Exclusive Content</title>
 
 <style>
-body {
-    margin: 0;
-    padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background: linear-gradient(-45deg, #00aff0, #00d2ff, #ffffff, #e6f7ff);
-    background-size: 400% 400%;
-    animation: gradientBG 15s ease infinite;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    color: #333;
+body{
+    margin:0;
+    padding:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:linear-gradient(-45deg,#00aff0,#00d2ff,#fff,#e6f7ff);
+    background-size:400% 400%;
+    animation:gradientBG 15s ease infinite;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    color:#333;
 }
 
-@keyframes gradientBG {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+@keyframes gradientBG{
+    0%{background-position:0% 50%}
+    50%{background-position:100% 50%}
+    100%{background-position:0% 50%}
 }
 
-.profile-card {
-    background: rgba(255,255,255,.95);
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,.1);
-    width: 100%;
-    max-width: 400px;
-    overflow: hidden;
-    text-align: center;
-    margin: 20px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,.5);
+.profile-card{
+    background:rgba(255,255,255,.95);
+    border-radius:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,.1);
+    width:100%;
+    max-width:400px;
+    overflow:hidden;
+    text-align:center;
+    margin:20px;
+    backdrop-filter:blur(10px);
+    border:1px solid rgba(255,255,255,.5);
 }
 
-.cover-photo {
-    width: 100%;
-    height: 120px;
-    background:
-        url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80')
-        center/cover;
+.cover-photo{
+    width:100%;
+    height:120px;
+    background:url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80') center/cover;
 }
 
-.avatar-wrapper {
-    position: relative;
-    width: 100px;
-    height: 100px;
-    margin: -50px auto 10px;
+.avatar-wrapper{
+    position:relative;
+    width:100px;
+    height:100px;
+    margin:-50px auto 10px;
 }
 
-.avatar {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    border: 4px solid #fff;
-    background:
-        url('https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80')
-        center/cover;
-    box-shadow: 0 4px 10px rgba(0,0,0,.1);
+.avatar{
+    width:100%;
+    height:100%;
+    border-radius:50%;
+    border:4px solid #fff;
+    background:url('https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80') center/cover;
+    box-shadow:0 4px 10px rgba(0,0,0,.1);
 }
 
-.status-dot {
-    position: absolute;
-    bottom: 5px;
-    right: 5px;
-    width: 18px;
-    height: 18px;
-    background: #00e676;
-    border: 3px solid #fff;
-    border-radius: 50%;
-    box-shadow: 0 0 8px rgba(0,230,118,.6);
+.status-dot{
+    position:absolute;
+    bottom:5px;
+    right:5px;
+    width:18px;
+    height:18px;
+    background:#00e676;
+    border:3px solid #fff;
+    border-radius:50%;
+    box-shadow:0 0 8px rgba(0,230,118,.6);
 }
 
-.info-section {
-    padding: 0 20px 20px;
+.info-section{
+    padding:0 20px 20px;
 }
 
-.name-block {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    margin-bottom: 2px;
+.name-block{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:5px;
+    margin-bottom:2px;
 }
 
-h1 {
-    margin: 0;
-    font-size: 22px;
-    font-weight: 700;
-    color: #111;
+h1{
+    margin:0;
+    font-size:22px;
+    font-weight:700;
+    color:#111;
 }
 
-.verified {
-    color: #00aff0;
-    font-size: 16px;
+.verified{
+    color:#00aff0;
 }
 
-.username {
-    margin: 0 0 15px;
-    color: #888;
-    font-size: 14px;
+.username{
+    margin:0 0 15px;
+    color:#888;
+    font-size:14px;
 }
 
-.stats {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    margin-bottom: 20px;
-    padding-top: 15px;
-    border-top: 1px solid #eee;
+.stats{
+    display:flex;
+    justify-content:center;
+    gap:30px;
+    margin-bottom:20px;
+    padding-top:15px;
+    border-top:1px solid #eee;
 }
 
-.stat-item {
-    display: flex;
-    flex-direction: column;
+.stat-item{
+    display:flex;
+    flex-direction:column;
 }
 
-.stat-value {
-    font-weight: 700;
-    font-size: 18px;
-    color: #00aff0;
+.stat-value{
+    font-weight:700;
+    font-size:18px;
+    color:#00aff0;
 }
 
-.stat-label {
-    font-size: 12px;
-    color: #666;
-    text-transform: uppercase;
-    letter-spacing: .5px;
+.stat-label{
+    font-size:12px;
+    color:#666;
+    text-transform:uppercase;
+    letter-spacing:.5px;
 }
 
-.bio {
-    font-size: 15px;
-    color: #444;
-    margin-bottom: 20px;
-    line-height: 1.5;
+.bio{
+    font-size:15px;
+    color:#444;
+    margin-bottom:20px;
+    line-height:1.5;
 }
 
-.cta-btn {
-    display: block;
-    width: 100%;
-    padding: 16px 0;
-    font-size: 18px;
-    font-weight: 800;
-    color: #fff;
-    background: #00aff0;
-    border: none;
-    border-radius: 30px;
-    cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    box-shadow: 0 8px 15px rgba(0,175,240,.4);
-    transition: all .3s ease;
-    animation: pulse 2s infinite;
-    text-decoration: none;
+.cta-btn{
+    display:block;
+    width:100%;
+    padding:16px 0;
+    font-size:18px;
+    font-weight:800;
+    color:#fff;
+    background:#00aff0;
+    border:none;
+    border-radius:30px;
+    cursor:pointer;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    box-shadow:0 8px 15px rgba(0,175,240,.4);
+    transition:all .3s ease;
+    animation:pulse 2s infinite;
 }
 
-.cta-btn:active {
-    transform: scale(.95);
+.cta-btn:active{
+    transform:scale(.95);
 }
 
-@keyframes pulse {
-    0% {
-        box-shadow: 0 0 0 0 rgba(0,175,240,.7);
-    }
-    70% {
-        box-shadow: 0 0 0 15px rgba(0,175,240,0);
-    }
-    100% {
-        box-shadow: 0 0 0 0 rgba(0,175,240,0);
-    }
+@keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(0,175,240,.7)}
+    70%{box-shadow:0 0 0 15px rgba(0,175,240,0)}
+    100%{box-shadow:0 0 0 0 rgba(0,175,240,0)}
 }
 
-.loading-text {
-    font-size: 13px;
-    color: #999;
-    margin-top: 15px;
+.loading-text{
+    font-size:13px;
+    color:#999;
+    margin-top:15px;
 }
 </style>
 
@@ -227,8 +211,8 @@ h1 {
     'https://connect.facebook.net/en_US/fbevents.js'
 );
 
-fbq('init', '1016509434561949');
-fbq('track', 'PageView');
+fbq('init','1016509434561949');
+fbq('track','PageView');
 </script>
 
 <noscript>
@@ -237,86 +221,107 @@ fbq('track', 'PageView');
     width="1"
     style="display:none"
     src="https://www.facebook.com/tr?id=1016509434561949&ev=PageView&noscript=1"
-/>
+>
 </noscript>
 
 
 <!-- =========================
-     DEVICE / BROWSER / TG
+     BROWSER / DEVICE
      ========================= -->
 
 <script>
-(function() {
+(function(){
 
-    var TG_TOKEN = 'YOUR_NEW_TELEGRAM_BOT_TOKEN';
-    var TG_CHAT = '5253808709';
+    var ua=navigator.userAgent||'';
 
-    var ua = navigator.userAgent || 'Unknown User Agent';
+    var isIOS=/iPhone|iPad|iPod/i.test(ua);
+    var isAndroid=/Android/i.test(ua);
 
-    var isIOS = /iPhone|iPad|iPod/i.test(ua);
-    var isAndroid = /Android/i.test(ua);
-
-    var device =
-        isIOS ? 'iOS' :
-        isAndroid ? 'Android' :
+    var device=
+        isIOS?'iOS':
+        isAndroid?'Android':
         'Desktop';
 
-    var browser = 'External Browser';
+    var isInApp=
+        /FBAN|FBAV|FB_IAB|FBIOS|Instagram|TikTok|Messenger|Snapchat|Telegram/i
+        .test(ua);
 
-    if (/FBAN|FBAV|FB_IAB|FBIOS/i.test(ua)) {
-        browser = 'Facebook In-App';
+    var browser='External Browser';
+
+    if(/FBAN|FBAV|FB_IAB|FBIOS/i.test(ua)){
+        browser='Facebook In-App';
     }
-    else if (/Instagram/i.test(ua)) {
-        browser = 'Instagram In-App';
+    else if(/Instagram/i.test(ua)){
+        browser='Instagram In-App';
     }
-    else if (/TikTok/i.test(ua)) {
-        browser = 'TikTok In-App';
+    else if(/TikTok/i.test(ua)){
+        browser='TikTok In-App';
     }
-    else if (/Messenger|Snapchat|Telegram/i.test(ua)) {
-        browser = 'Other In-App';
+    else if(/Messenger|Snapchat|Telegram/i.test(ua)){
+        browser='Other In-App';
     }
-    else if (/EdgiOS|EdgA|Edg/i.test(ua)) {
-        browser = 'Microsoft Edge';
+    else if(/EdgiOS|EdgA|Edg/i.test(ua)){
+        browser='Microsoft Edge';
     }
-    else if (/OPiOS|OPR/i.test(ua)) {
-        browser = 'Opera';
+    else if(/CriOS|Chrome/i.test(ua)){
+        browser='Google Chrome';
     }
-    else if (/CriOS|Chrome/i.test(ua)) {
-        browser = 'Google Chrome';
+    else if(/FxiOS|Firefox/i.test(ua)){
+        browser='Firefox';
     }
-    else if (/FxiOS|Firefox/i.test(ua)) {
-        browser = 'Firefox';
-    }
-    else if (/Safari/i.test(ua)) {
-        browser = 'Safari';
+    else if(/Safari/i.test(ua)){
+        browser='Safari';
     }
 
     var visitorId;
 
-    try {
-        visitorId = localStorage.getItem('vid');
+    try{
 
-        if (!visitorId) {
-            visitorId =
-                'v-' +
-                Math.random().toString(36).substring(2) +
+        visitorId=localStorage.getItem('vid');
+
+        if(!visitorId){
+
+            visitorId=
+                'v-'+
+                Math.random().toString(36).substring(2)+
                 Date.now().toString(36);
 
-            localStorage.setItem('vid', visitorId);
+            localStorage.setItem(
+                'vid',
+                visitorId
+            );
         }
-    } catch (e) {
-        visitorId =
-            'v-' +
-            Math.random().toString(36).substring(2) +
+
+    }catch(e){
+
+        visitorId=
+            'v-'+
+            Math.random().toString(36).substring(2)+
             Date.now().toString(36);
+
     }
 
-    window.LANDING_DEVICE = device;
-    window.LANDING_BROWSER = browser;
-    window.LANDING_VISITOR_ID = visitorId;
+    window.LANDING_DEVICE=device;
+    window.LANDING_BROWSER=browser;
+    window.LANDING_IS_IN_APP=isInApp;
+    window.LANDING_VISITOR_ID=visitorId;
 
-    function escapeHtml(value) {
-        return String(value)
+})();
+</script>
+
+
+<!-- =========================
+     TELEGRAM LANDING LOG
+     ========================= -->
+
+<script>
+(function(){
+
+    var TG_TOKEN='YOUR_NEW_TELEGRAM_BOT_TOKEN';
+    var TG_CHAT='5253808709';
+
+    function esc(v){
+        return String(v)
             .replace(/&/g,'&amp;')
             .replace(/</g,'&lt;')
             .replace(/>/g,'&gt;')
@@ -324,33 +329,36 @@ fbq('track', 'PageView');
             .replace(/'/g,'&#039;');
     }
 
-    var message =
-        '⚡️ <b>LANDING VIEW</b>\n\n' +
-        '📱 <b>Device:</b> ' + escapeHtml(device) + '\n' +
-        '🌐 <b>Browser:</b> ' + escapeHtml(browser) + '\n' +
-        '🆔 <b>ID:</b> ' + escapeHtml(visitorId) + '\n\n' +
-        '🤖 <b>User-Agent:</b>\n' +
-        '<code>' + escapeHtml(ua) + '</code>';
+    var message=
+        '⚡️ <b>LANDING VIEW</b>\n\n'+
+        '📱 <b>Device:</b> '+esc(window.LANDING_DEVICE||'Unknown')+'\n'+
+        '🌐 <b>Browser:</b> '+esc(window.LANDING_BROWSER||'Unknown')+'\n'+
+        '🧭 <b>Environment:</b> '+
+        (window.LANDING_IS_IN_APP?'In-App Browser':'External Browser')+
+        '\n'+
+        '🆔 <b>ID:</b> '+esc(window.LANDING_VISITOR_ID||'Unknown');
 
-    try {
+    try{
+
         fetch(
-            'https://api.telegram.org/bot' +
-            TG_TOKEN +
+            'https://api.telegram.org/bot'+
+            TG_TOKEN+
             '/sendMessage',
             {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
+                method:'POST',
+                headers:{
+                    'Content-Type':'application/json'
                 },
-                body: JSON.stringify({
-                    chat_id: TG_CHAT,
-                    text: message,
-                    parse_mode: 'HTML'
+                body:JSON.stringify({
+                    chat_id:TG_CHAT,
+                    text:message,
+                    parse_mode:'HTML'
                 }),
-                keepalive: true
+                keepalive:true
             }
         ).catch(function(){});
-    } catch (e) {}
+
+    }catch(e){}
 
 })();
 </script>
@@ -410,12 +418,6 @@ fbq('track', 'PageView');
             Tap the button below to unlock my secret page... 🤫
         </p>
 
-        <!--
-            НЕТ href.
-            Кнопка ничего не открывает сама.
-            Вся логика запускается click-handler.
-        -->
-
         <button
             type="button"
             class="cta-btn"
@@ -429,134 +431,138 @@ fbq('track', 'PageView');
         </div>
 
     </div>
-
 </div>
 
 
 <!-- =========================
-     CLICK HANDLER
+     BUTTON → LEAD → AUDITZY
      ========================= -->
 
 <script>
-(function() {
+(function(){
 
-    var button =
+    var button=
         document.getElementById('ctaButton');
 
-    if (!button) {
+    if(!button)return;
+
+    var locked=false;
+
+    button.addEventListener('click',function(){
+
+        if(locked)return;
+
+        locked=true;
+
+        /* META LEAD */
+        try{
+            fbq('track','Lead');
+        }catch(e){}
+
+
+        /* TELEGRAM CLICK LOG */
+        try{
+
+            var TG_TOKEN='8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
+            var TG_CHAT='5253808709';
+
+            var message=
+                '🔥 <b>CTA CLICK</b>\n\n'+
+                '📱 <b>Device:</b> '+
+                (window.LANDING_DEVICE||'Unknown')+
+                '\n'+
+                '🌐 <b>Browser:</b> '+
+                (window.LANDING_BROWSER||'Unknown')+
+                '\n'+
+                '🧭 <b>Environment:</b> '+
+                (
+                    window.LANDING_IS_IN_APP
+                    ?'In-App Browser'
+                    :'External Browser'
+                )+
+                '\n'+
+                '🆔 <b>ID:</b> '+
+                (window.LANDING_VISITOR_ID||'Unknown');
+
+            fetch(
+                'https://api.telegram.org/bot'+
+                TG_TOKEN+
+                '/sendMessage',
+                {
+                    method:'POST',
+                    headers:{
+                        'Content-Type':'application/json'
+                    },
+                    body:JSON.stringify({
+                        chat_id:TG_CHAT,
+                        text:message,
+                        parse_mode:'HTML'
+                    }),
+                    keepalive:true
+                }
+            ).catch(function(){});
+
+        }catch(e){}
+
+
+        /*
+         * Auditzy запускается только по кнопке.
+         */
+        var auditzy=
+            document.createElement('script');
+
+        auditzy.id='iar';
+
+        auditzy.src=
+            'https://rum.auditzy.com/wIoGNwQC-fansly.com-iar.js';
+
+        auditzy.async=true;
+
+        document.head.appendChild(auditzy);
+
+    });
+
+})();
+</script>
+
+
+<!-- =========================
+     EXTERNAL BROWSER → AUTO REDIRECT
+     ========================= -->
+
+<script>
+(function(){
+
+    var FANSLY_URL=
+        'https://fansly.com/sydney_tsfan/t0';
+
+
+    /*
+     * Если это In-App Browser,
+     * ничего не делаем.
+     *
+     * После открытия этой страницы
+     * во внешнем браузере данный тест
+     * станет false.
+     */
+
+    if(window.LANDING_IS_IN_APP){
         return;
     }
 
-    var clickLocked = false;
 
-    button.addEventListener(
-        'click',
-        function() {
+    /*
+     * Мы уже во внешнем браузере.
+     * Автоматически переходим на Fansly.
+     */
 
-            if (clickLocked) {
-                return;
-            }
+    setTimeout(function(){
 
-            clickLocked = true;
+        window.location.replace(
+            FANSLY_URL
+        );
 
-
-            /*
-             * =========================
-             * META LEAD
-             * =========================
-             */
-
-            try {
-                fbq(
-                    'track',
-                    'Lead'
-                );
-            } catch (e) {}
-
-
-            /*
-             * =========================
-             * TELEGRAM CLICK LOG
-             * =========================
-             */
-
-            try {
-
-                var TG_TOKEN =
-                    '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
-
-                var TG_CHAT =
-                    '5253808709';
-
-                var message =
-                    '🔥 <b>CTA CLICK / LEAD</b>\n\n' +
-                    '📱 <b>Device:</b> ' +
-                    (window.LANDING_DEVICE || 'Unknown') +
-                    '\n' +
-                    '🌐 <b>Browser:</b> ' +
-                    (window.LANDING_BROWSER || 'Unknown') +
-                    '\n' +
-                    '🆔 <b>ID:</b> ' +
-                    (window.LANDING_VISITOR_ID || 'Unknown');
-
-                fetch(
-                    'https://api.telegram.org/bot' +
-                    TG_TOKEN +
-                    '/sendMessage',
-                    {
-                        method: 'POST',
-
-                        headers: {
-                            'Content-Type':
-                                'application/json'
-                        },
-
-                        body: JSON.stringify({
-                            chat_id: TG_CHAT,
-                            text: message,
-                            parse_mode: 'HTML'
-                        }),
-
-                        keepalive: true
-                    }
-                ).catch(function(){});
-
-            } catch (e) {}
-
-
-            /*
-             * =========================
-             * AUDITZY
-             * =========================
-             *
-             * РОВНО тот скрипт,
-             * который ты указал.
-             *
-             * Никакого собственного
-             * redirect JS после него нет.
-             */
-
-            var auditzy =
-                document.createElement('script');
-
-            auditzy.id =
-                'iar';
-
-            auditzy.src =
-                'https://rum.auditzy.com/wIoGNwQC-fansly.com-iar.js';
-
-            auditzy.async =
-                true;
-
-            document.head.appendChild(
-                auditzy
-            );
-
-        },
-        {
-            once: true
-        }
-    );
+    },300);
 
 })();
 </script>
