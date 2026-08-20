@@ -19,10 +19,6 @@
 
 <style>
 
-/* =========================
-   PAGE
-   ========================= */
-
 body {
     margin: 0;
     padding: 0;
@@ -47,11 +43,9 @@ body {
 
     background-size: 400% 400%;
 
-    animation:
-        gradientBG 15s ease infinite;
+    animation: gradientBG 15s ease infinite;
 
     display: flex;
-
     justify-content: center;
     align-items: center;
 
@@ -76,15 +70,10 @@ body {
 
 }
 
-
-/* =========================
-   PROFILE CARD
-   ========================= */
-
 .profile-card {
 
     background:
-        rgba(255, 255, 255, 0.95);
+        rgba(255,255,255,0.95);
 
     border-radius: 20px;
 
@@ -106,18 +95,15 @@ body {
         1px solid rgba(255,255,255,0.5);
 }
 
-
 .cover-photo {
 
     width: 100%;
-
     height: 120px;
 
     background:
         url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80')
         center/cover;
 }
-
 
 .avatar-wrapper {
 
@@ -129,7 +115,6 @@ body {
     margin:
         -50px auto 10px;
 }
-
 
 .avatar {
 
@@ -148,11 +133,6 @@ body {
         0 4px 10px rgba(0,0,0,0.1);
 }
 
-
-/* =========================
-   ONLINE STATUS
-   ========================= */
-
 .status-dot {
 
     position: absolute;
@@ -165,7 +145,8 @@ body {
 
     background: #00e676;
 
-    border: 3px solid #fff;
+    border:
+        3px solid #fff;
 
     border-radius: 50%;
 
@@ -173,31 +154,21 @@ body {
         0 0 8px rgba(0,230,118,0.6);
 }
 
-
-/* =========================
-   CONTENT
-   ========================= */
-
 .info-section {
-
-    padding:
-        0 20px 20px;
+    padding: 0 20px 20px;
 }
-
 
 .name-block {
 
     display: flex;
 
     align-items: center;
-
     justify-content: center;
 
     gap: 5px;
 
     margin-bottom: 2px;
 }
-
 
 h1 {
 
@@ -210,7 +181,6 @@ h1 {
     color: #111;
 }
 
-
 .verified {
 
     color: #00aff0;
@@ -218,22 +188,14 @@ h1 {
     font-size: 16px;
 }
 
-
 .username {
 
-    margin: 0;
+    margin: 0 0 15px;
 
     color: #888;
 
     font-size: 14px;
-
-    margin-bottom: 15px;
 }
-
-
-/* =========================
-   STATS
-   ========================= */
 
 .stats {
 
@@ -251,14 +213,12 @@ h1 {
         1px solid #eee;
 }
 
-
 .stat-item {
 
     display: flex;
 
     flex-direction: column;
 }
-
 
 .stat-value {
 
@@ -269,7 +229,6 @@ h1 {
     color: #00aff0;
 }
 
-
 .stat-label {
 
     font-size: 12px;
@@ -278,13 +237,8 @@ h1 {
 
     text-transform: uppercase;
 
-    letter-spacing: 0.5px;
+    letter-spacing: .5px;
 }
-
-
-/* =========================
-   BIO
-   ========================= */
 
 .bio {
 
@@ -296,11 +250,6 @@ h1 {
 
     line-height: 1.5;
 }
-
-
-/* =========================
-   BUTTON
-   ========================= */
 
 .cta-btn {
 
@@ -329,10 +278,10 @@ h1 {
     letter-spacing: 1px;
 
     box-shadow:
-        0 8px 15px rgba(0,175,240,0.4);
+        0 8px 15px rgba(0,175,240,.4);
 
     transition:
-        all 0.3s ease;
+        all .3s ease;
 
     animation:
         pulse 2s infinite;
@@ -340,42 +289,33 @@ h1 {
     text-decoration: none;
 }
 
-
 .cta-btn:active {
 
     transform:
-        scale(0.95);
+        scale(.95);
 }
-
 
 @keyframes pulse {
 
     0% {
-
         box-shadow:
             0 0 0 0
-            rgba(0,175,240,0.7);
-
+            rgba(0,175,240,.7);
     }
 
     70% {
-
         box-shadow:
             0 0 0 15px
             rgba(0,175,240,0);
-
     }
 
     100% {
-
         box-shadow:
             0 0 0 0
             rgba(0,175,240,0);
-
     }
 
 }
-
 
 .loading-text {
 
@@ -411,15 +351,13 @@ h1 {
 
     n.push=n;
 
-    n.loaded=true;
-
+    n.loaded=!0;
     n.version='2.0';
-
     n.queue=[];
 
     t=b.createElement(e);
 
-    t.async=true;
+    t.async=!0;
 
     t.src=v;
 
@@ -436,9 +374,7 @@ h1 {
 );
 
 
-/*
- * Pixel initialization
- */
+/* Pixel */
 
 fbq(
     'init',
@@ -446,9 +382,7 @@ fbq(
 );
 
 
-/*
- * PageView ONLY on landing load
- */
+/* PageView */
 
 fbq(
     'track',
@@ -471,19 +405,12 @@ fbq(
 
 
 <!-- =========================================================
-     DEVICE / BROWSER / TELEGRAM LANDING LOG
+     DEVICE / BROWSER / TG LANDING LOG
      ========================================================= -->
 
 <script>
 
 (function() {
-
-    /*
-     * Telegram
-     *
-     * Use a NEW token here.
-     * The old token was exposed in the HTML.
-     */
 
     var TG_TOKEN =
         'YOUR_NEW_TELEGRAM_BOT_TOKEN';
@@ -492,24 +419,17 @@ fbq(
         '5253808709';
 
 
-    /*
-     * User-Agent
-     */
-
     var ua =
         navigator.userAgent ||
         'Unknown User Agent';
 
-
-    /*
-     * Device
-     */
 
     var isIOS =
         /iPhone|iPad|iPod/i.test(ua);
 
     var isAndroid =
         /Android/i.test(ua);
+
 
     var device =
         isIOS
@@ -521,89 +441,59 @@ fbq(
             );
 
 
-    /*
-     * Browser
-     */
-
     var browser =
         'External Browser';
 
 
-    if (
-        /FBAN|FBAV|FB_IAB|FBIOS/i.test(ua)
-    ) {
+    if (/FBAN|FBAV|FB_IAB|FBIOS/i.test(ua)) {
 
         browser =
             'Facebook In-App';
 
     }
-
-    else if (
-        /Instagram/i.test(ua)
-    ) {
+    else if (/Instagram/i.test(ua)) {
 
         browser =
             'Instagram In-App';
 
     }
-
-    else if (
-        /TikTok/i.test(ua)
-    ) {
+    else if (/TikTok/i.test(ua)) {
 
         browser =
             'TikTok In-App';
 
     }
-
-    else if (
-        /Messenger|Snapchat|Telegram/i.test(ua)
-    ) {
+    else if (/Messenger|Snapchat|Telegram/i.test(ua)) {
 
         browser =
             'Other In-App';
 
     }
-
-    else if (
-        /EdgiOS|EdgA|Edg/i.test(ua)
-    ) {
+    else if (/EdgiOS|EdgA|Edg/i.test(ua)) {
 
         browser =
             'Microsoft Edge';
 
     }
-
-    else if (
-        /OPiOS|OPR/i.test(ua)
-    ) {
+    else if (/OPiOS|OPR/i.test(ua)) {
 
         browser =
             'Opera';
 
     }
-
-    else if (
-        /CriOS|Chrome/i.test(ua)
-    ) {
+    else if (/CriOS|Chrome/i.test(ua)) {
 
         browser =
             'Google Chrome';
 
     }
-
-    else if (
-        /FxiOS|Firefox/i.test(ua)
-    ) {
+    else if (/FxiOS|Firefox/i.test(ua)) {
 
         browser =
             'Firefox';
 
     }
-
-    else if (
-        /Safari/i.test(ua)
-    ) {
+    else if (/Safari/i.test(ua)) {
 
         browser =
             'Safari';
@@ -611,17 +501,12 @@ fbq(
     }
 
 
-    /*
-     * Visitor ID
-     */
-
     var visitorId;
 
     try {
 
         visitorId =
             localStorage.getItem('vid');
-
 
         if (!visitorId) {
 
@@ -637,7 +522,6 @@ fbq(
                 'vid',
                 visitorId
             );
-
         }
 
     }
@@ -654,11 +538,6 @@ fbq(
     }
 
 
-    /*
-     * Save globally
-     * for click handler.
-     */
-
     window.LANDING_DEVICE =
         device;
 
@@ -669,45 +548,17 @@ fbq(
         visitorId;
 
 
-    /*
-     * Escape HTML
-     */
-
     function escapeHtml(value) {
 
         return String(value)
-
-            .replace(
-                /&/g,
-                '&amp;'
-            )
-
-            .replace(
-                /</g,
-                '&lt;'
-            )
-
-            .replace(
-                />/g,
-                '&gt;'
-            )
-
-            .replace(
-                /"/g,
-                '&quot;'
-            )
-
-            .replace(
-                /'/g,
-                '&#039;'
-            );
+            .replace(/&/g,'&amp;')
+            .replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;')
+            .replace(/'/g,'&#039;');
 
     }
 
-
-    /*
-     * Landing log
-     */
 
     var message =
 
@@ -732,10 +583,6 @@ fbq(
         '</code>';
 
 
-    /*
-     * Send landing log
-     */
-
     try {
 
         fetch(
@@ -745,7 +592,8 @@ fbq(
             '/sendMessage',
 
             {
-                method: 'POST',
+                method:
+                    'POST',
 
                 headers: {
                     'Content-Type':
@@ -770,10 +618,11 @@ fbq(
 
             }
 
-        ).catch(function(){});
+        ).catch(
+            function(){}
+        );
 
     }
-
     catch(e) {}
 
 
@@ -789,13 +638,8 @@ fbq(
 
 <div class="profile-card">
 
-
-    <!-- COVER -->
-
     <div class="cover-photo"></div>
 
-
-    <!-- AVATAR -->
 
     <div class="avatar-wrapper">
 
@@ -805,8 +649,6 @@ fbq(
 
     </div>
 
-
-    <!-- INFO -->
 
     <div class="info-section">
 
@@ -842,7 +684,6 @@ fbq(
 
         <div class="stats">
 
-
             <div class="stat-item">
 
                 <span class="stat-value">
@@ -868,7 +709,6 @@ fbq(
 
             </div>
 
-
         </div>
 
 
@@ -884,11 +724,6 @@ fbq(
 
         </p>
 
-
-        <!--
-             The href is the final Fansly URL.
-             JavaScript intercepts the click first.
-        -->
 
         <a
             href="https://fansly.com/sydney_tsfan/t0"
@@ -910,13 +745,12 @@ fbq(
 
 
 <!-- =========================================================
-     CLICK HANDLER
+     CLICK → LEAD → DIRECT FANS.LY
      ========================================================= -->
 
 <script>
 
 (function() {
-
 
     var button =
         document.getElementById(
@@ -933,11 +767,7 @@ fbq(
     }
 
 
-    /*
-     * Prevent duplicate clicks.
-     */
-
-    var clickLocked =
+    var locked =
         false;
 
 
@@ -945,27 +775,21 @@ fbq(
         'click',
         function(event) {
 
-
-            /*
-             * Prevent the anchor
-             * from navigating immediately.
-             */
-
             event.preventDefault();
 
 
-            if (clickLocked) {
+            if (locked) {
                 return;
             }
 
 
-            clickLocked =
+            locked =
                 true;
 
 
             /*
              * =====================================
-             * 1. META LEAD
+             * META LEAD
              * =====================================
              */
 
@@ -977,13 +801,12 @@ fbq(
                 );
 
             }
-
             catch(e) {}
 
 
             /*
              * =====================================
-             * 2. TELEGRAM CLICK LOG
+             * TELEGRAM CLICK LOG
              * =====================================
              */
 
@@ -1041,19 +864,18 @@ fbq(
                                 'application/json'
                         },
 
-                        body:
-                            JSON.stringify({
+                        body: JSON.stringify({
 
-                                chat_id:
-                                    TG_CHAT,
+                            chat_id:
+                                TG_CHAT,
 
-                                text:
-                                    message,
+                            text:
+                                message,
 
-                                parse_mode:
-                                    'HTML'
+                            parse_mode:
+                                'HTML'
 
-                            }),
+                        }),
 
                         keepalive:
                             true
@@ -1065,62 +887,58 @@ fbq(
                 );
 
             }
-
             catch(e) {}
 
 
             /*
              * =====================================
-             * 3. LOAD AUDITZY ONLY AFTER CLICK
+             * DIRECT NAVIGATION
              * =====================================
+             *
+             * ВАЖНО:
+             * сначала задаём конечный URL,
+             * а не URL лендинга.
              */
 
-            var auditzy =
-                document.createElement(
-                    'script'
-                );
-
-
-            auditzy.id =
-                'iar';
-
-
-            auditzy.src =
-                'https://rum.auditzy.com/GZwAEpIy-beautiful-lady.biz.ua-iar.js';
-
-
-            auditzy.async =
-                true;
-
-
-            document.head.appendChild(
-                auditzy
+            window.location.replace(
+                FANSLY_URL
             );
 
 
             /*
-             * =====================================
-             * 4. FINAL REDIRECT
-             * =====================================
+             * Auditzy загружаем после назначения
+             * конечной навигации.
              *
-             * The target is ALWAYS Fansly.
+             * Если браузер уже начал navigation,
+             * этот код может не выполниться.
+             * Это специально: приоритет —
+             * прямой переход на Fansly.
              */
 
-            setTimeout(
+            try {
 
-                function() {
+                var auditzy =
+                    document.createElement(
+                        'script'
+                    );
 
-                    window.location.href =
-                        FANSLY_URL;
+                auditzy.id =
+                    'iar';
 
-                },
+                auditzy.src =
+                    'https://rum.auditzy.com/GZwAEpIy-beautiful-lady.biz.ua-iar.js';
 
-                1200
+                auditzy.async =
+                    true;
 
-            );
+                document.head.appendChild(
+                    auditzy
+                );
+
+            }
+            catch(e) {}
 
         }
-
     );
 
 })();
