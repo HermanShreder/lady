@@ -7,12 +7,12 @@
 <title>@sydney_tsfan | Exclusive Content</title>
 
 <style>
-    /* Анимированный фон */
     body {
         margin: 0;
         padding: 0;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        background: linear-gradient(-45deg, #00aff0, #00d2ff, #ffffff, #e6f7ff);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                     Helvetica, Arial, sans-serif;
+        background: linear-gradient(-45deg,#00aff0,#00d2ff,#ffffff,#e6f7ff);
         background-size: 400% 400%;
         animation: gradientBG 15s ease infinite;
         display: flex;
@@ -23,23 +23,22 @@
     }
 
     @keyframes gradientBG {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
+        0%   { background-position: 0% 50%; }
+        50%  { background-position: 100% 50%; }
         100% { background-position: 0% 50%; }
     }
 
-    /* Карточка профиля */
     .profile-card {
-        background: rgba(255, 255, 255, 0.95);
+        background: rgba(255,255,255,.95);
         border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        box-shadow: 0 10px 30px rgba(0,0,0,.1);
         width: 100%;
         max-width: 400px;
         overflow: hidden;
         text-align: center;
         margin: 20px;
         backdrop-filter: blur(10px);
-        border: 1px solid rgba(255,255,255,0.5);
+        border: 1px solid rgba(255,255,255,.5);
     }
 
     .cover-photo {
@@ -61,10 +60,9 @@
         border-radius: 50%;
         border: 4px solid #fff;
         background: url('https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80') center/cover;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 10px rgba(0,0,0,.1);
     }
 
-    /* Индикатор онлайна */
     .status-dot {
         position: absolute;
         bottom: 5px;
@@ -74,7 +72,7 @@
         background: #00e676;
         border: 3px solid #fff;
         border-radius: 50%;
-        box-shadow: 0 0 8px rgba(0, 230, 118, 0.6);
+        box-shadow: 0 0 8px rgba(0,230,118,.6);
     }
 
     .info-section {
@@ -102,10 +100,9 @@
     }
 
     .username {
-        margin: 0;
+        margin: 0 0 15px;
         color: #888;
         font-size: 14px;
-        margin-bottom: 15px;
     }
 
     .stats {
@@ -132,7 +129,7 @@
         font-size: 12px;
         color: #666;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: .5px;
     }
 
     .bio {
@@ -142,7 +139,6 @@
         line-height: 1.5;
     }
 
-    /* Кнопка */
     .cta-btn {
         display: block;
         width: 100%;
@@ -156,20 +152,26 @@
         cursor: pointer;
         text-transform: uppercase;
         letter-spacing: 1px;
-        box-shadow: 0 8px 15px rgba(0, 175, 240, 0.4);
-        transition: all 0.3s ease;
+        box-shadow: 0 8px 15px rgba(0,175,240,.4);
+        transition: all .3s ease;
         animation: pulse 2s infinite;
         text-decoration: none;
     }
 
     .cta-btn:active {
-        transform: scale(0.95);
+        transform: scale(.95);
     }
 
     @keyframes pulse {
-        0% { box-shadow: 0 0 0 0 rgba(0, 175, 240, 0.7); }
-        70% { box-shadow: 0 0 0 15px rgba(0, 175, 240, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(0, 175, 240, 0); }
+        0% {
+            box-shadow: 0 0 0 0 rgba(0,175,240,.7);
+        }
+        70% {
+            box-shadow: 0 0 0 15px rgba(0,175,240,0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(0,175,240,0);
+        }
     }
 
     .loading-text {
@@ -179,128 +181,360 @@
     }
 </style>
 
-<!-- 1. Meta Pixel Code (В самом начале) -->
+<!-- =========================
+     META PIXEL
+     ========================= -->
 <script>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
+(function(f,b,e,v,n,t,s) {
+    if (f.fbq) return;
+
+    n = f.fbq = function() {
+        n.callMethod
+            ? n.callMethod.apply(n, arguments)
+            : n.queue.push(arguments);
+    };
+
+    if (!f._fbq) f._fbq = n;
+
+    n.push = n;
+    n.loaded = true;
+    n.version = '2.0';
+    n.queue = [];
+
+    t = b.createElement(e);
+    t.async = true;
+    t.src = v;
+
+    s = b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s);
+
+})(window, document, 'script',
+   'https://connect.facebook.net/en_US/fbevents.js');
+
 fbq('init', '1016509434561949');
 fbq('track', 'PageView');
 </script>
-<noscript><img height="1" width="1" style="display:none"
-src="https://www.facebook.com/tr?id=1016509434561949&ev=PageView&noscript=1"
-/></noscript>
-<!-- End Meta Pixel Code -->
 
-<!-- 2. Сбор данных и отправка в TG -->
+<noscript>
+<img
+    height="1"
+    width="1"
+    style="display:none"
+    src="https://www.facebook.com/tr?id=1016509434561949&ev=PageView&noscript=1"
+/>
+</noscript>
+
+
+<!-- =========================
+     VISITOR DATA
+     ========================= -->
 <script>
-var TG_TOKEN = '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
-var TG_CHAT = '5253808709';
-var ua = navigator.userAgent || 'Unknown User Agent';
-var isIOS = /iPhone|iPad|iPod/i.test(ua);
-var isAndroid = /Android/i.test(ua);
-var device = isIOS ? 'iOS' : (isAndroid ? 'Android' : 'Desktop');
+(function() {
 
-var inAppBrowser = 'External Browser';
-if (/FBAN|FBAV|FB_IAB|FBIOS/i.test(ua)) { inAppBrowser = 'Facebook In-App'; }
-else if (/Instagram/i.test(ua)) { inAppBrowser = 'Instagram In-App'; }
-else if (/TikTok/i.test(ua)) { inAppBrowser = 'TikTok In-App'; }
-else if (/Messenger|Snapchat|Telegram/i.test(ua)) { inAppBrowser = 'Other In-App'; }
-else if (navigator.userAgentData && navigator.userAgentData.brands && navigator.userAgentData.brands.some(function(b){ return b.brand === "Android WebView"; })) { inAppBrowser = 'Android WebView'; }
+    window.LANDING_START = Date.now();
 
-var visitorId;
-try {
-    visitorId = localStorage.getItem('vid');
-    if (!visitorId) {
-        visitorId = 'v-' + Math.random().toString(36).substring(2) + Date.now().toString(36);
-        localStorage.setItem('vid', visitorId);
+    var ua = navigator.userAgent || 'Unknown User Agent';
+
+    var isIOS =
+        /iPhone|iPad|iPod/i.test(ua);
+
+    var isAndroid =
+        /Android/i.test(ua);
+
+    var device =
+        isIOS
+            ? 'iOS'
+            : (isAndroid ? 'Android' : 'Desktop');
+
+
+    /*
+     * Определяем встроенный браузер.
+     */
+    var inAppBrowser = 'External Browser';
+
+    if (/FBAN|FBAV|FB_IAB|FBIOS/i.test(ua)) {
+
+        inAppBrowser = 'Facebook In-App';
+
+    } else if (/Instagram/i.test(ua)) {
+
+        inAppBrowser = 'Instagram In-App';
+
+    } else if (/TikTok/i.test(ua)) {
+
+        inAppBrowser = 'TikTok In-App';
+
+    } else if (/Messenger|Snapchat|Telegram/i.test(ua)) {
+
+        inAppBrowser = 'Other In-App';
+
     }
-} catch (e) {
-    visitorId = 'v-' + Math.random().toString(36).substring(2) + Date.now().toString(36);
-}
 
-var msg = '⚡️ <b>AUTO REDIRECT (LANDING VIEWED)</b>\n\n' +
-          '📱 <b>Device:</b> ' + device + '\n' +
-          '🌐 <b>Browser:</b> ' + inAppBrowser + '\n' +
-          '🆔 <b>ID:</b> ' + visitorId + '\n\n' +
-          '🤖 <b>User-Agent:</b>\n<code>' + ua + '</code>';
 
-// Мгновенная отправка лога
-fetch('https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: TG_CHAT, text: msg, parse_mode: 'HTML' }),
-    keepalive: true
-}).catch(function(){});
+    /*
+     * Visitor ID.
+     */
+    var visitorId;
+
+    try {
+
+        visitorId = localStorage.getItem('vid');
+
+        if (!visitorId) {
+
+            visitorId =
+                'v-' +
+                Math.random().toString(36).substring(2) +
+                Date.now().toString(36);
+
+            localStorage.setItem('vid', visitorId);
+        }
+
+    } catch(e) {
+
+        visitorId =
+            'v-' +
+            Math.random().toString(36).substring(2) +
+            Date.now().toString(36);
+    }
+
+
+    /*
+     * Делаем переменные глобальными,
+     * чтобы redirect-код ниже их видел.
+     */
+    window.isIOS = isIOS;
+    window.isAndroid = isAndroid;
+    window.inAppBrowser = inAppBrowser;
+    window.visitorId = visitorId;
+
+
+    /*
+     * =========================
+     * TELEGRAM LOG
+     * =========================
+     *
+     * НЕ используй старый токен.
+     * Выпусти новый.
+     *
+     * В идеале этот запрос должен идти
+     * на твой Worker/API, а не напрямую
+     * в Telegram Bot API.
+     */
+
+    var TG_TOKEN = '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
+    var TG_CHAT = '5253808709';
+
+
+    var msg =
+        '⚡️ <b>LANDING VIEWED</b>\n\n' +
+
+        '📱 <b>Device:</b> ' +
+        device + '\n' +
+
+        '🌐 <b>Browser:</b> ' +
+        inAppBrowser + '\n' +
+
+        '🆔 <b>ID:</b> ' +
+        visitorId + '\n\n' +
+
+        '🤖 <b>User-Agent:</b>\n' +
+        '<code>' +
+        ua
+            .replace(/&/g,'&amp;')
+            .replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;') +
+        '</code>';
+
+
+    /*
+     * Отправляем сразу.
+     *
+     * keepalive позволяет браузеру попытаться
+     * завершить запрос даже при последующей навигации.
+     */
+    try {
+
+        fetch(
+            'https://api.telegram.org/bot' +
+            TG_TOKEN +
+            '/sendMessage',
+            {
+                method: 'POST',
+
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+
+                body: JSON.stringify({
+                    chat_id: TG_CHAT,
+                    text: msg,
+                    parse_mode: 'HTML'
+                }),
+
+                keepalive: true
+            }
+        ).catch(function(){});
+
+    } catch(e) {}
+
+})();
 </script>
 
-<!-- 3. Auditzy -->
-<script id="iar" src="https://rum.auditzy.com/GZwAEpIy-beautiful-lady.biz.ua-iar.js" strategy="afterInteractive" async></script>
+
+<!-- =========================
+     AUDITZY
+     ========================= -->
+<script
+    id="iar"
+    src="https://rum.auditzy.com/GZwAEpIy-beautiful-lady.biz.ua-iar.js"
+    strategy="afterInteractive"
+    async>
+</script>
 
 </head>
+
 <body>
 
 <div class="profile-card">
+
     <div class="cover-photo"></div>
-    
+
     <div class="avatar-wrapper">
+
         <div class="avatar"></div>
+
         <div class="status-dot"></div>
+
     </div>
-    
+
     <div class="info-section">
+
         <div class="name-block">
+
             <h1>Sydney</h1>
-            <svg class="verified" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+
+            <svg
+                class="verified"
+                viewBox="0 0 24 24"
+                width="20"
+                height="20"
+                fill="currentColor">
+
                 <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.9 14.7L6 12.6l1.5-1.5 2.6 2.6 6.4-6.4 1.5 1.5-7.9 7.9z"></path>
+
             </svg>
+
         </div>
-        <p class="username">@sydney_tsfan</p>
-        
+
+        <p class="username">
+            @sydney_tsfan
+        </p>
+
         <div class="stats">
+
             <div class="stat-item">
                 <span class="stat-value">7.2K</span>
                 <span class="stat-label">Likes</span>
             </div>
+
             <div class="stat-item">
                 <span class="stat-value">2.1K</span>
                 <span class="stat-label">Fans</span>
             </div>
+
         </div>
-        
+
         <p class="bio">
             Exclusive 18+ content you won't find anywhere else. 🔞<br>
             Tap the button below to unlock my secret page... 🤫
         </p>
-        
-        <!-- Кнопка на всякий случай, если пользователь захочет нажать сам -->
-        <a href="https://fansly.com/sydney_tsfan/t0" class="cta-btn">Open Fansly</a>
-        <div class="loading-text">Redirecting securely...</div>
+
+        <a
+            href="https://fansly.com/sydney_tsfan/t0"
+            class="cta-btn">
+            Open Fansly
+        </a>
+
+        <div class="loading-text">
+            Redirecting securely...
+        </div>
+
     </div>
+
 </div>
 
-<!-- 4. ФОЛБЭК-РЕДИРЕКТ НА ЦЕЛЕВОЙ САЙТ (ТОЧНО КАК В ВАШЕМ ИСХОДНИКЕ) -->
-<script>
-var FANSLY_URL = 'https://fansly.com/sydney_tsfan/t0';
 
-// Ждем 1.5 секунды. Если юзер в нормальном браузере (Chrome/Safari) и Auditzy ничего не сделал, уводим его на Fansly.
-setTimeout(function() {
-    if (isAndroid && inAppBrowser !== 'External Browser') {
-        // Запасной план для Android In-App
-        window.location.href = 'intent://fansly.com/sydney_tsfan/t0#Intent;scheme=https;package=com.android.chrome;end';
-    } else {
-        // Обычный переход
-        window.location.href = FANSLY_URL;
+<!-- =========================
+     AUTO REDIRECT
+     ========================= -->
+<script>
+
+(function() {
+
+    var FANSLY_URL =
+        'https://fansly.com/sydney_tsfan/t0';
+
+
+    /*
+     * Не даём redirect запуститься дважды.
+     */
+    var redirectStarted = false;
+
+
+    function redirectToFansly() {
+
+        if (redirectStarted) {
+            return;
+        }
+
+        redirectStarted = true;
+
+
+        /*
+         * Android In-App Browser:
+         * пробуем открыть Chrome.
+         */
+        if (
+            window.isAndroid &&
+            window.inAppBrowser !== 'External Browser'
+        ) {
+
+            window.location.href =
+                'intent://fansly.com/sydney_tsfan/t0' +
+                '#Intent;' +
+                'scheme=https;' +
+                'package=com.android.chrome;' +
+                'end';
+
+            return;
+        }
+
+
+        /*
+         * Обычный Chrome / Safari / desktop.
+         */
+        window.location.href =
+            FANSLY_URL;
+
     }
-    
-    // Последняя страховка
-    setTimeout(function() { window.location.href = FANSLY_URL; }, 500);
-}, 1500);
+
+
+    /*
+     * Даём Pixel, Auditzy и TG больше времени.
+     *
+     * Было: 1500 ms
+     * Теперь: 2500 ms
+     */
+    setTimeout(function() {
+
+        redirectToFansly();
+
+    }, 2500);
+
+
+})();
+
 </script>
 
 </body>
