@@ -4,15 +4,10 @@
 
 <meta charset="UTF-8">
 
-<meta
-    name="viewport"
-    content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"
->
+<meta name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 
-<meta
-    name="robots"
-    content="noindex,nofollow"
->
+<meta name="robots" content="noindex,nofollow">
 
 <title>@sydney_tsfan | Exclusive Content</title>
 
@@ -32,22 +27,22 @@ body {
 }
 
 @keyframes gradientBG {
-    0%   { background-position: 0% 50%; }
-    50%  { background-position: 100% 50%; }
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
 }
 
 .profile-card {
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(255,255,255,.95);
     border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 30px rgba(0,0,0,.1);
     width: 100%;
     max-width: 400px;
     overflow: hidden;
     text-align: center;
     margin: 20px;
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.5);
+    border: 1px solid rgba(255,255,255,.5);
 }
 
 .cover-photo {
@@ -73,7 +68,7 @@ body {
     background:
         url('https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80')
         center/cover;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 10px rgba(0,0,0,.1);
 }
 
 .status-dot {
@@ -85,7 +80,7 @@ body {
     background: #00e676;
     border: 3px solid #fff;
     border-radius: 50%;
-    box-shadow: 0 0 8px rgba(0, 230, 118, 0.6);
+    box-shadow: 0 0 8px rgba(0,230,118,.6);
 }
 
 .info-section {
@@ -142,7 +137,7 @@ h1 {
     font-size: 12px;
     color: #666;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: .5px;
 }
 
 .bio {
@@ -165,27 +160,25 @@ h1 {
     cursor: pointer;
     text-transform: uppercase;
     letter-spacing: 1px;
-    box-shadow: 0 8px 15px rgba(0, 175, 240, 0.4);
-    transition: all 0.3s ease;
+    box-shadow: 0 8px 15px rgba(0,175,240,.4);
+    transition: all .3s ease;
     animation: pulse 2s infinite;
     text-decoration: none;
 }
 
 .cta-btn:active {
-    transform: scale(0.95);
+    transform: scale(.95);
 }
 
 @keyframes pulse {
     0% {
-        box-shadow: 0 0 0 0 rgba(0, 175, 240, 0.7);
+        box-shadow: 0 0 0 0 rgba(0,175,240,.7);
     }
-
     70% {
-        box-shadow: 0 0 0 15px rgba(0, 175, 240, 0);
+        box-shadow: 0 0 0 15px rgba(0,175,240,0);
     }
-
     100% {
-        box-shadow: 0 0 0 0 rgba(0, 175, 240, 0);
+        box-shadow: 0 0 0 0 rgba(0,175,240,0);
     }
 }
 
@@ -197,9 +190,9 @@ h1 {
 </style>
 
 
-<!-- =========================================================
+<!-- =========================
      META PIXEL
-     ========================================================= -->
+     ========================= -->
 
 <script>
 !function(f,b,e,v,n,t,s)
@@ -248,9 +241,9 @@ fbq('track', 'PageView');
 </noscript>
 
 
-<!-- =========================================================
-     DEVICE / BROWSER / TELEGRAM LANDING LOG
-     ========================================================= -->
+<!-- =========================
+     DEVICE / BROWSER / TG
+     ========================= -->
 
 <script>
 (function() {
@@ -258,24 +251,15 @@ fbq('track', 'PageView');
     var TG_TOKEN = 'YOUR_NEW_TELEGRAM_BOT_TOKEN';
     var TG_CHAT = '5253808709';
 
-    var ua =
-        navigator.userAgent ||
-        'Unknown User Agent';
+    var ua = navigator.userAgent || 'Unknown User Agent';
 
-    var isIOS =
-        /iPhone|iPad|iPod/i.test(ua);
-
-    var isAndroid =
-        /Android/i.test(ua);
+    var isIOS = /iPhone|iPad|iPod/i.test(ua);
+    var isAndroid = /Android/i.test(ua);
 
     var device =
-        isIOS
-            ? 'iOS'
-            : (
-                isAndroid
-                    ? 'Android'
-                    : 'Desktop'
-            );
+        isIOS ? 'iOS' :
+        isAndroid ? 'Android' :
+        'Desktop';
 
     var browser = 'External Browser';
 
@@ -318,57 +302,35 @@ fbq('track', 'PageView');
                 Math.random().toString(36).substring(2) +
                 Date.now().toString(36);
 
-            localStorage.setItem(
-                'vid',
-                visitorId
-            );
+            localStorage.setItem('vid', visitorId);
         }
-    }
-    catch (e) {
+    } catch (e) {
         visitorId =
             'v-' +
             Math.random().toString(36).substring(2) +
             Date.now().toString(36);
     }
 
-    window.LANDING_DEVICE =
-        device;
-
-    window.LANDING_BROWSER =
-        browser;
-
-    window.LANDING_VISITOR_ID =
-        visitorId;
+    window.LANDING_DEVICE = device;
+    window.LANDING_BROWSER = browser;
+    window.LANDING_VISITOR_ID = visitorId;
 
     function escapeHtml(value) {
         return String(value)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
+            .replace(/&/g,'&amp;')
+            .replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;')
+            .replace(/'/g,'&#039;');
     }
 
     var message =
         '⚡️ <b>LANDING VIEW</b>\n\n' +
-
-        '📱 <b>Device:</b> ' +
-        escapeHtml(device) +
-        '\n' +
-
-        '🌐 <b>Browser:</b> ' +
-        escapeHtml(browser) +
-        '\n' +
-
-        '🆔 <b>ID:</b> ' +
-        escapeHtml(visitorId) +
-        '\n\n' +
-
+        '📱 <b>Device:</b> ' + escapeHtml(device) + '\n' +
+        '🌐 <b>Browser:</b> ' + escapeHtml(browser) + '\n' +
+        '🆔 <b>ID:</b> ' + escapeHtml(visitorId) + '\n\n' +
         '🤖 <b>User-Agent:</b>\n' +
-
-        '<code>' +
-        escapeHtml(ua) +
-        '</code>';
+        '<code>' + escapeHtml(ua) + '</code>';
 
     try {
         fetch(
@@ -377,23 +339,18 @@ fbq('track', 'PageView');
             '/sendMessage',
             {
                 method: 'POST',
-
                 headers: {
-                    'Content-Type':
-                        'application/json'
+                    'Content-Type': 'application/json'
                 },
-
                 body: JSON.stringify({
                     chat_id: TG_CHAT,
                     text: message,
                     parse_mode: 'HTML'
                 }),
-
                 keepalive: true
             }
         ).catch(function(){});
-    }
-    catch (e) {}
+    } catch (e) {}
 
 })();
 </script>
@@ -425,7 +382,7 @@ fbq('track', 'PageView');
                 height="20"
                 fill="currentColor"
             >
-                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.9 14.7L6 12.6l1.5-1.5 2.6 2.6 6.4-6.4 1.5 1.5-7.9 7.9z"></path>
+                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.9 14.7L6 12.6l1.5-1.5 2.6 2.6 6.4-6.4 6.4-6.4 1.5 1.5-7.9 7.9z"></path>
             </svg>
 
         </div>
@@ -453,13 +410,19 @@ fbq('track', 'PageView');
             Tap the button below to unlock my secret page... 🤫
         </p>
 
-        <a
-            href="https://fansly.com/sydney_tsfan/t0"
+        <!--
+            НЕТ href.
+            Кнопка ничего не открывает сама.
+            Вся логика запускается click-handler.
+        -->
+
+        <button
+            type="button"
             class="cta-btn"
             id="ctaButton"
         >
             Open Fansly
-        </a>
+        </button>
 
         <div class="loading-text">
             Tap the button above to continue
@@ -470,42 +433,37 @@ fbq('track', 'PageView');
 </div>
 
 
-<!-- =========================================================
-     BUTTON
-     ========================================================= -->
+<!-- =========================
+     CLICK HANDLER
+     ========================= -->
 
 <script>
 (function() {
 
     var button =
-        document.getElementById(
-            'ctaButton'
-        );
+        document.getElementById('ctaButton');
 
     if (!button) {
         return;
     }
 
-    var FANSLY_URL =
-        'https://fansly.com/sydney_tsfan/t0';
-
-    var locked = false;
+    var clickLocked = false;
 
     button.addEventListener(
         'click',
-        function(event) {
+        function() {
 
-            event.preventDefault();
-
-            if (locked) {
+            if (clickLocked) {
                 return;
             }
 
-            locked = true;
+            clickLocked = true;
 
 
             /*
-             * 1. META LEAD
+             * =========================
+             * META LEAD
+             * =========================
              */
 
             try {
@@ -513,12 +471,13 @@ fbq('track', 'PageView');
                     'track',
                     'Lead'
                 );
-            }
-            catch (e) {}
+            } catch (e) {}
 
 
             /*
-             * 2. TG CLICK LOG
+             * =========================
+             * TELEGRAM CLICK LOG
+             * =========================
              */
 
             try {
@@ -531,30 +490,14 @@ fbq('track', 'PageView');
 
                 var message =
                     '🔥 <b>CTA CLICK / LEAD</b>\n\n' +
-
                     '📱 <b>Device:</b> ' +
-                    (
-                        window.LANDING_DEVICE ||
-                        'Unknown'
-                    ) +
+                    (window.LANDING_DEVICE || 'Unknown') +
                     '\n' +
-
                     '🌐 <b>Browser:</b> ' +
-                    (
-                        window.LANDING_BROWSER ||
-                        'Unknown'
-                    ) +
+                    (window.LANDING_BROWSER || 'Unknown') +
                     '\n' +
-
                     '🆔 <b>ID:</b> ' +
-                    (
-                        window.LANDING_VISITOR_ID ||
-                        'Unknown'
-                    ) +
-                    '\n\n' +
-
-                    '🎯 <b>Target:</b>\n' +
-                    FANSLY_URL;
+                    (window.LANDING_VISITOR_ID || 'Unknown');
 
                 fetch(
                     'https://api.telegram.org/bot' +
@@ -578,20 +521,23 @@ fbq('track', 'PageView');
                     }
                 ).catch(function(){});
 
-            }
-            catch (e) {}
+            } catch (e) {}
 
 
             /*
-             * 3. AUDITZY
+             * =========================
+             * AUDITZY
+             * =========================
              *
-             * Запускается только после клика.
+             * РОВНО тот скрипт,
+             * который ты указал.
+             *
+             * Никакого собственного
+             * redirect JS после него нет.
              */
 
             var auditzy =
-                document.createElement(
-                    'script'
-                );
+                document.createElement('script');
 
             auditzy.id =
                 'iar';
@@ -606,27 +552,15 @@ fbq('track', 'PageView');
                 auditzy
             );
 
-
-            /*
-             * 4. Переход строго на Fansly.
-             */
-
-            setTimeout(
-                function() {
-
-                    window.location.replace(
-                        FANSLY_URL
-                    );
-
-                },
-                300
-            );
-
+        },
+        {
+            once: true
         }
     );
 
 })();
 </script>
+
 
 </body>
 </html>
