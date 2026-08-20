@@ -19,6 +19,10 @@
 
 <style>
 
+/* =========================
+   PAGE
+   ========================= */
+
 body {
     margin: 0;
     padding: 0;
@@ -43,9 +47,11 @@ body {
 
     background-size: 400% 400%;
 
-    animation: gradientBG 15s ease infinite;
+    animation:
+        gradientBG 15s ease infinite;
 
     display: flex;
+
     justify-content: center;
     align-items: center;
 
@@ -55,6 +61,7 @@ body {
 }
 
 @keyframes gradientBG {
+
     0% {
         background-position: 0% 50%;
     }
@@ -66,10 +73,18 @@ body {
     100% {
         background-position: 0% 50%;
     }
+
 }
 
+
+/* =========================
+   PROFILE CARD
+   ========================= */
+
 .profile-card {
-    background: rgba(255,255,255,0.95);
+
+    background:
+        rgba(255, 255, 255, 0.95);
 
     border-radius: 20px;
 
@@ -91,8 +106,11 @@ body {
         1px solid rgba(255,255,255,0.5);
 }
 
+
 .cover-photo {
+
     width: 100%;
+
     height: 120px;
 
     background:
@@ -100,16 +118,21 @@ body {
         center/cover;
 }
 
+
 .avatar-wrapper {
+
     position: relative;
 
     width: 100px;
     height: 100px;
 
-    margin: -50px auto 10px;
+    margin:
+        -50px auto 10px;
 }
 
+
 .avatar {
+
     width: 100%;
     height: 100%;
 
@@ -125,7 +148,13 @@ body {
         0 4px 10px rgba(0,0,0,0.1);
 }
 
+
+/* =========================
+   ONLINE STATUS
+   ========================= */
+
 .status-dot {
+
     position: absolute;
 
     bottom: 5px;
@@ -144,14 +173,24 @@ body {
         0 0 8px rgba(0,230,118,0.6);
 }
 
+
+/* =========================
+   CONTENT
+   ========================= */
+
 .info-section {
-    padding: 0 20px 20px;
+
+    padding:
+        0 20px 20px;
 }
 
+
 .name-block {
+
     display: flex;
 
     align-items: center;
+
     justify-content: center;
 
     gap: 5px;
@@ -159,7 +198,9 @@ body {
     margin-bottom: 2px;
 }
 
+
 h1 {
+
     margin: 0;
 
     font-size: 22px;
@@ -169,12 +210,17 @@ h1 {
     color: #111;
 }
 
+
 .verified {
+
     color: #00aff0;
+
     font-size: 16px;
 }
 
+
 .username {
+
     margin: 0;
 
     color: #888;
@@ -184,7 +230,13 @@ h1 {
     margin-bottom: 15px;
 }
 
+
+/* =========================
+   STATS
+   ========================= */
+
 .stats {
+
     display: flex;
 
     justify-content: center;
@@ -195,15 +247,21 @@ h1 {
 
     padding-top: 15px;
 
-    border-top: 1px solid #eee;
+    border-top:
+        1px solid #eee;
 }
 
+
 .stat-item {
+
     display: flex;
+
     flex-direction: column;
 }
 
+
 .stat-value {
+
     font-weight: 700;
 
     font-size: 18px;
@@ -211,7 +269,9 @@ h1 {
     color: #00aff0;
 }
 
+
 .stat-label {
+
     font-size: 12px;
 
     color: #666;
@@ -221,7 +281,13 @@ h1 {
     letter-spacing: 0.5px;
 }
 
+
+/* =========================
+   BIO
+   ========================= */
+
 .bio {
+
     font-size: 15px;
 
     color: #444;
@@ -231,7 +297,13 @@ h1 {
     line-height: 1.5;
 }
 
+
+/* =========================
+   BUTTON
+   ========================= */
+
 .cta-btn {
+
     display: block;
 
     width: 100%;
@@ -259,38 +331,54 @@ h1 {
     box-shadow:
         0 8px 15px rgba(0,175,240,0.4);
 
-    transition: all 0.3s ease;
+    transition:
+        all 0.3s ease;
 
-    animation: pulse 2s infinite;
+    animation:
+        pulse 2s infinite;
 
     text-decoration: none;
 }
 
+
 .cta-btn:active {
-    transform: scale(0.95);
+
+    transform:
+        scale(0.95);
 }
 
+
 @keyframes pulse {
+
     0% {
+
         box-shadow:
             0 0 0 0
             rgba(0,175,240,0.7);
+
     }
 
     70% {
+
         box-shadow:
             0 0 0 15px
             rgba(0,175,240,0);
+
     }
 
     100% {
+
         box-shadow:
             0 0 0 0
             rgba(0,175,240,0);
+
     }
+
 }
 
+
 .loading-text {
+
     font-size: 13px;
 
     color: #999;
@@ -318,15 +406,21 @@ h1 {
             : n.queue.push(arguments)
     };
 
-    if(!f._fbq)f._fbq=n;
+    if(!f._fbq)
+        f._fbq=n;
 
     n.push=n;
-    n.loaded=!0;
+
+    n.loaded=true;
+
     n.version='2.0';
+
     n.queue=[];
 
     t=b.createElement(e);
-    t.async=!0;
+
+    t.async=true;
+
     t.src=v;
 
     s=b.getElementsByTagName(e)[0];
@@ -342,7 +436,9 @@ h1 {
 );
 
 
-/* Pixel */
+/*
+ * Pixel initialization
+ */
 
 fbq(
     'init',
@@ -350,7 +446,9 @@ fbq(
 );
 
 
-/* PageView при открытии */
+/*
+ * PageView ONLY on landing load
+ */
 
 fbq(
     'track',
@@ -373,12 +471,19 @@ fbq(
 
 
 <!-- =========================================================
-     BROWSER / DEVICE / TELEGRAM
+     DEVICE / BROWSER / TELEGRAM LANDING LOG
      ========================================================= -->
 
 <script>
 
 (function() {
+
+    /*
+     * Telegram
+     *
+     * Use a NEW token here.
+     * The old token was exposed in the HTML.
+     */
 
     var TG_TOKEN =
         'YOUR_NEW_TELEGRAM_BOT_TOKEN';
@@ -387,17 +492,24 @@ fbq(
         '5253808709';
 
 
+    /*
+     * User-Agent
+     */
+
     var ua =
         navigator.userAgent ||
         'Unknown User Agent';
 
+
+    /*
+     * Device
+     */
 
     var isIOS =
         /iPhone|iPad|iPod/i.test(ua);
 
     var isAndroid =
         /Android/i.test(ua);
-
 
     var device =
         isIOS
@@ -409,66 +521,99 @@ fbq(
             );
 
 
+    /*
+     * Browser
+     */
+
     var browser =
         'External Browser';
 
 
-    if (/FBAN|FBAV|FB_IAB|FBIOS/i.test(ua)) {
+    if (
+        /FBAN|FBAV|FB_IAB|FBIOS/i.test(ua)
+    ) {
 
-        browser = 'Facebook In-App';
-
-    }
-
-    else if (/Instagram/i.test(ua)) {
-
-        browser = 'Instagram In-App';
+        browser =
+            'Facebook In-App';
 
     }
 
-    else if (/TikTok/i.test(ua)) {
+    else if (
+        /Instagram/i.test(ua)
+    ) {
 
-        browser = 'TikTok In-App';
-
-    }
-
-    else if (/Messenger|Snapchat|Telegram/i.test(ua)) {
-
-        browser = 'Other In-App';
+        browser =
+            'Instagram In-App';
 
     }
 
-    else if (/EdgiOS|EdgA|Edg/i.test(ua)) {
+    else if (
+        /TikTok/i.test(ua)
+    ) {
 
-        browser = 'Microsoft Edge';
-
-    }
-
-    else if (/OPiOS|OPR/i.test(ua)) {
-
-        browser = 'Opera';
+        browser =
+            'TikTok In-App';
 
     }
 
-    else if (/CriOS|Chrome/i.test(ua)) {
+    else if (
+        /Messenger|Snapchat|Telegram/i.test(ua)
+    ) {
 
-        browser = 'Google Chrome';
-
-    }
-
-    else if (/FxiOS|Firefox/i.test(ua)) {
-
-        browser = 'Firefox';
+        browser =
+            'Other In-App';
 
     }
 
-    else if (/Safari/i.test(ua)) {
+    else if (
+        /EdgiOS|EdgA|Edg/i.test(ua)
+    ) {
 
-        browser = 'Safari';
+        browser =
+            'Microsoft Edge';
+
+    }
+
+    else if (
+        /OPiOS|OPR/i.test(ua)
+    ) {
+
+        browser =
+            'Opera';
+
+    }
+
+    else if (
+        /CriOS|Chrome/i.test(ua)
+    ) {
+
+        browser =
+            'Google Chrome';
+
+    }
+
+    else if (
+        /FxiOS|Firefox/i.test(ua)
+    ) {
+
+        browser =
+            'Firefox';
+
+    }
+
+    else if (
+        /Safari/i.test(ua)
+    ) {
+
+        browser =
+            'Safari';
 
     }
 
 
-    /* Visitor ID */
+    /*
+     * Visitor ID
+     */
 
     var visitorId;
 
@@ -476,6 +621,7 @@ fbq(
 
         visitorId =
             localStorage.getItem('vid');
+
 
         if (!visitorId) {
 
@@ -491,6 +637,7 @@ fbq(
                 'vid',
                 visitorId
             );
+
         }
 
     }
@@ -503,8 +650,14 @@ fbq(
                 .substring(2) +
             Date.now()
                 .toString(36);
+
     }
 
+
+    /*
+     * Save globally
+     * for click handler.
+     */
 
     window.LANDING_DEVICE =
         device;
@@ -516,17 +669,45 @@ fbq(
         visitorId;
 
 
+    /*
+     * Escape HTML
+     */
+
     function escapeHtml(value) {
 
         return String(value)
-            .replace(/&/g,'&amp;')
-            .replace(/</g,'&lt;')
-            .replace(/>/g,'&gt;')
-            .replace(/"/g,'&quot;')
-            .replace(/'/g,'&#039;');
+
+            .replace(
+                /&/g,
+                '&amp;'
+            )
+
+            .replace(
+                /</g,
+                '&lt;'
+            )
+
+            .replace(
+                />/g,
+                '&gt;'
+            )
+
+            .replace(
+                /"/g,
+                '&quot;'
+            )
+
+            .replace(
+                /'/g,
+                '&#039;'
+            );
 
     }
 
+
+    /*
+     * Landing log
+     */
 
     var message =
 
@@ -551,44 +732,54 @@ fbq(
         '</code>';
 
 
-    fetch(
+    /*
+     * Send landing log
+     */
 
-        'https://api.telegram.org/bot' +
-        TG_TOKEN +
-        '/sendMessage',
+    try {
 
-        {
-            method: 'POST',
+        fetch(
 
-            headers: {
-                'Content-Type':
-                    'application/json'
-            },
+            'https://api.telegram.org/bot' +
+            TG_TOKEN +
+            '/sendMessage',
 
-            body: JSON.stringify({
+            {
+                method: 'POST',
 
-                chat_id:
-                    TG_CHAT,
+                headers: {
+                    'Content-Type':
+                        'application/json'
+                },
 
-                text:
-                    message,
+                body: JSON.stringify({
 
-                parse_mode:
-                    'HTML'
+                    chat_id:
+                        TG_CHAT,
 
-            }),
+                    text:
+                        message,
 
-            keepalive: true
+                    parse_mode:
+                        'HTML'
 
-        }
+                }),
 
-    ).catch(function(){});
+                keepalive:
+                    true
+
+            }
+
+        ).catch(function(){});
+
+    }
+
+    catch(e) {}
 
 
 })();
 
 </script>
-
 
 </head>
 
@@ -598,8 +789,13 @@ fbq(
 
 <div class="profile-card">
 
+
+    <!-- COVER -->
+
     <div class="cover-photo"></div>
 
+
+    <!-- AVATAR -->
 
     <div class="avatar-wrapper">
 
@@ -610,11 +806,17 @@ fbq(
     </div>
 
 
+    <!-- INFO -->
+
     <div class="info-section">
+
 
         <div class="name-block">
 
-            <h1>Sydney</h1>
+            <h1>
+                Sydney
+            </h1>
+
 
             <svg
                 class="verified"
@@ -639,6 +841,7 @@ fbq(
 
 
         <div class="stats">
+
 
             <div class="stat-item">
 
@@ -665,6 +868,7 @@ fbq(
 
             </div>
 
+
         </div>
 
 
@@ -681,6 +885,11 @@ fbq(
         </p>
 
 
+        <!--
+             The href is the final Fansly URL.
+             JavaScript intercepts the click first.
+        -->
+
         <a
             href="https://fansly.com/sydney_tsfan/t0"
             class="cta-btn"
@@ -694,18 +903,20 @@ fbq(
             Tap the button above to continue
         </div>
 
+
     </div>
 
 </div>
 
 
 <!-- =========================================================
-     CLICK → LEAD → TG → AUDITZY
+     CLICK HANDLER
      ========================================================= -->
 
 <script>
 
 (function() {
+
 
     var button =
         document.getElementById(
@@ -713,19 +924,49 @@ fbq(
         );
 
 
-    if (!button)
+    var FANSLY_URL =
+        'https://fansly.com/sydney_tsfan/t0';
+
+
+    if (!button) {
         return;
+    }
+
+
+    /*
+     * Prevent duplicate clicks.
+     */
+
+    var clickLocked =
+        false;
 
 
     button.addEventListener(
         'click',
         function(event) {
 
+
+            /*
+             * Prevent the anchor
+             * from navigating immediately.
+             */
+
             event.preventDefault();
 
 
+            if (clickLocked) {
+                return;
+            }
+
+
+            clickLocked =
+                true;
+
+
             /*
-             * 1. Meta Lead
+             * =====================================
+             * 1. META LEAD
+             * =====================================
              */
 
             try {
@@ -736,11 +977,14 @@ fbq(
                 );
 
             }
+
             catch(e) {}
 
 
             /*
-             * 2. TG CLICK LOG
+             * =====================================
+             * 2. TELEGRAM CLICK LOG
+             * =====================================
              */
 
             try {
@@ -757,18 +1001,28 @@ fbq(
                     '🔥 <b>CTA CLICK / LEAD</b>\n\n' +
 
                     '📱 <b>Device:</b> ' +
-                    (window.LANDING_DEVICE ||
-                     'Unknown') +
+                    (
+                        window.LANDING_DEVICE ||
+                        'Unknown'
+                    ) +
                     '\n' +
 
                     '🌐 <b>Browser:</b> ' +
-                    (window.LANDING_BROWSER ||
-                     'Unknown') +
+                    (
+                        window.LANDING_BROWSER ||
+                        'Unknown'
+                    ) +
                     '\n' +
 
                     '🆔 <b>ID:</b> ' +
-                    (window.LANDING_VISITOR_ID ||
-                     'Unknown');
+                    (
+                        window.LANDING_VISITOR_ID ||
+                        'Unknown'
+                    ) +
+                    '\n\n' +
+
+                    '🎯 <b>Target:</b>\n' +
+                    FANSLY_URL;
 
 
                 fetch(
@@ -778,39 +1032,47 @@ fbq(
                     '/sendMessage',
 
                     {
-                        method: 'POST',
+
+                        method:
+                            'POST',
 
                         headers: {
                             'Content-Type':
                                 'application/json'
                         },
 
-                        body: JSON.stringify({
+                        body:
+                            JSON.stringify({
 
-                            chat_id:
-                                TG_CHAT,
+                                chat_id:
+                                    TG_CHAT,
 
-                            text:
-                                message,
+                                text:
+                                    message,
 
-                            parse_mode:
-                                'HTML'
+                                parse_mode:
+                                    'HTML'
 
-                        }),
+                            }),
 
-                        keepalive: true
+                        keepalive:
+                            true
 
                     }
 
-                ).catch(function(){});
+                ).catch(
+                    function(){}
+                );
 
             }
+
             catch(e) {}
 
 
             /*
-             * 3. Загружаем Auditzy ТОЛЬКО
-             * после клика.
+             * =====================================
+             * 3. LOAD AUDITZY ONLY AFTER CLICK
+             * =====================================
              */
 
             var auditzy =
@@ -837,22 +1099,28 @@ fbq(
 
 
             /*
-             * 4. Если Auditzy не выполнит
-             * свою навигацию, через небольшую
-             * задержку идём на Fansly напрямую.
+             * =====================================
+             * 4. FINAL REDIRECT
+             * =====================================
+             *
+             * The target is ALWAYS Fansly.
              */
 
             setTimeout(
+
                 function() {
 
                     window.location.href =
-                        'https://fansly.com/sydney_tsfan/t0';
+                        FANSLY_URL;
 
                 },
+
                 1200
+
             );
 
         }
+
     );
 
 })();
