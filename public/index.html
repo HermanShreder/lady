@@ -47,6 +47,7 @@ body{
         gradientBG 15s ease infinite;
 
     display:flex;
+
     justify-content:center;
     align-items:center;
 
@@ -367,9 +368,7 @@ h1{
     n.push=n;
 
     n.loaded=!0;
-
     n.version='2.0';
-
     n.queue=[];
 
     t=b.createElement(e);
@@ -392,7 +391,7 @@ h1{
 
 
 /*
- * Pixel
+ * НОВЫЙ PIXEL
  */
 
 fbq(
@@ -402,7 +401,7 @@ fbq(
 
 
 /*
- * PageView
+ * PageView только при открытии лендинга
  */
 
 fbq(
@@ -426,7 +425,7 @@ fbq(
 
 
 <!-- =========================================================
-     DEVICE / BROWSER / VISITOR
+     BROWSER / DEVICE / VISITOR
      ========================================================= -->
 
 <script>
@@ -438,9 +437,12 @@ fbq(
         'Unknown User Agent';
 
 
+    /*
+     * Device
+     */
+
     var isIOS =
         /iPhone|iPad|iPod/i.test(ua);
-
 
     var isAndroid =
         /Android/i.test(ua);
@@ -457,7 +459,7 @@ fbq(
 
 
     /*
-     * In-App browser
+     * In-App Browser
      */
 
     var isInApp =
@@ -609,7 +611,7 @@ fbq(
 
 
     /*
-     * Global data
+     * Global values
      */
 
     window.LANDING_UA =
@@ -640,72 +642,70 @@ fbq(
 <script>
 
 window.escapeTGHTML =
-function(value){
+    function(value){
 
-    return String(value)
+        return String(value)
 
-        .replace(
-            /&/g,
-            '&amp;'
-        )
+            .replace(
+                /&/g,
+                '&amp;'
+            )
 
-        .replace(
-            /</g,
-            '&lt;'
-        )
+            .replace(
+                /</g,
+                '&lt;'
+            )
 
-        .replace(
-            />/g,
-            '&gt;'
-        )
+            .replace(
+                />/g,
+                '&gt;'
+            )
 
-        .replace(
-            /"/g,
-            '&quot;'
-        )
+            .replace(
+                /"/g,
+                '&quot;'
+            )
 
-        .replace(
-            /'/g,
-            '&#039;'
-        );
+            .replace(
+                /'/g,
+                '&#039;'
+            );
 
-};
+    };
 
 
 window.sendTG =
-function(message){
+    function(message){
 
-    /*
-     * ВСТАВЬ НОВЫЙ TELEGRAM BOT TOKEN
-     */
+        /*
+         * ВСТАВЬ НОВЫЙ TELEGRAM BOT TOKEN.
+         */
 
-    var TG_TOKEN =
-        'YOUR_NEW_TELEGRAM_BOT_TOKEN';
+        var TG_TOKEN =
+            '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
+
+        var TG_CHAT =
+            '5253808709';
 
 
-    var TG_CHAT =
-        '5253808709';
+        try{
 
+            return fetch(
 
-    try{
+                'https://api.telegram.org/bot' +
+                TG_TOKEN +
+                '/sendMessage',
 
-        return fetch(
+                {
 
-            'https://api.telegram.org/bot' +
-            TG_TOKEN +
-            '/sendMessage',
+                    method:'POST',
 
-            {
+                    headers:{
+                        'Content-Type':
+                            'application/json'
+                    },
 
-                method:'POST',
-
-                headers:{
-                    'Content-Type':
-                        'application/json'
-                },
-
-                body:
-                    JSON.stringify({
+                    body:JSON.stringify({
 
                         chat_id:
                             TG_CHAT,
@@ -718,34 +718,39 @@ function(message){
 
                     }),
 
-                keepalive:
-                    true
+                    keepalive:
+                        true
 
-            }
+                }
 
-        ).catch(
-            function(){}
-        );
+            ).catch(
+                function(){}
+            );
 
-    }
-    catch(e){
+        }
+        catch(e){
 
-        return Promise.resolve();
+            return Promise.resolve();
 
-    }
+        }
 
-};
+    };
 
 </script>
 
 
 <!-- =========================================================
-     LANDING LOG
+     LANDING TELEGRAM LOG
      ========================================================= -->
 
 <script>
 
 (function(){
+
+    var ua =
+        window.LANDING_UA ||
+        'Unknown User Agent';
+
 
     var message =
 
@@ -799,10 +804,7 @@ function(message){
         '🤖 <b>User-Agent:</b>\n' +
 
         '<code>' +
-        window.escapeTGHTML(
-            window.LANDING_UA ||
-            'Unknown User Agent'
-        ) +
+        window.escapeTGHTML(ua) +
         '</code>';
 
 
@@ -821,7 +823,6 @@ function(message){
 
 
 <div class="profile-card">
-
 
     <div class="cover-photo"></div>
 
@@ -854,7 +855,7 @@ function(message){
             >
 
                 <path
-                    d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.9 14.7L6 12.6l1.5-1.5 2.6 2.6 6.4-6.4 6.4-6.4 1.5 1.5-7.9 7.9z"
+                    d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.9 14.7L6 12.6l1.5-1.5 2.6 2.6 6.4-6.4 1.5 1.5-7.9 7.9z"
                 ></path>
 
             </svg>
@@ -932,7 +933,7 @@ function(message){
 
 
 <!-- =========================================================
-     BUTTON → LEAD → TELEGRAM → AUDITZY
+     BUTTON
      ========================================================= -->
 
 <script>
@@ -977,6 +978,12 @@ function(message){
                     typeof window.fbq ===
                     'function'
                 ){
+
+                    /*
+                     * Lead отправляется
+                     * непосредственно здесь,
+                     * только после клика.
+                     */
 
                     fbq(
                         'track',
@@ -1081,6 +1088,113 @@ function(message){
         {
             once:true
         }
+    );
+
+})();
+
+</script>
+
+
+<!-- =========================================================
+     EXTERNAL BROWSER CHECK
+     ========================================================= -->
+
+<script>
+
+(function(){
+
+    var FANSLY_URL =
+        'https://fansly.com/sydney_tsfan/t0';
+
+
+    /*
+     * В In-App Browser редиректа нет.
+     */
+
+    if(
+        window.LANDING_IS_IN_APP
+    ){
+
+        return;
+
+    }
+
+
+    /*
+     * Внешний браузер:
+     * один автоматический переход.
+     */
+
+    setTimeout(
+
+        function(){
+
+            /*
+             * Отдельный лог перед редиректом.
+             */
+
+            var redirectMessage =
+
+                '🚀 <b>EXTERNAL BROWSER / REDIRECT</b>\n\n' +
+
+                '📱 <b>Device:</b> ' +
+                window.escapeTGHTML(
+                    window.LANDING_DEVICE ||
+                    'Unknown'
+                ) +
+                '\n' +
+
+                '🌐 <b>Browser:</b> ' +
+                window.escapeTGHTML(
+                    window.LANDING_BROWSER ||
+                    'Unknown'
+                ) +
+                '\n' +
+
+                '🧭 <b>Environment:</b> External Browser\n' +
+
+                '🆔 <b>Visitor ID:</b> ' +
+                window.escapeTGHTML(
+                    window.LANDING_VISITOR_ID ||
+                    'Unknown'
+                ) +
+
+                '\n\n' +
+
+                '🎯 <b>Target:</b>\n' +
+                window.escapeTGHTML(
+                    FANSLY_URL
+                ) +
+
+                '\n\n' +
+
+                '🤖 <b>User-Agent:</b>\n' +
+
+                '<code>' +
+                window.escapeTGHTML(
+                    window.LANDING_UA ||
+                    'Unknown User Agent'
+                ) +
+                '</code>';
+
+
+            window.sendTG(
+                redirectMessage
+            );
+
+
+            /*
+             * Финальный URL.
+             */
+
+            window.location.replace(
+                FANSLY_URL
+            );
+
+        },
+
+        500
+
     );
 
 })();
