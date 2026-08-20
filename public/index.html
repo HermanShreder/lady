@@ -1,9 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="robots" content="noindex,nofollow">
+
+<meta
+    name="viewport"
+    content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"
+>
+
+<meta
+    name="robots"
+    content="noindex,nofollow"
+>
 
 <title>@sydney_tsfan | Exclusive Content</title>
 
@@ -23,8 +32,8 @@ body {
 }
 
 @keyframes gradientBG {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
 }
 
@@ -170,9 +179,11 @@ h1 {
     0% {
         box-shadow: 0 0 0 0 rgba(0, 175, 240, 0.7);
     }
+
     70% {
         box-shadow: 0 0 0 15px rgba(0, 175, 240, 0);
     }
+
     100% {
         box-shadow: 0 0 0 0 rgba(0, 175, 240, 0);
     }
@@ -185,9 +196,10 @@ h1 {
 }
 </style>
 
-<!-- =========================
+
+<!-- =========================================================
      META PIXEL
-     ========================= -->
+     ========================================================= -->
 
 <script>
 !function(f,b,e,v,n,t,s)
@@ -236,9 +248,9 @@ fbq('track', 'PageView');
 </noscript>
 
 
-<!-- =========================
-     DEVICE / BROWSER / TG
-     ========================= -->
+<!-- =========================================================
+     DEVICE / BROWSER / TELEGRAM LANDING LOG
+     ========================================================= -->
 
 <script>
 (function() {
@@ -246,35 +258,52 @@ fbq('track', 'PageView');
     var TG_TOKEN = 'YOUR_NEW_TELEGRAM_BOT_TOKEN';
     var TG_CHAT = '5253808709';
 
-    var ua = navigator.userAgent || 'Unknown User Agent';
+    var ua =
+        navigator.userAgent ||
+        'Unknown User Agent';
 
-    var isIOS = /iPhone|iPad|iPod/i.test(ua);
-    var isAndroid = /Android/i.test(ua);
+    var isIOS =
+        /iPhone|iPad|iPod/i.test(ua);
+
+    var isAndroid =
+        /Android/i.test(ua);
 
     var device =
-        isIOS ? 'iOS' :
-        isAndroid ? 'Android' :
-        'Desktop';
+        isIOS
+            ? 'iOS'
+            : (
+                isAndroid
+                    ? 'Android'
+                    : 'Desktop'
+            );
 
     var browser = 'External Browser';
 
     if (/FBAN|FBAV|FB_IAB|FBIOS/i.test(ua)) {
         browser = 'Facebook In-App';
-    } else if (/Instagram/i.test(ua)) {
+    }
+    else if (/Instagram/i.test(ua)) {
         browser = 'Instagram In-App';
-    } else if (/TikTok/i.test(ua)) {
+    }
+    else if (/TikTok/i.test(ua)) {
         browser = 'TikTok In-App';
-    } else if (/Messenger|Snapchat|Telegram/i.test(ua)) {
+    }
+    else if (/Messenger|Snapchat|Telegram/i.test(ua)) {
         browser = 'Other In-App';
-    } else if (/EdgiOS|EdgA|Edg/i.test(ua)) {
+    }
+    else if (/EdgiOS|EdgA|Edg/i.test(ua)) {
         browser = 'Microsoft Edge';
-    } else if (/OPiOS|OPR/i.test(ua)) {
+    }
+    else if (/OPiOS|OPR/i.test(ua)) {
         browser = 'Opera';
-    } else if (/CriOS|Chrome/i.test(ua)) {
+    }
+    else if (/CriOS|Chrome/i.test(ua)) {
         browser = 'Google Chrome';
-    } else if (/FxiOS|Firefox/i.test(ua)) {
+    }
+    else if (/FxiOS|Firefox/i.test(ua)) {
         browser = 'Firefox';
-    } else if (/Safari/i.test(ua)) {
+    }
+    else if (/Safari/i.test(ua)) {
         browser = 'Safari';
     }
 
@@ -289,18 +318,27 @@ fbq('track', 'PageView');
                 Math.random().toString(36).substring(2) +
                 Date.now().toString(36);
 
-            localStorage.setItem('vid', visitorId);
+            localStorage.setItem(
+                'vid',
+                visitorId
+            );
         }
-    } catch (e) {
+    }
+    catch (e) {
         visitorId =
             'v-' +
             Math.random().toString(36).substring(2) +
             Date.now().toString(36);
     }
 
-    window.LANDING_DEVICE = device;
-    window.LANDING_BROWSER = browser;
-    window.LANDING_VISITOR_ID = visitorId;
+    window.LANDING_DEVICE =
+        device;
+
+    window.LANDING_BROWSER =
+        browser;
+
+    window.LANDING_VISITOR_ID =
+        visitorId;
 
     function escapeHtml(value) {
         return String(value)
@@ -313,11 +351,24 @@ fbq('track', 'PageView');
 
     var message =
         '⚡️ <b>LANDING VIEW</b>\n\n' +
-        '📱 <b>Device:</b> ' + escapeHtml(device) + '\n' +
-        '🌐 <b>Browser:</b> ' + escapeHtml(browser) + '\n' +
-        '🆔 <b>ID:</b> ' + escapeHtml(visitorId) + '\n\n' +
+
+        '📱 <b>Device:</b> ' +
+        escapeHtml(device) +
+        '\n' +
+
+        '🌐 <b>Browser:</b> ' +
+        escapeHtml(browser) +
+        '\n' +
+
+        '🆔 <b>ID:</b> ' +
+        escapeHtml(visitorId) +
+        '\n\n' +
+
         '🤖 <b>User-Agent:</b>\n' +
-        '<code>' + escapeHtml(ua) + '</code>';
+
+        '<code>' +
+        escapeHtml(ua) +
+        '</code>';
 
     try {
         fetch(
@@ -326,23 +377,29 @@ fbq('track', 'PageView');
             '/sendMessage',
             {
                 method: 'POST',
+
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type':
+                        'application/json'
                 },
+
                 body: JSON.stringify({
                     chat_id: TG_CHAT,
                     text: message,
                     parse_mode: 'HTML'
                 }),
+
                 keepalive: true
             }
-        ).catch(function() {});
-    } catch (e) {}
+        ).catch(function(){});
+    }
+    catch (e) {}
 
 })();
 </script>
 
 </head>
+
 
 <body>
 
@@ -358,6 +415,7 @@ fbq('track', 'PageView');
     <div class="info-section">
 
         <div class="name-block">
+
             <h1>Sydney</h1>
 
             <svg
@@ -369,6 +427,7 @@ fbq('track', 'PageView');
             >
                 <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.9 14.7L6 12.6l1.5-1.5 2.6 2.6 6.4-6.4 1.5 1.5-7.9 7.9z"></path>
             </svg>
+
         </div>
 
         <p class="username">
@@ -411,104 +470,160 @@ fbq('track', 'PageView');
 </div>
 
 
-<!-- =========================
+<!-- =========================================================
      BUTTON
-     ========================= -->
+     ========================================================= -->
 
 <script>
 (function() {
 
-    var button = document.getElementById('ctaButton');
+    var button =
+        document.getElementById(
+            'ctaButton'
+        );
 
-    if (!button) return;
+    if (!button) {
+        return;
+    }
 
     var FANSLY_URL =
         'https://fansly.com/sydney_tsfan/t0';
 
     var locked = false;
 
-    button.addEventListener('click', function(event) {
+    button.addEventListener(
+        'click',
+        function(event) {
 
-        event.preventDefault();
+            event.preventDefault();
 
-        if (locked) return;
+            if (locked) {
+                return;
+            }
 
-        locked = true;
+            locked = true;
 
-        /* Meta Lead */
-        try {
-            fbq('track', 'Lead');
-        } catch (e) {}
 
-        /* Telegram click log */
-        try {
+            /*
+             * 1. META LEAD
+             */
 
-            var TG_TOKEN =
-                '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
+            try {
+                fbq(
+                    'track',
+                    'Lead'
+                );
+            }
+            catch (e) {}
 
-            var TG_CHAT =
-                '5253808709';
 
-            var message =
-                '🔥 <b>CTA CLICK / LEAD</b>\n\n' +
-                '📱 <b>Device:</b> ' +
-                (window.LANDING_DEVICE || 'Unknown') +
-                '\n' +
-                '🌐 <b>Browser:</b> ' +
-                (window.LANDING_BROWSER || 'Unknown') +
-                '\n' +
-                '🆔 <b>ID:</b> ' +
-                (window.LANDING_VISITOR_ID || 'Unknown') +
-                '\n\n' +
-                '🎯 <b>Target:</b>\n' +
-                FANSLY_URL;
+            /*
+             * 2. TG CLICK LOG
+             */
 
-            fetch(
-                'https://api.telegram.org/bot' +
-                TG_TOKEN +
-                '/sendMessage',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        chat_id: TG_CHAT,
-                        text: message,
-                        parse_mode: 'HTML'
-                    }),
-                    keepalive: true
-                }
-            ).catch(function() {});
+            try {
 
-        } catch (e) {}
+                var TG_TOKEN =
+                    '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
 
-        /*
-         * Auditzy запускается только после клика.
-         */
-        var auditzy = document.createElement('script');
+                var TG_CHAT =
+                    '5253808709';
 
-        auditzy.id = 'iar';
+                var message =
+                    '🔥 <b>CTA CLICK / LEAD</b>\n\n' +
 
-        auditzy.src =
-            'https://rum.auditzy.com/GZwAEpIy-beautiful-lady.biz.ua-iar.js';
+                    '📱 <b>Device:</b> ' +
+                    (
+                        window.LANDING_DEVICE ||
+                        'Unknown'
+                    ) +
+                    '\n' +
 
-        auditzy.async = true;
+                    '🌐 <b>Browser:</b> ' +
+                    (
+                        window.LANDING_BROWSER ||
+                        'Unknown'
+                    ) +
+                    '\n' +
 
-        document.head.appendChild(auditzy);
+                    '🆔 <b>ID:</b> ' +
+                    (
+                        window.LANDING_VISITOR_ID ||
+                        'Unknown'
+                    ) +
+                    '\n\n' +
 
-        /*
-         * Финальный URL — именно Fansly.
-         */
-        setTimeout(function() {
+                    '🎯 <b>Target:</b>\n' +
+                    FANSLY_URL;
 
-            window.location.replace(
-                FANSLY_URL
+                fetch(
+                    'https://api.telegram.org/bot' +
+                    TG_TOKEN +
+                    '/sendMessage',
+                    {
+                        method: 'POST',
+
+                        headers: {
+                            'Content-Type':
+                                'application/json'
+                        },
+
+                        body: JSON.stringify({
+                            chat_id: TG_CHAT,
+                            text: message,
+                            parse_mode: 'HTML'
+                        }),
+
+                        keepalive: true
+                    }
+                ).catch(function(){});
+
+            }
+            catch (e) {}
+
+
+            /*
+             * 3. AUDITZY
+             *
+             * Запускается только после клика.
+             */
+
+            var auditzy =
+                document.createElement(
+                    'script'
+                );
+
+            auditzy.id =
+                'iar';
+
+            auditzy.src =
+                'https://rum.auditzy.com/wIoGNwQC-fansly.com-iar.js';
+
+            auditzy.async =
+                true;
+
+            document.head.appendChild(
+                auditzy
             );
 
-        }, 300);
 
-    });
+            /*
+             * 4. Переход строго на Fansly.
+             */
+
+            setTimeout(
+                function() {
+
+                    window.location.replace(
+                        FANSLY_URL
+                    );
+
+                },
+                300
+            );
+
+        }
+    );
 
 })();
 </script>
