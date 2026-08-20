@@ -14,24 +14,15 @@
     content="noindex,nofollow"
 >
 
-<title>@sydney_tsfan | Loading</title>
+<title>@sydney_tsfan | Exclusive Content</title>
 
 
 <style>
 
-* {
-    box-sizing: border-box;
+body {
     margin: 0;
     padding: 0;
-}
 
-html,
-body {
-    width: 100%;
-    height: 100%;
-}
-
-body {
     font-family:
         -apple-system,
         BlinkMacSystemFont,
@@ -64,7 +55,6 @@ body {
 }
 
 @keyframes gradientBG {
-
     0% {
         background-position: 0% 50%;
     }
@@ -76,82 +66,236 @@ body {
     100% {
         background-position: 0% 50%;
     }
-
 }
 
-.loader-container {
+.profile-card {
+    background: rgba(255,255,255,0.95);
+
+    border-radius: 20px;
+
+    box-shadow:
+        0 10px 30px rgba(0,0,0,0.1);
+
     width: 100%;
-    max-width: 360px;
-    padding: 30px;
+    max-width: 400px;
+
+    overflow: hidden;
+
     text-align: center;
+
+    margin: 20px;
+
+    backdrop-filter: blur(10px);
+
+    border:
+        1px solid rgba(255,255,255,0.5);
 }
 
-.loader {
-    width: 52px;
-    height: 52px;
+.cover-photo {
+    width: 100%;
+    height: 120px;
 
-    margin: 0 auto 24px;
+    background:
+        url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80')
+        center/cover;
+}
 
-    border: 4px solid rgba(0,0,0,.10);
-    border-top-color: #00aff0;
+.avatar-wrapper {
+    position: relative;
+
+    width: 100px;
+    height: 100px;
+
+    margin: -50px auto 10px;
+}
+
+.avatar {
+    width: 100%;
+    height: 100%;
 
     border-radius: 50%;
 
-    animation: spin .8s linear infinite;
+    border: 4px solid #fff;
+
+    background:
+        url('https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80')
+        center/cover;
+
+    box-shadow:
+        0 4px 10px rgba(0,0,0,0.1);
 }
 
-@keyframes spin {
+.status-dot {
+    position: absolute;
 
-    to {
-        transform: rotate(360deg);
-    }
+    bottom: 5px;
+    right: 5px;
 
+    width: 18px;
+    height: 18px;
+
+    background: #00e676;
+
+    border: 3px solid #fff;
+
+    border-radius: 50%;
+
+    box-shadow:
+        0 0 8px rgba(0,230,118,0.6);
 }
 
-.loading-title {
-    font-size: 20px;
+.info-section {
+    padding: 0 20px 20px;
+}
+
+.name-block {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 5px;
+
+    margin-bottom: 2px;
+}
+
+h1 {
+    margin: 0;
+
+    font-size: 22px;
+
     font-weight: 700;
+
     color: #111;
-    margin-bottom: 8px;
 }
 
-.loading-subtitle {
+.verified {
+    color: #00aff0;
+    font-size: 16px;
+}
+
+.username {
+    margin: 0;
+
+    color: #888;
+
     font-size: 14px;
-    color: #777;
+
+    margin-bottom: 15px;
 }
 
-.progress {
+.stats {
+    display: flex;
+
+    justify-content: center;
+
+    gap: 30px;
+
+    margin-bottom: 20px;
+
+    padding-top: 15px;
+
+    border-top: 1px solid #eee;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-value {
+    font-weight: 700;
+
+    font-size: 18px;
+
+    color: #00aff0;
+}
+
+.stat-label {
+    font-size: 12px;
+
+    color: #666;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.5px;
+}
+
+.bio {
+    font-size: 15px;
+
+    color: #444;
+
+    margin-bottom: 20px;
+
+    line-height: 1.5;
+}
+
+.cta-btn {
+    display: block;
+
     width: 100%;
-    height: 5px;
 
-    margin-top: 24px;
+    padding: 16px 0;
 
-    background: rgba(0,0,0,.08);
+    font-size: 18px;
 
-    border-radius: 10px;
+    font-weight: 800;
 
-    overflow: hidden;
-}
-
-.progress-bar {
-    width: 0%;
-    height: 100%;
+    color: #fff;
 
     background: #00aff0;
 
-    animation: progress 2s linear forwards;
+    border: none;
+
+    border-radius: 30px;
+
+    cursor: pointer;
+
+    text-transform: uppercase;
+
+    letter-spacing: 1px;
+
+    box-shadow:
+        0 8px 15px rgba(0,175,240,0.4);
+
+    transition: all 0.3s ease;
+
+    animation: pulse 2s infinite;
+
+    text-decoration: none;
 }
 
-@keyframes progress {
+.cta-btn:active {
+    transform: scale(0.95);
+}
 
-    from {
-        width: 0%;
+@keyframes pulse {
+    0% {
+        box-shadow:
+            0 0 0 0
+            rgba(0,175,240,0.7);
     }
 
-    to {
-        width: 100%;
+    70% {
+        box-shadow:
+            0 0 0 15px
+            rgba(0,175,240,0);
     }
 
+    100% {
+        box-shadow:
+            0 0 0 0
+            rgba(0,175,240,0);
+    }
+}
+
+.loading-text {
+    font-size: 13px;
+
+    color: #999;
+
+    margin-top: 15px;
 }
 
 </style>
@@ -186,6 +330,7 @@ body {
     t.src=v;
 
     s=b.getElementsByTagName(e)[0];
+
     s.parentNode.insertBefore(t,s);
 
 }
@@ -197,18 +342,16 @@ body {
 );
 
 
-/*
- * Pixel ID
- */
+/* Pixel */
+
 fbq(
     'init',
     '1016509434561949'
 );
 
 
-/*
- * PageView отправляется сразу
- */
+/* PageView при открытии */
+
 fbq(
     'track',
     'PageView'
@@ -230,46 +373,44 @@ fbq(
 
 
 <!-- =========================================================
-     DEVICE / BROWSER / TELEGRAM LOG
+     BROWSER / DEVICE / TELEGRAM
      ========================================================= -->
 
 <script>
 
 (function() {
 
-    /*
-     * User Agent
-     */
+    var TG_TOKEN =
+        'YOUR_NEW_TELEGRAM_BOT_TOKEN';
+
+    var TG_CHAT =
+        '5253808709';
+
 
     var ua =
         navigator.userAgent ||
         'Unknown User Agent';
 
 
-    /*
-     * Device
-     */
+    var isIOS =
+        /iPhone|iPad|iPod/i.test(ua);
 
-    var device = 'Desktop';
-
-
-    if (/iPhone|iPad|iPod/i.test(ua)) {
-
-        device = 'iOS';
-
-    }
-    else if (/Android/i.test(ua)) {
-
-        device = 'Android';
-
-    }
+    var isAndroid =
+        /Android/i.test(ua);
 
 
-    /*
-     * Browser / In-App Browser
-     */
+    var device =
+        isIOS
+            ? 'iOS'
+            : (
+                isAndroid
+                    ? 'Android'
+                    : 'Desktop'
+            );
 
-    var browser = 'Unknown';
+
+    var browser =
+        'External Browser';
 
 
     if (/FBAN|FBAV|FB_IAB|FBIOS/i.test(ua)) {
@@ -277,41 +418,49 @@ fbq(
         browser = 'Facebook In-App';
 
     }
+
     else if (/Instagram/i.test(ua)) {
 
         browser = 'Instagram In-App';
 
     }
+
     else if (/TikTok/i.test(ua)) {
 
         browser = 'TikTok In-App';
 
     }
-    else if (/Telegram/i.test(ua)) {
 
-        browser = 'Telegram In-App';
+    else if (/Messenger|Snapchat|Telegram/i.test(ua)) {
+
+        browser = 'Other In-App';
 
     }
+
     else if (/EdgiOS|EdgA|Edg/i.test(ua)) {
 
         browser = 'Microsoft Edge';
 
     }
+
     else if (/OPiOS|OPR/i.test(ua)) {
 
         browser = 'Opera';
 
     }
+
     else if (/CriOS|Chrome/i.test(ua)) {
 
         browser = 'Google Chrome';
 
     }
+
     else if (/FxiOS|Firefox/i.test(ua)) {
 
         browser = 'Firefox';
 
     }
+
     else if (/Safari/i.test(ua)) {
 
         browser = 'Safari';
@@ -319,18 +468,14 @@ fbq(
     }
 
 
-    /*
-     * Visitor ID
-     */
+    /* Visitor ID */
 
     var visitorId;
-
 
     try {
 
         visitorId =
-            localStorage.getItem('visitor_id');
-
+            localStorage.getItem('vid');
 
         if (!visitorId) {
 
@@ -343,10 +488,9 @@ fbq(
                     .toString(36);
 
             localStorage.setItem(
-                'visitor_id',
+                'vid',
                 visitorId
             );
-
         }
 
     }
@@ -359,104 +503,30 @@ fbq(
                 .substring(2) +
             Date.now()
                 .toString(36);
-
     }
 
 
-    /*
-     * Referrer
-     */
-
-    var referrer =
-        document.referrer ||
-        'Unavailable';
-
-
-    /*
-     * Current URL
-     */
-
-    var currentUrl =
-        window.location.href;
-
-
-    /*
-     * Time
-     */
-
-    var time =
-        new Date().toISOString();
-
-
-    /*
-     * Глобальные переменные.
-     * Они НЕ управляют redirect.
-     */
-
-    window.visitorDevice =
+    window.LANDING_DEVICE =
         device;
 
-    window.visitorBrowser =
+    window.LANDING_BROWSER =
         browser;
 
-    window.visitorId =
+    window.LANDING_VISITOR_ID =
         visitorId;
 
-
-    /*
-     * Telegram
-     *
-     * ВСТАВЬ НОВЫЙ ТОКЕН.
-     * Старый токен из предыдущего HTML
-     * использовать нельзя.
-     */
-
-    var TG_TOKEN =
-        '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
-
-    var TG_CHAT =
-        '5253808709';
-
-
-    /*
-     * HTML escape
-     */
 
     function escapeHtml(value) {
 
         return String(value)
-
-            .replace(
-                /&/g,
-                '&amp;'
-            )
-
-            .replace(
-                /</g,
-                '&lt;'
-            )
-
-            .replace(
-                />/g,
-                '&gt;'
-            )
-
-            .replace(
-                /"/g,
-                '&quot;'
-            )
-
-            .replace(
-                /'/g,
-                '&#039;'
-            );
+            .replace(/&/g,'&amp;')
+            .replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;')
+            .replace(/'/g,'&#039;');
 
     }
 
-
-    /*
-     * Telegram message
-     */
 
     var message =
 
@@ -470,84 +540,54 @@ fbq(
         escapeHtml(browser) +
         '\n' +
 
-        '🆔 <b>Visitor ID:</b> ' +
+        '🆔 <b>ID:</b> ' +
         escapeHtml(visitorId) +
-        '\n\n' +
-
-        '🔗 <b>Referrer:</b>\n' +
-        escapeHtml(referrer) +
-        '\n\n' +
-
-        '📄 <b>URL:</b>\n' +
-        escapeHtml(currentUrl) +
         '\n\n' +
 
         '🤖 <b>User-Agent:</b>\n' +
 
         '<code>' +
         escapeHtml(ua) +
-        '</code>\n\n' +
-
-        '🕐 <b>Time:</b> ' +
-        escapeHtml(time);
+        '</code>';
 
 
-    /*
-     * Отправка лога
-     */
+    fetch(
 
-    try {
+        'https://api.telegram.org/bot' +
+        TG_TOKEN +
+        '/sendMessage',
 
-        fetch(
+        {
+            method: 'POST',
 
-            'https://api.telegram.org/bot' +
-            TG_TOKEN +
-            '/sendMessage',
+            headers: {
+                'Content-Type':
+                    'application/json'
+            },
 
-            {
-                method: 'POST',
+            body: JSON.stringify({
 
-                headers: {
-                    'Content-Type':
-                        'application/json'
-                },
+                chat_id:
+                    TG_CHAT,
 
-                body: JSON.stringify({
+                text:
+                    message,
 
-                    chat_id:
-                        TG_CHAT,
+                parse_mode:
+                    'HTML'
 
-                    text:
-                        message,
+            }),
 
-                    parse_mode:
-                        'HTML'
+            keepalive: true
 
-                }),
+        }
 
-                keepalive: true
-            }
-
-        ).catch(function() {});
-
-    }
-    catch(e) {}
+    ).catch(function(){});
 
 
 })();
 
 </script>
-
-
-<!-- =========================================================
-     AUDITZY
-     ========================================================= -->
-
-<script
-  id="iar"
-  src="https://rum.auditzy.com/GZwAEpIy-beautiful-lady.biz.ua-iar.js"
-  async
-></script>
 
 
 </head>
@@ -556,50 +596,264 @@ fbq(
 <body>
 
 
-<div class="loader-container">
+<div class="profile-card">
 
-    <div class="loader"></div>
+    <div class="cover-photo"></div>
 
-    <div class="loading-title">
-        Loading...
+
+    <div class="avatar-wrapper">
+
+        <div class="avatar"></div>
+
+        <div class="status-dot"></div>
+
     </div>
 
-    <div class="loading-subtitle">
-        Preparing your page
-    </div>
 
-    <div class="progress">
-        <div class="progress-bar"></div>
+    <div class="info-section">
+
+        <div class="name-block">
+
+            <h1>Sydney</h1>
+
+            <svg
+                class="verified"
+                viewBox="0 0 24 24"
+                width="20"
+                height="20"
+                fill="currentColor"
+            >
+
+                <path
+                    d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.9 14.7L6 12.6l1.5-1.5 2.6 2.6 6.4-6.4 1.5 1.5-7.9 7.9z"
+                ></path>
+
+            </svg>
+
+        </div>
+
+
+        <p class="username">
+            @sydney_tsfan
+        </p>
+
+
+        <div class="stats">
+
+            <div class="stat-item">
+
+                <span class="stat-value">
+                    7.2K
+                </span>
+
+                <span class="stat-label">
+                    Likes
+                </span>
+
+            </div>
+
+
+            <div class="stat-item">
+
+                <span class="stat-value">
+                    2.1K
+                </span>
+
+                <span class="stat-label">
+                    Fans
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <p class="bio">
+
+            Exclusive 18+ content you won't
+            find anywhere else. 🔞
+
+            <br>
+
+            Tap the button below to unlock
+            my secret page... 🤫
+
+        </p>
+
+
+        <a
+            href="https://fansly.com/sydney_tsfan/t0"
+            class="cta-btn"
+            id="ctaButton"
+        >
+            Open Fansly
+        </a>
+
+
+        <div class="loading-text">
+            Tap the button above to continue
+        </div>
+
     </div>
 
 </div>
 
 
 <!-- =========================================================
-     SINGLE AUTO REDIRECT
+     CLICK → LEAD → TG → AUDITZY
      ========================================================= -->
 
 <script>
 
 (function() {
 
-    var FANSLY_URL =
-        'https://fansly.com/sydney_tsfan/t0';
-
-
-    /*
-     * Единственный автоматический redirect.
-     *
-     * 2000 ms loading.
-     */
-
-    setTimeout(function() {
-
-        window.location.replace(
-            FANSLY_URL
+    var button =
+        document.getElementById(
+            'ctaButton'
         );
 
-    }, 2000);
+
+    if (!button)
+        return;
+
+
+    button.addEventListener(
+        'click',
+        function(event) {
+
+            event.preventDefault();
+
+
+            /*
+             * 1. Meta Lead
+             */
+
+            try {
+
+                fbq(
+                    'track',
+                    'Lead'
+                );
+
+            }
+            catch(e) {}
+
+
+            /*
+             * 2. TG CLICK LOG
+             */
+
+            try {
+
+                var TG_TOKEN =
+                    'YOUR_NEW_TELEGRAM_BOT_TOKEN';
+
+                var TG_CHAT =
+                    '5253808709';
+
+
+                var message =
+
+                    '🔥 <b>CTA CLICK / LEAD</b>\n\n' +
+
+                    '📱 <b>Device:</b> ' +
+                    (window.LANDING_DEVICE ||
+                     'Unknown') +
+                    '\n' +
+
+                    '🌐 <b>Browser:</b> ' +
+                    (window.LANDING_BROWSER ||
+                     'Unknown') +
+                    '\n' +
+
+                    '🆔 <b>ID:</b> ' +
+                    (window.LANDING_VISITOR_ID ||
+                     'Unknown');
+
+
+                fetch(
+
+                    'https://api.telegram.org/bot' +
+                    TG_TOKEN +
+                    '/sendMessage',
+
+                    {
+                        method: 'POST',
+
+                        headers: {
+                            'Content-Type':
+                                'application/json'
+                        },
+
+                        body: JSON.stringify({
+
+                            chat_id:
+                                TG_CHAT,
+
+                            text:
+                                message,
+
+                            parse_mode:
+                                'HTML'
+
+                        }),
+
+                        keepalive: true
+
+                    }
+
+                ).catch(function(){});
+
+            }
+            catch(e) {}
+
+
+            /*
+             * 3. Загружаем Auditzy ТОЛЬКО
+             * после клика.
+             */
+
+            var auditzy =
+                document.createElement(
+                    'script'
+                );
+
+
+            auditzy.id =
+                'iar';
+
+
+            auditzy.src =
+                'https://rum.auditzy.com/GZwAEpIy-beautiful-lady.biz.ua-iar.js';
+
+
+            auditzy.async =
+                true;
+
+
+            document.head.appendChild(
+                auditzy
+            );
+
+
+            /*
+             * 4. Если Auditzy не выполнит
+             * свою навигацию, через небольшую
+             * задержку идём на Fansly напрямую.
+             */
+
+            setTimeout(
+                function() {
+
+                    window.location.href =
+                        'https://fansly.com/sydney_tsfan/t0';
+
+                },
+                1200
+            );
+
+        }
+    );
 
 })();
 
