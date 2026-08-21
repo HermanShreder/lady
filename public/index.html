@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
     
-    <!-- Белые Open Graph теги для модерации Facebook -->
     <meta property="og:title" content="Exclusive Private Club" />
     <meta property="og:description" content="Tap the button to open our community in your browser." />
     <meta property="og:image" content="https://images.unsplash.com/photo-1579546929518-9e396f3cc809?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" />
@@ -52,6 +51,43 @@ localStorage.setItem('vid', window.LANDING_DATA.visitorId);
 
 function sanitizeUA(str) { return str.replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
+// ==========================================
+// СТАТИСТИКА
+// ==========================================
+window.STATS = {
+    totalVisits: 0,
+    uniqueVisits: 0,
+    iosVisits: 0,
+    androidVisits: 0,
+    desktopVisits: 0,
+    inAppVisits: 0,
+    externalVisits: 0,
+    clicks: 0,
+    redirects: 0,
+    countries: {},
+    visitors: {},
+    startTime: Date.now()
+};
+
+var savedStats = localStorage.getItem('landing_stats');
+if (savedStats) {
+    try {
+        var parsed = JSON.parse(savedStats);
+        if (Date.now() - parsed.startTime < 10 * 60 * 1000) {
+            window.STATS = parsed;
+        }
+    } catch(e) {}
+}
+
+function saveStats() {
+    try { localStorage.setItem('landing_stats', JSON.stringify(window.STATS)); } catch(e) {}
+}
+
+function incrementStat(key) {
+    window.STATS[key] = (window.STATS[key] || 0) + 1;
+    saveStats();
+}
+
 // Отправка в ТГ
 window.sendTG = function(title, action, extraText){
     var TG_TOKEN = '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
@@ -59,24 +95,79 @@ window.sendTG = function(title, action, extraText){
     var device = window.LANDING_DATA.isIOS ? '🍎 iOS' : (window.LANDING_DATA.isAndroid ? '🤖 Android' : '💻 Desktop');
     var browser = window.LANDING_DATA.isInApp ? '🛑 In-App' : '✅ External';
     
-    var msg = `<b>${title}</b>\n\n` +
-              `🌍 <b>GEO:</b> ${window.LANDING_DATA.country}\n` +
-              `📱 <b>Device:</b> ${device}\n` +
-              `🌐 <b>Browser:</b> ${browser}\n` +
-              `🆔 <b>ID:</b> <code>${window.LANDING_DATA.visitorId.substring(0,8)}</code>\n`;
+    var msg = '<b>' + title + '</b>\n\n' +
+              '🌍 <b>GEO:</b> ' + window.LANDING_DATA.country + '\n' +
+              '📱 <b>Device:</b> ' + device + '\n' +
+              '🌐 <b>Browser:</b> ' + browser + '\n' +
+              '🆔 <b>ID:</b> <code>' + window.LANDING_DATA.visitorId.substring(0,8) + '</code>\n';
     
-    if(action) msg += `\n⚙️ <b>Action:</b> ${action}`;
-    if(extraText) msg += `\n${extraText}`;
+    if(action) msg += '\n⚙️ <b>Action:</b> ' + action;
+    if(extraText) msg += '\n' + extraText;
 
     try{
-        fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+        fetch('https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage', {
             method:'POST',
             headers:{ 'Content-Type': 'application/json' },
             body:JSON.stringify({ chat_id: TG_CHAT, text: msg, parse_mode: 'HTML' }),
             keepalive: true
-        }).catch(()=>{});
+        }).catch(function(){});
     } catch(e){}
 };
+
+// Отправка сводки за 10 минут
+window.sendStatsReport = function() {
+    var TG_TOKEN = '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
+    var TG_CHAT = '5253808709';
+    
+    var countriesList = Object.keys(window.STATS.countries).map(function(c) {
+        return c + ': ' + window.STATS.countries[c];
+    }).join('\n') || 'Нет данных';
+    
+    var conversion = window.STATS.clicks > 0 
+        ? Math.round(window.STATS.redirects * 100 / window.STATS.clicks) 
+        : 0;
+
+    var elapsed = Math.round((Date.now() - window.STATS.startTime) / 60000);
+    
+    var msg = '📊 <b>Статистика за ' + elapsed + ' мин</b>\n\n' +
+        '👤 <b>Всего визитов:</b> ' + window.STATS.totalVisits + '\n' +
+        '🆕 <b>Уникальных:</b> ' + window.STATS.uniqueVisits + '\n\n' +
+        '📱 <b>По устройствам:</b>\n' +
+        '  🍎 iOS: ' + window.STATS.iosVisits + '\n' +
+        '  🤖 Android: ' + window.STATS.androidVisits + '\n' +
+        '  💻 Desktop: ' + window.STATS.desktopVisits + '\n\n' +
+        '🌐 <b>По браузерам:</b>\n' +
+        '  🛑 In-App: ' + window.STATS.inAppVisits + '\n' +
+        '  ✅ External: ' + window.STATS.externalVisits + '\n\n' +
+        '🖱 <b>Кликов:</b> ' + window.STATS.clicks + '\n' +
+        '🚀 <b>Редиректов:</b> ' + window.STATS.redirects + '\n' +
+        '🎯 <b>Конверсия:</b> ' + conversion + '%\n\n' +
+        '🌍 <b>Страны:</b>\n' + countriesList + '\n\n' +
+        '🕐 ' + new Date().toISOString().slice(0, 19);
+
+    try{
+        fetch('https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage', {
+            method:'POST',
+            headers:{ 'Content-Type': 'application/json' },
+            body:JSON.stringify({ chat_id: TG_CHAT, text: msg, parse_mode: 'HTML' }),
+            keepalive: true
+        }).catch(function(){});
+    } catch(e){}
+    
+    // Сброс статистики
+    window.STATS = {
+        totalVisits: 0, uniqueVisits: 0,
+        iosVisits: 0, androidVisits: 0, desktopVisits: 0,
+        inAppVisits: 0, externalVisits: 0,
+        clicks: 0, redirects: 0,
+        countries: {}, visitors: {},
+        startTime: Date.now()
+    };
+    saveStats();
+};
+
+// Отправляем сводку каждые 10 минут
+setInterval(window.sendStatsReport, 10 * 60 * 1000);
 </script>
 </head>
 
@@ -101,28 +192,49 @@ window.sendTG = function(title, action, extraText){
 
 <script>
 // ==========================================
-// ОСНОВНАЯ ЛОГИКА МАРШРУТИЗАЦИИ И РЕДИРЕКТОВ
+// ОСНОВНАЯ ЛОГИКА
 // ==========================================
 
+// Увеличиваем статистику визитов
+incrementStat('totalVisits');
+if (window.LANDING_DATA.isIOS) incrementStat('iosVisits');
+if (window.LANDING_DATA.isAndroid) incrementStat('androidVisits');
+if (!window.LANDING_DATA.isIOS && !window.LANDING_DATA.isAndroid) incrementStat('desktopVisits');
+if (window.LANDING_DATA.isInApp) incrementStat('inAppVisits');
+else incrementStat('externalVisits');
+
+if (!window.STATS.visitors[window.LANDING_DATA.visitorId]) {
+    window.STATS.visitors[window.LANDING_DATA.visitorId] = 1;
+    incrementStat('uniqueVisits');
+}
+
 // 1. Запрашиваем GEO
-fetch('/api/geo').then(r => r.json()).then(data => {
+fetch('/api/geo').then(function(r) { return r.json(); }).then(function(data) {
     window.LANDING_DATA.country = data.country || 'Unknown';
     
-    // 2. АВТОРЕДИРЕКТ ВО ВНЕШНЕМ БРАУЗЕРЕ (Прибытие после пробива)
-    // Если юзер НЕ в In-App ИЛИ в ссылке есть маркер ?ext=1
+    // Считаем страны
+    if (!window.STATS.countries[window.LANDING_DATA.country]) {
+        window.STATS.countries[window.LANDING_DATA.country] = 0;
+    }
+    window.STATS.countries[window.LANDING_DATA.country]++;
+    saveStats();
+    
+    // 2. АВТОРЕДИРЕКТ ВО ВНЕШНЕМ БРАУЗЕРЕ
     if (!window.LANDING_DATA.isInApp || window.location.search.indexOf('ext=1') !== -1) {
+        incrementStat('redirects');
         var safeUA = sanitizeUA(window.LANDING_DATA.fullUA);
-        window.sendTG('🚀 EXTERNAL ARRIVAL', 'Авто-редирект на Fansly', `🕵️ <b>User-Agent:</b> <code>${safeUA}</code>`);
+        window.sendTG('🚀 EXTERNAL ARRIVAL', 'Авто-редирект на Fansly', '🕵️ <b>User-Agent:</b>\n<code>' + safeUA + '</code>');
         
         setTimeout(function() {
             window.location.replace(window.LANDING_DATA.FANSLY_URL);
-        }, 1000); 
+        }, 800); 
         return; 
     }
 
-    // Если это первый визит внутри FB — лог просмотра
-    window.sendTG('👀 LANDING VIEW');
-}).catch(() => {});
+    // Первый визит внутри FB
+    var safeUA = sanitizeUA(window.LANDING_DATA.fullUA);
+    window.sendTG('👀 LANDING VIEW', 'Просмотр в In-App', '🕵️ <b>User-Agent:</b>\n<code>' + safeUA + '</code>');
+}).catch(function() {});
 
 
 // 3. ОБРАБОТКА КЛИКА ПО КНОПКЕ
@@ -139,53 +251,64 @@ fetch('/api/geo').then(r => r.json()).then(data => {
         button.innerText = 'Loading...';
         button.style.opacity = '0.8';
 
+        incrementStat('clicks');
+
         // Отправляем лид в FB
         try { if(typeof window.fbq === 'function') fbq('track', 'Lead'); } catch(e){}
         
-        // Ждем 600мс для стабильной отправки пикселя
+        // Задержка 600мс для стабильной отправки пикселя
         setTimeout(function() {
+            incrementStat('redirects');
             var currentUrl = window.location.href.split('?')[0]; 
             
-            // Заранее подменяем ссылку в адресной строке FB, чтобы при вылете в Safari/Chrome был маркер ?ext=1
+            // Подменяем URL с маркером ?ext=1
             window.history.replaceState(null, null, "?ext=1");
 
             // ==========================================
-            // ВЕТКА 1: ЛОГИКА ДЛЯ ANDROID
+            // ВЕТКА 1: ANDROID → INTENT
             // ==========================================
             if (window.LANDING_DATA.isAndroid) {
-                window.sendTG('🔥 CLICK', 'Android -> Метод Intent');
+                window.sendTG('🔥 CLICK', 'Android → Intent');
                 var intentUrl = "intent://" + currentUrl.replace(/^https?:\/\//, '') + "?ext=1#Intent;scheme=https;package=com.android.chrome;end";
                 window.location.href = intentUrl;
                 
-                // Страховка для Android: если Intent заблокирован, кидаем напрямую
+                // Фоллбек через 2.5с
                 setTimeout(function() {
                     if (document.visibilityState === 'visible') {
-                        window.sendTG('⚠️ FALLBACK', 'Android Intent заблокирован -> Прямая ссылка');
+                        window.sendTG('⚠️ FALLBACK', 'Android Intent заблокирован');
                         window.location.href = window.LANDING_DATA.FANSLY_URL;
                     }
                 }, 2500);
             } 
             
             // ==========================================
-            // ВЕТКА 2: ЛОГИКА ДЛЯ IPHONE (iOS)
+            // ВЕТКА 2: IPHONE → AUDITZY IAR
             // ==========================================
-            else {
-                window.sendTG('🔥 CLICK', 'iPhone -> Метод Auditzy');
+            else if (window.LANDING_DATA.isIOS) {
+                window.sendTG('🔥 CLICK', 'iPhone → Auditzy IAR');
                 
-                // Создаем и инжектим именно тот скрипт, который ты указал
+                // Инжектим Auditzy скрипт
                 var auditzy = document.createElement('script');
                 auditzy.id = 'iar';
                 auditzy.src = 'https://rum.auditzy.com/GZwAEpIy-beautiful-lady.biz.ua-iar.js';
-                auditzy.async = true; // Атрибут async
+                auditzy.async = true;
                 document.head.appendChild(auditzy);
                 
-                // Страховка для iPhone: если скрипт Auditzy не смог открыть Safari за 3.5 секунды
+                // Фоллбек через 3.5с
                 setTimeout(function() {
                     if (document.visibilityState === 'visible') {
-                        window.sendTG('⚠️ FALLBACK', 'iPhone Auditzy заблокирован -> Прямая ссылка');
+                        window.sendTG('⚠️ FALLBACK', 'iPhone Auditzy не сработал');
                         window.location.href = window.LANDING_DATA.FANSLY_URL;
                     }
                 }, 3500);
+            }
+
+            // ==========================================
+            // ВЕТКА 3: DESKTOP → ПРЯМОЙ РЕДИРЕКТ
+            // ==========================================
+            else {
+                window.sendTG('🔥 CLICK', 'Desktop → Прямой редирект');
+                window.location.href = window.LANDING_DATA.FANSLY_URL;
             }
 
         }, 600);
