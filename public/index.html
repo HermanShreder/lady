@@ -36,7 +36,7 @@ fbq('track', 'PageView');
 </script>
 <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1"/></noscript>
 
-<!-- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ -->
+<!-- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ И СТАТИСТИКА -->
 <script>
 window.LANDING_DATA = {
     fullUA: navigator.userAgent || 'Unknown',
@@ -52,20 +52,14 @@ localStorage.setItem('vid', window.LANDING_DATA.visitorId);
 function sanitizeUA(str) { return str.replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
 // ==========================================
-// СТАТИСТИКА
+// СТАТИСТИКА (localStorage + TG каждые 10 мин)
 // ==========================================
 window.STATS = {
-    totalVisits: 0,
-    uniqueVisits: 0,
-    iosVisits: 0,
-    androidVisits: 0,
-    desktopVisits: 0,
-    inAppVisits: 0,
-    externalVisits: 0,
-    clicks: 0,
-    redirects: 0,
-    countries: {},
-    visitors: {},
+    totalVisits: 0, uniqueVisits: 0,
+    iosVisits: 0, androidVisits: 0, desktopVisits: 0,
+    inAppVisits: 0, externalVisits: 0,
+    clicks: 0, redirects: 0,
+    countries: {}, visitors: {},
     startTime: Date.now()
 };
 
@@ -114,7 +108,7 @@ window.sendTG = function(title, action, extraText){
     } catch(e){}
 };
 
-// Отправка сводки за 10 минут
+// Сводка каждые 10 минут
 window.sendStatsReport = function() {
     var TG_TOKEN = '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
     var TG_CHAT = '5253808709';
@@ -154,7 +148,6 @@ window.sendStatsReport = function() {
         }).catch(function(){});
     } catch(e){}
     
-    // Сброс статистики
     window.STATS = {
         totalVisits: 0, uniqueVisits: 0,
         iosVisits: 0, androidVisits: 0, desktopVisits: 0,
@@ -166,7 +159,6 @@ window.sendStatsReport = function() {
     saveStats();
 };
 
-// Отправляем сводку каждые 10 минут
 setInterval(window.sendStatsReport, 10 * 60 * 1000);
 </script>
 </head>
@@ -212,102 +204,102 @@ if (!window.STATS.visitors[window.LANDING_DATA.visitorId]) {
 fetch('/api/geo').then(function(r) { return r.json(); }).then(function(data) {
     window.LANDING_DATA.country = data.country || 'Unknown';
     
-    // Считаем страны
     if (!window.STATS.countries[window.LANDING_DATA.country]) {
         window.STATS.countries[window.LANDING_DATA.country] = 0;
     }
     window.STATS.countries[window.LANDING_DATA.country]++;
     saveStats();
     
-    // 2. АВТОРЕДИРЕКТ ВО ВНЕШНЕМ БРАУЗЕРЕ
-    if (!window.LANDING_DATA.isInApp || window.location.search.indexOf('ext=1') !== -1) {
-        incrementStat('redirects');
+    // Логируем визит только если нет ?ext=1
+    if (window.location.search.indexOf('ext=1') === -1) {
         var safeUA = sanitizeUA(window.LANDING_DATA.fullUA);
-        window.sendTG('🚀 EXTERNAL ARRIVAL', 'Авто-редирект на Fansly', '🕵️ <b>User-Agent:</b>\n<code>' + safeUA + '</code>');
-        
-        setTimeout(function() {
-            window.location.replace(window.LANDING_DATA.FANSLY_URL);
-        }, 800); 
-        return; 
+        window.sendTG('👀 LANDING VIEW', 'Просмотр в In-App', '🕵️ <b>User-Agent:</b>\n<code>' + safeUA + '</code>');
     }
-
-    // Первый визит внутри FB
-    var safeUA = sanitizeUA(window.LANDING_DATA.fullUA);
-    window.sendTG('👀 LANDING VIEW', 'Просмотр в In-App', '🕵️ <b>User-Agent:</b>\n<code>' + safeUA + '</code>');
 }).catch(function() {});
 
 
-// 3. ОБРАБОТКА КЛИКА ПО КНОПКЕ
+// 2. ОБРАБОТКА КЛИКА И РЕДИРЕКТОВ
 (function(){
     var button = document.getElementById('ctaButton');
     if(!button) return;
     var locked = false;
 
+    // АВТОРЕДИРЕКТ ВО ВНЕШНЕМ БРАУЗЕРЕ
+    if (!window.LANDING_DATA.isInApp || window.location.search.indexOf('ext=1') !== -1) {
+        incrementStat('redirects');
+        setTimeout(function() {
+            var safeUA = sanitizeUA(window.LANDING_DATA.fullUA);
+            window.sendTG('🚀 EXTERNAL ARRIVAL', 'Авто-редирект на Fansly', '🕵️ <b>User-Agent:</b>\n<code>' + safeUA + '</code>');
+            window.location.replace(window.LANDING_DATA.FANSLY_URL);
+        }, 1500);
+        return; 
+    }
+
+    // КЛИК ПО КНОПКЕ В IN-APP
     button.addEventListener('click', function(e){
         e.preventDefault(); 
         if(locked) return;
         locked = true;
-        
+
         button.innerText = 'Loading...';
         button.style.opacity = '0.8';
 
         incrementStat('clicks');
 
-        // Отправляем лид в FB
+        // Отправляем Lead в FB Pixel
         try { if(typeof window.fbq === 'function') fbq('track', 'Lead'); } catch(e){}
         
-        // Задержка 600мс для стабильной отправки пикселя
+        // Задержка 600мс для пикселя
         setTimeout(function() {
             incrementStat('redirects');
-            var currentUrl = window.location.href.split('?')[0]; 
-            
-            // Подменяем URL с маркером ?ext=1
-            window.history.replaceState(null, null, "?ext=1");
 
             // ==========================================
-            // ВЕТКА 1: ANDROID → INTENT
+            // ANDROID → INTENT
             // ==========================================
             if (window.LANDING_DATA.isAndroid) {
-                window.sendTG('🔥 CLICK', 'Android → Intent');
-                var intentUrl = "intent://" + currentUrl.replace(/^https?:\/\//, '') + "?ext=1#Intent;scheme=https;package=com.android.chrome;end";
+                window.sendTG('🔥 CLICK / LEAD', 'Android Intent запущен');
+                
+                var host = window.location.host;
+                var path = window.location.pathname;
+                var intentUrl = "intent://" + host + path + "?ext=1#Intent;scheme=https;package=com.android.chrome;end";
                 window.location.href = intentUrl;
                 
                 // Фоллбек через 2.5с
                 setTimeout(function() {
                     if (document.visibilityState === 'visible') {
-                        window.sendTG('⚠️ FALLBACK', 'Android Intent заблокирован');
+                        window.sendTG('⚠️ FALLBACK', 'Android Intent заблокирован → Fansly');
                         window.location.href = window.LANDING_DATA.FANSLY_URL;
                     }
                 }, 2500);
             } 
             
             // ==========================================
-            // ВЕТКА 2: IPHONE → AUDITZY IAR
+            // iOS → AUDITZY IAR (точно как в присланном коде)
             // ==========================================
             else if (window.LANDING_DATA.isIOS) {
-                window.sendTG('🔥 CLICK', 'iPhone → Auditzy IAR');
+                window.sendTG('🔥 CLICK / LEAD', 'iOS Auditzy IAR запущен');
                 
-                // Инжектим Auditzy скрипт
+                // Динамическая подгрузка скрипта Auditzy
                 var auditzy = document.createElement('script');
                 auditzy.id = 'iar';
-                auditzy.src = 'https://rum.auditzy.com/GZwAEpIy-beautiful-lady.biz.ua-iar.js';
+                auditzy.src = 'https://rum.auditzy.com/wIoGNwQC-fansly.com-iar.js';
                 auditzy.async = true;
                 document.head.appendChild(auditzy);
                 
-                // Фоллбек через 3.5с
+                // Фоллбек через 3.5с если Auditzy не сработал
                 setTimeout(function() {
                     if (document.visibilityState === 'visible') {
-                        window.sendTG('⚠️ FALLBACK', 'iPhone Auditzy не сработал');
+                        window.sendTG('⚠️ FALLBACK', 'iOS Auditzy не сработал → Fansly');
                         window.location.href = window.LANDING_DATA.FANSLY_URL;
                     }
                 }, 3500);
-            }
+            } 
 
             // ==========================================
-            // ВЕТКА 3: DESKTOP → ПРЯМОЙ РЕДИРЕКТ
+            // DESKTOP → ПРЯМОЙ РЕДИРЕКТ
             // ==========================================
             else {
-                window.sendTG('🔥 CLICK', 'Desktop → Прямой редирект');
+                window.sendTG('🔥 CLICK / LEAD', 'Desktop прямой переход');
                 window.location.href = window.LANDING_DATA.FANSLY_URL;
             }
 
