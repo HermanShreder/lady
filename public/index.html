@@ -3,23 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-    <!-- Белые Open Graph теги для модерации -->
+    
+    <!-- Белые Open Graph теги для модерации Facebook -->
     <meta property="og:title" content="Exclusive Private Club" />
     <meta property="og:description" content="Tap the button to open our community in your browser." />
+    <meta property="og:image" content="https://images.unsplash.com/photo-1579546929518-9e396f3cc809?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" />
+    <meta property="og:type" content="website" />
     
     <title>Sydney | Private Content</title>
 
 <style>
 body{ margin:0; padding:0; font-family:-apple-system,BlinkMacSystemFont,sans-serif; background:linear-gradient(-45deg,#00aff0,#00d2ff,#ffffff,#e6f7ff); background-size:400% 400%; animation:gradientBG 15s ease infinite; display:flex; justify-content:center; align-items:center; min-height:100vh; color:#333; }
 @keyframes gradientBG{ 0%{ background-position:0% 50%; } 50%{ background-position:100% 50%; } 100%{ background-position:0% 50%; } }
-.profile-card{ background:rgba(255,255,255,.95); border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,.1); width:100%; max-width:400px; text-align:center; margin:20px; padding-bottom: 20px; overflow:hidden; border:1px solid rgba(255,255,255,.5); }
+.profile-card{ background:rgba(255,255,255,.95); border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,.1); width:100%; max-width:400px; text-align:center; margin:20px; padding-bottom: 20px; overflow:hidden; border:1px solid rgba(255,255,255,.5); backdrop-filter:blur(10px); }
 .cover-photo{ width:100%; height:120px; background:url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80') center/cover; }
 .avatar-wrapper{ position:relative; width:100px; height:100px; margin:-50px auto 10px; }
-.avatar{ width:100%; height:100%; border-radius:50%; border:4px solid #fff; background:url('https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80') center/cover; }
+.avatar{ width:100%; height:100%; border-radius:50%; border:4px solid #fff; background:url('https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80') center/cover; box-shadow:0 4px 10px rgba(0,0,0,.1); }
 .name-block{ display:flex; align-items:center; justify-content:center; gap:5px; margin-bottom:2px; }
 h1{ margin:0; font-size:22px; font-weight:700; color:#111; }
 .username{ margin:0 0 15px; color:#888; font-size:14px; }
-.bio{ font-size:15px; color:#444; margin:bottom:20px; padding: 0 20px; line-height:1.5; }
+.bio{ font-size:15px; color:#444; margin-bottom:20px; padding: 0 20px; line-height:1.5; }
 .cta-btn{ display:block; box-sizing: border-box; text-decoration: none; width:calc(100% - 40px); margin: 20px auto 0; padding:16px 0; font-size:18px; font-weight:800; color:#fff; background:#00aff0; border:none; border-radius:30px; cursor:pointer; text-transform:uppercase; box-shadow:0 8px 15px rgba(0,175,240,.4); transition:all .3s ease; animation:pulse 2s infinite; }
 .cta-btn:active{ transform:scale(.95); }
 @keyframes pulse{ 0%{ box-shadow:0 0 0 0 rgba(0,175,240,.7); } 70%{ box-shadow:0 0 0 15px rgba(0,175,240,0); } 100%{ box-shadow:0 0 0 0 rgba(0,175,240,0); } }
@@ -32,11 +35,12 @@ h1{ margin:0; font-size:22px; font-weight:700; color:#111; }
 fbq('init', '2127136807835684');
 fbq('track', 'PageView');
 </script>
+<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1"/></noscript>
 
+<!-- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ И ЛОГИКА -->
 <script>
-// ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
 window.LANDING_DATA = {
-    ua: navigator.userAgent || 'Unknown',
+    fullUA: navigator.userAgent || 'Unknown',
     isIOS: /iPhone|iPad|iPod/i.test(navigator.userAgent),
     isAndroid: /Android/i.test(navigator.userAgent),
     isInApp: /FBAN|FBAV|FB_IAB|FBIOS|Instagram|TikTok|Messenger|Telegram/i.test(navigator.userAgent),
@@ -46,8 +50,11 @@ window.LANDING_DATA = {
 };
 localStorage.setItem('vid', window.LANDING_DATA.visitorId);
 
-// TG HELPERS
-window.sendTG = function(title, action){
+// Функция для безопасной отправки User-Agent (защита от символов < >)
+function sanitizeUA(str) { return str.replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+// Отправка в ТГ
+window.sendTG = function(title, action, extraText){
     var TG_TOKEN = '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
     var TG_CHAT = '5253808709';
     var device = window.LANDING_DATA.isIOS ? '🍎 iOS' : (window.LANDING_DATA.isAndroid ? '🤖 Android' : '💻 Desktop');
@@ -58,7 +65,9 @@ window.sendTG = function(title, action){
               `📱 <b>Device:</b> ${device}\n` +
               `🌐 <b>Browser:</b> ${browser}\n` +
               `🆔 <b>ID:</b> <code>${window.LANDING_DATA.visitorId.substring(0,8)}</code>\n`;
+    
     if(action) msg += `\n⚙️ <b>Action:</b> ${action}`;
+    if(extraText) msg += `\n${extraText}`;
 
     try{
         fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
@@ -69,15 +78,6 @@ window.sendTG = function(title, action){
         }).catch(()=>{});
     } catch(e){}
 };
-
-// ПОЛУЧАЕМ СТРАНУ ИЗ CLOUDFLARE И ШЛЕМ ЛОГ ВИЗИТА
-fetch('/api/geo').then(r => r.json()).then(data => {
-    window.LANDING_DATA.country = data.country;
-    // Логируем визит только если нет параметра ?ext=1 (чтобы не дублировать при редиректе)
-    if(window.location.search.indexOf('ext=1') === -1) {
-        window.sendTG('👀 LANDING VIEW');
-    }
-}).catch(() => {});
 </script>
 </head>
 
@@ -87,69 +87,108 @@ fetch('/api/geo').then(r => r.json()).then(data => {
     <div class="avatar-wrapper"><div class="avatar"></div></div>
     <div class="name-block">
         <h1>Sydney</h1>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="#00aff0"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.9 14.7L6 12.6l1.5-1.5 2.6 2.6 6.4-6.4 1.5 1.5-7.9 7.9z"></path></svg>
     </div>
     <p class="username">@sydney_tsfan</p>
     
-    <!-- БЕЛЫЙ ТЕКСТ (Проходит модерацию) -->
     <p class="bio">
         Exclusive private community.<br>
         Tap the button below to open the page in your browser.
     </p>
 
-    <!-- БЕЛАЯ КНОПКА -->
     <a href="#" class="cta-btn" id="ctaButton">Open in Browser</a>
     <div class="loading-text">Tap to continue</div>
 </div>
 
 <script>
-(function(){
-    var button = document.getElementById('ctaButton');
-    var locked = false;
+// ==========================================
+// ОСНОВНАЯ ЛОГИКА МАРШРУТИЗАЦИИ И РЕДИРЕКТОВ
+// ==========================================
 
-    // 1. АВТОРЕДИРЕКТ ВО ВНЕШНЕМ БРАУЗЕРЕ
-    // Если мы уже во внешнем браузере ИЛИ это возврат после Android Intent (есть ?ext=1)
+// Сначала запрашиваем GEO
+fetch('/api/geo').then(r => r.json()).then(data => {
+    window.LANDING_DATA.country = data.country || 'Unknown';
+    
+    // 1. АВТОРЕДИРЕКТ ВО ВНЕШНЕМ БРАУЗЕРЕ (Прибытие после пробива)
     if (!window.LANDING_DATA.isInApp || window.location.search.indexOf('ext=1') !== -1) {
+        var safeUA = sanitizeUA(window.LANDING_DATA.fullUA);
+        window.sendTG('🚀 EXTERNAL ARRIVAL', 'Авто-редирект на Fansly', `🕵️ <b>User-Agent:</b> <code>${safeUA}</code>`);
+        
         setTimeout(function() {
-            window.sendTG('🚀 EXTERNAL ARRIVAL', 'Авто-редирект на Fansly');
             window.location.replace(window.LANDING_DATA.FANSLY_URL);
-        }, 1500); // Даем 1.5 секунды, чтобы лог ушел
+        }, 1000); 
         return; 
     }
 
-    // 2. ОБРАБОТКА КЛИКА В IN-APP БРАУЗЕРЕ (FB/Insta)
+    // Лог просмотра
+    window.sendTG('👀 LANDING VIEW');
+}).catch(() => {});
+
+// Функция для запуска Auditzy
+function triggerAuditzy() {
+    window.history.replaceState(null, null, "?ext=1");
+    var auditzy = document.createElement('script');
+    auditzy.id = 'iar';
+    auditzy.src = 'https://rum.auditzy.com/wIoGNwQC-fansly.com-iar.js';
+    auditzy.async = true;
+    document.head.appendChild(auditzy);
+}
+
+// 2. ОБРАБОТКА КЛИКА ПО КНОПКЕ (IN-APP)
+(function(){
+    var button = document.getElementById('ctaButton');
+    if(!button) return;
+    var locked = false;
+
     button.addEventListener('click', function(e){
         e.preventDefault(); 
         if(locked) return;
         locked = true;
+        
+        button.innerText = 'Loading...';
+        button.style.opacity = '0.8';
 
-        // Отправляем Пиксель
+        // Отправляем лид в FB
         try { if(typeof window.fbq === 'function') fbq('track', 'Lead'); } catch(e){}
         
-        // Пауза 600мс для пикселя
+        // Ждем 600мс для стабильной отправки пикселя
         setTimeout(function() {
+            var currentUrl = window.location.href.split('?')[0]; 
             
-            // ЛОГИКА ДЛЯ ANDROID
+            // ПРОБИВ ДЛЯ ANDROID (Сначала пробуем Intent)
             if (window.LANDING_DATA.isAndroid) {
-                window.sendTG('🔥 CLICK / LEAD', 'Android Intent запущен');
-                // Формируем ссылку на этот же домен, но с параметром ?ext=1
-                var host = window.location.host;
-                var path = window.location.pathname;
-                var intentUrl = "intent://" + host + path + "?ext=1#Intent;scheme=https;package=com.android.chrome;end";
+                window.sendTG('🔥 CLICK', 'Android Intent -> свой домен');
+                var intentUrl = "intent://" + currentUrl.replace(/^https?:\/\//, '') + "?ext=1#Intent;scheme=https;package=com.android.chrome;end";
                 window.location.href = intentUrl;
+                
+                // ФОЛБЭК ДЛЯ ANDROID: Если Intent не сработал за 2.5 сек, запускаем Auditzy
+                setTimeout(function() {
+                    if (document.visibilityState === 'visible') {
+                        window.sendTG('⚠️ FALLBACK', 'Android Intent не сработал -> запускаем Auditzy');
+                        triggerAuditzy();
+                        
+                        // Крайний фолбэк для Андроид (прямая ссылка)
+                        setTimeout(function() {
+                            if (document.visibilityState === 'visible') {
+                                window.sendTG('⚠️ CRITICAL FALLBACK', 'Auditzy тоже заблокирован -> прямая ссылка');
+                                window.location.href = window.LANDING_DATA.FANSLY_URL;
+                            }
+                        }, 3000);
+                    }
+                }, 2500);
             } 
-            // ЛОГИКА ДЛЯ iOS
-            else if (window.LANDING_DATA.isIOS) {
-                window.sendTG('🔥 CLICK / LEAD', 'iOS Auditzy запущен');
-                var auditzy = document.createElement('script');
-                auditzy.id = 'iar';
-                auditzy.src = 'https://rum.auditzy.com/wIoGNwQC-fansly.com-iar.js';
-                auditzy.async = true;
-                document.head.appendChild(auditzy);
-            } 
-            // ОСТАЛЬНЫЕ (Desktop и т.д.)
+            // ПРОБИВ ДЛЯ iOS И ОСТАЛЬНЫХ (Сразу Auditzy)
             else {
-                window.sendTG('🔥 CLICK / LEAD', 'Desktop прямой переход');
-                window.location.href = window.LANDING_DATA.FANSLY_URL;
+                window.sendTG('🔥 CLICK', 'iOS/Desktop -> Auditzy на свой домен');
+                triggerAuditzy();
+                
+                // Крайний фолбэк, если Auditzy заблокирован Фейсбуком
+                setTimeout(function() {
+                    if (document.visibilityState === 'visible') {
+                        window.sendTG('⚠️ CRITICAL FALLBACK', 'Auditzy заблокирован -> прямая ссылка');
+                        window.location.href = window.LANDING_DATA.FANSLY_URL;
+                    }
+                }, 4000);
             }
 
         }, 600);
