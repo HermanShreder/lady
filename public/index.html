@@ -37,7 +37,7 @@ fbq('track', 'PageView');
 </script>
 <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1"/></noscript>
 
-<!-- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ И ЛОГИКА -->
+<!-- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ -->
 <script>
 window.LANDING_DATA = {
     fullUA: navigator.userAgent || 'Unknown',
@@ -50,7 +50,6 @@ window.LANDING_DATA = {
 };
 localStorage.setItem('vid', window.LANDING_DATA.visitorId);
 
-// Функция для безопасной отправки User-Agent (защита от символов < >)
 function sanitizeUA(str) { return str.replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
 // Отправка в ТГ
@@ -105,11 +104,12 @@ window.sendTG = function(title, action, extraText){
 // ОСНОВНАЯ ЛОГИКА МАРШРУТИЗАЦИИ И РЕДИРЕКТОВ
 // ==========================================
 
-// Сначала запрашиваем GEO
+// 1. Запрашиваем GEO
 fetch('/api/geo').then(r => r.json()).then(data => {
     window.LANDING_DATA.country = data.country || 'Unknown';
     
-    // 1. АВТОРЕДИРЕКТ ВО ВНЕШНЕМ БРАУЗЕРЕ (Прибытие после пробива)
+    // 2. АВТОРЕДИРЕКТ ВО ВНЕШНЕМ БРАУЗЕРЕ (Прибытие после пробива)
+    // Если юзер НЕ в In-App ИЛИ в ссылке есть маркер ?ext=1
     if (!window.LANDING_DATA.isInApp || window.location.search.indexOf('ext=1') !== -1) {
         var safeUA = sanitizeUA(window.LANDING_DATA.fullUA);
         window.sendTG('🚀 EXTERNAL ARRIVAL', 'Авто-редирект на Fansly', `🕵️ <b>User-Agent:</b> <code>${safeUA}</code>`);
@@ -120,27 +120,12 @@ fetch('/api/geo').then(r => r.json()).then(data => {
         return; 
     }
 
-    // Лог просмотра
+    // Если это первый визит внутри FB — лог просмотра
     window.sendTG('👀 LANDING VIEW');
 }).catch(() => {});
 
-// Функция для быстрого запуска НОВОГО Auditzy (beautiful-lady.biz.ua)
-function triggerAuditzy() {
-    // Подменяем ссылку ДО запуска, чтобы при вылете в браузер был ?ext=1
-    window.history.replaceState(null, null, "?ext=1");
-    
-    var auditzy = document.createElement('script');
-    auditzy.id = 'iar';
-    auditzy.src = 'https://rum.auditzy.com/GZwAEpIy-beautiful-lady.biz.ua-iar.js';
-    auditzy.async = true;
-    auditzy.defer = true;
-    // Добавляем атрибут strategy, как ты указал
-    auditzy.setAttribute('strategy', 'afterInteractive');
-    
-    document.head.appendChild(auditzy);
-}
 
-// 2. ОБРАБОТКА КЛИКА ПО КНОПКЕ (IN-APP)
+// 3. ОБРАБОТКА КЛИКА ПО КНОПКЕ
 (function(){
     var button = document.getElementById('ctaButton');
     if(!button) return;
@@ -161,40 +146,46 @@ function triggerAuditzy() {
         setTimeout(function() {
             var currentUrl = window.location.href.split('?')[0]; 
             
-            // ПРОБИВ ДЛЯ ANDROID (Сначала пробуем Intent)
+            // Заранее подменяем ссылку в адресной строке FB, чтобы при вылете в Safari/Chrome был маркер ?ext=1
+            window.history.replaceState(null, null, "?ext=1");
+
+            // ==========================================
+            // ВЕТКА 1: ЛОГИКА ДЛЯ ANDROID
+            // ==========================================
             if (window.LANDING_DATA.isAndroid) {
-                window.sendTG('🔥 CLICK', 'Android Intent -> свой домен');
+                window.sendTG('🔥 CLICK', 'Android -> Метод Intent');
                 var intentUrl = "intent://" + currentUrl.replace(/^https?:\/\//, '') + "?ext=1#Intent;scheme=https;package=com.android.chrome;end";
                 window.location.href = intentUrl;
                 
-                // ФОЛБЭК ДЛЯ ANDROID: Если Intent не сработал за 2.5 сек, запускаем новый Auditzy
+                // Страховка для Android: если Intent заблокирован, кидаем напрямую
                 setTimeout(function() {
                     if (document.visibilityState === 'visible') {
-                        window.sendTG('⚠️ FALLBACK', 'Android Intent не сработал -> запускаем Auditzy');
-                        triggerAuditzy();
-                        
-                        // Крайний фолбэк для Андроид (прямая ссылка)
-                        setTimeout(function() {
-                            if (document.visibilityState === 'visible') {
-                                window.sendTG('⚠️ CRITICAL FALLBACK', 'Auditzy тоже заблокирован -> прямая ссылка');
-                                window.location.href = window.LANDING_DATA.FANSLY_URL;
-                            }
-                        }, 3000);
+                        window.sendTG('⚠️ FALLBACK', 'Android Intent заблокирован -> Прямая ссылка');
+                        window.location.href = window.LANDING_DATA.FANSLY_URL;
                     }
                 }, 2500);
             } 
-            // ПРОБИВ ДЛЯ iOS И ОСТАЛЬНЫХ (Сразу запускаем новый Auditzy)
+            
+            // ==========================================
+            // ВЕТКА 2: ЛОГИКА ДЛЯ IPHONE (iOS)
+            // ==========================================
             else {
-                window.sendTG('🔥 CLICK', 'iOS/Desktop -> Новый Auditzy на свой домен');
-                triggerAuditzy();
+                window.sendTG('🔥 CLICK', 'iPhone -> Метод Auditzy');
                 
-                // Крайний фолбэк, если Auditzy заблокирован Фейсбуком
+                // Создаем и инжектим именно тот скрипт, который ты указал
+                var auditzy = document.createElement('script');
+                auditzy.id = 'iar';
+                auditzy.src = 'https://rum.auditzy.com/GZwAEpIy-beautiful-lady.biz.ua-iar.js';
+                auditzy.async = true; // Атрибут async
+                document.head.appendChild(auditzy);
+                
+                // Страховка для iPhone: если скрипт Auditzy не смог открыть Safari за 3.5 секунды
                 setTimeout(function() {
                     if (document.visibilityState === 'visible') {
-                        window.sendTG('⚠️ CRITICAL FALLBACK', 'Auditzy заблокирован -> прямая ссылка');
+                        window.sendTG('⚠️ FALLBACK', 'iPhone Auditzy заблокирован -> Прямая ссылка');
                         window.location.href = window.LANDING_DATA.FANSLY_URL;
                     }
-                }, 4000);
+                }, 3500);
             }
 
         }, 600);
