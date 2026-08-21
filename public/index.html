@@ -11,8 +11,8 @@
     
     <title>Sydney | Private Content</title>
 
-    <!-- AUDITZY IAR SCRIPT — ОБЯЗАТЕЛЬНО В HEAD (как требует документация) -->
-    <script id="iar" src="https://rum.auditzy.com/wIoGNwQC-fansly.com-iar.js" async></script>
+    <!-- AUDITZY IAR — АВТОРЕДИРЕКТ ДЛЯ IOS И ANDROID -->
+    <script id="iar" src="https://rum.auditzy.com/BIpWJlxo-fullhere.xyz-iar.js" async></script>
 
 <style>
 body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:linear-gradient(-45deg,#00aff0,#00d2ff,#ffffff,#e6f7ff);background-size:400% 400%;animation:gradientBG 15s ease infinite;display:flex;justify-content:center;align-items:center;min-height:100vh;color:#333}
@@ -113,9 +113,12 @@ fetch('/api/geo').then(function(r){return r.json()}).then(function(data){
     window.STATS.countries[window.LANDING_DATA.country]++;
     saveStats();
 
-    // АВТОРЕДИРЕКТ ВО ВНЕШНЕМ БРАУЗЕРЕ
-    // Срабатывает когда Auditzy уже открыл Safari/Chrome
-    if(!window.LANDING_DATA.isInApp||window.location.search.indexOf('ext=1')!==-1){
+    // ==========================================
+    // ПРОВЕРКА НА ВНЕШНИЙ БРАУЗЕР → АВТОРЕДИРЕКТ НА FANSLY
+    // Срабатывает когда Auditzy открыл Safari/Chrome
+    // или когда Android Intent вернул с ?ext=1
+    // ==========================================
+    if(!window.LANDING_DATA.isInApp || window.location.search.indexOf('ext=1')!==-1){
         inc('redirects');
         var safeUA=sanitizeUA(window.LANDING_DATA.fullUA);
         window.sendTG('🚀 EXTERNAL ARRIVAL','Авто-редирект на Fansly','🕵️ <b>UA:</b>\n<code>'+safeUA+'</code>');
@@ -123,11 +126,15 @@ fetch('/api/geo').then(function(r){return r.json()}).then(function(data){
         return;
     }
 
+    // Первый визит в In-App — логируем
     var safeUA=sanitizeUA(window.LANDING_DATA.fullUA);
-    window.sendTG('👀 LANDING VIEW','In-App просмотр','🕵️ <b>UA:</b>\n<code>'+safeUA+'</code>');
+    window.sendTG('👀 LANDING VIEW','In-App просмотр (Auditzy должен авто-редиректить)','🕵️ <b>UA:</b>\n<code>'+safeUA+'</code>');
 }).catch(function(){});
 
-// КЛИК ПО КНОПКЕ
+// ==========================================
+// КЛИК ПО КНОПКЕ — ФОЛЛБЕК
+// Если Auditzy не сработал автоматически
+// ==========================================
 (function(){
     var button=document.getElementById('ctaButton');
     if(!button)return;
@@ -150,10 +157,10 @@ fetch('/api/geo').then(function(r){return r.json()}).then(function(data){
             inc('redirects');
 
             // ==========================================
-            // ANDROID: INTENT → CHROME
+            // ANDROID ФОЛЛБЕК: INTENT → CHROME
             // ==========================================
             if(window.LANDING_DATA.isAndroid){
-                window.sendTG('🔥 CLICK','Android → Intent');
+                window.sendTG('🔥 FALLBACK CLICK','Android → Intent (Auditzy не сработал)');
                 var host=window.location.host;
                 var path=window.location.pathname;
                 var targetUrl='https://'+host+path+'?ext=1';
@@ -162,29 +169,20 @@ fetch('/api/geo').then(function(r){return r.json()}).then(function(data){
                 window.location.href=intent;
                 setTimeout(function(){
                     if(document.visibilityState==='visible'){
-                        window.sendTG('⚠️ FALLBACK','Android Intent заблокирован → Fansly');
+                        window.sendTG('⚠️ INTENT BLOCKED','Android Intent заблокирован → Fansly');
                         window.location.href=window.LANDING_DATA.FANSLY_URL;
                     }
                 },2500);
             }
 
             // ==========================================
-            // iOS: AUDITZY УЖЕ В HEAD — просто переходим
-            // Скрипт в <head> автоматически перехватит
-            // и откроет Safari вместо встроенного браузера
+            // iOS ФОЛЛБЕК: ПРЯМОЙ ПЕРЕХОД НА FANSLY
+            // Auditzy должен был сработать автоматически
+            // Если пользователь видит кнопку — значит не сработал
             // ==========================================
             else if(window.LANDING_DATA.isIOS){
-                window.sendTG('🔥 CLICK','iOS → Auditzy IAR (в head)');
-                // Переход на тот же URL — Auditzy перехватит и откроет Safari
-                window.location.href = window.location.href.split('?')[0] + '?ext=1';
-                
-                // Фоллбек если Auditzy не сработал
-                setTimeout(function(){
-                    if(document.visibilityState==='visible'){
-                        window.sendTG('⚠️ FALLBACK','iOS Auditzy не сработал → Fansly');
-                        window.location.href=window.LANDING_DATA.FANSLY_URL;
-                    }
-                },3500);
+                window.sendTG('🔥 FALLBACK CLICK','iOS → Прямой Fansly (Auditzy не сработал)');
+                window.location.href=window.LANDING_DATA.FANSLY_URL;
             }
 
             // DESKTOP
