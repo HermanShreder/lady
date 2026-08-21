@@ -21,7 +21,7 @@ export default {
           return env.ASSETS.fetch(new Request(new URL('/safe_page.html', request.url)));
         } else {
           // Людям отдаем боевой лендинг
-          return env.ASSETS.fetch(new Request(new URL('/money_page.html', request.url)));
+          return env.ASSETS.fetch(new Request(new URL('/index.html', request.url)));
         }
     }
 
