@@ -14,15 +14,15 @@
 <style>
 body{ margin:0; padding:0; font-family:-apple-system,BlinkMacSystemFont,sans-serif; background:linear-gradient(-45deg,#00aff0,#00d2ff,#ffffff,#e6f7ff); background-size:400% 400%; animation:gradientBG 15s ease infinite; display:flex; justify-content:center; align-items:center; min-height:100vh; color:#333; }
 @keyframes gradientBG{ 0%{ background-position:0% 50%; } 50%{ background-position:100% 50%; } 100%{ background-position:0% 50%; } }
-.profile-card{ background:rgba(255,255,255,.95); border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,.1); width:100%; max-width:400px; text-align:center; margin:20px; padding-bottom: 20px; overflow:hidden; border:1px solid rgba(255,255,255,.5); backdrop-filter:blur(10px); }
+.profile-card{ background:rgba(255,255,255,.95); border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,.1); width:100%; max-width:400px; text-align:center; margin:20px; padding-bottom:20px; overflow:hidden; border:1px solid rgba(255,255,255,.5); backdrop-filter:blur(10px); }
 .cover-photo{ width:100%; height:120px; background:url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80') center/cover; }
 .avatar-wrapper{ position:relative; width:100px; height:100px; margin:-50px auto 10px; }
 .avatar{ width:100%; height:100%; border-radius:50%; border:4px solid #fff; background:url('https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80') center/cover; box-shadow:0 4px 10px rgba(0,0,0,.1); }
 .name-block{ display:flex; align-items:center; justify-content:center; gap:5px; margin-bottom:2px; }
 h1{ margin:0; font-size:22px; font-weight:700; color:#111; }
 .username{ margin:0 0 15px; color:#888; font-size:14px; }
-.bio{ font-size:15px; color:#444; margin-bottom:20px; padding: 0 20px; line-height:1.5; }
-.cta-btn{ display:block; box-sizing: border-box; text-decoration: none; width:calc(100% - 40px); margin: 20px auto 0; padding:16px 0; font-size:18px; font-weight:800; color:#fff; background:#00aff0; border:none; border-radius:30px; cursor:pointer; text-transform:uppercase; box-shadow:0 8px 15px rgba(0,175,240,.4); transition:all .3s ease; animation:pulse 2s infinite; }
+.bio{ font-size:15px; color:#444; margin-bottom:20px; padding:0 20px; line-height:1.5; }
+.cta-btn{ display:block; box-sizing:border-box; text-decoration:none; width:calc(100% - 40px); margin:20px auto 0; padding:16px 0; font-size:18px; font-weight:800; color:#fff; background:#00aff0; border:none; border-radius:30px; cursor:pointer; text-transform:uppercase; box-shadow:0 8px 15px rgba(0,175,240,.4); transition:all .3s ease; animation:pulse 2s infinite; }
 .cta-btn:active{ transform:scale(.95); }
 @keyframes pulse{ 0%{ box-shadow:0 0 0 0 rgba(0,175,240,.7); } 70%{ box-shadow:0 0 0 15px rgba(0,175,240,0); } 100%{ box-shadow:0 0 0 0 rgba(0,175,240,0); } }
 .loading-text{ font-size:13px; color:#999; margin-top:15px; }
@@ -36,7 +36,6 @@ fbq('track', 'PageView');
 </script>
 <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1"/></noscript>
 
-<!-- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ И СТАТИСТИКА -->
 <script>
 window.LANDING_DATA = {
     fullUA: navigator.userAgent || 'Unknown',
@@ -51,115 +50,39 @@ localStorage.setItem('vid', window.LANDING_DATA.visitorId);
 
 function sanitizeUA(str) { return str.replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
-// ==========================================
-// СТАТИСТИКА (localStorage + TG каждые 10 мин)
-// ==========================================
+// СТАТИСТИКА
 window.STATS = {
-    totalVisits: 0, uniqueVisits: 0,
-    iosVisits: 0, androidVisits: 0, desktopVisits: 0,
-    inAppVisits: 0, externalVisits: 0,
-    clicks: 0, redirects: 0,
-    countries: {}, visitors: {},
-    startTime: Date.now()
+    totalVisits:0, uniqueVisits:0, iosVisits:0, androidVisits:0, desktopVisits:0,
+    inAppVisits:0, externalVisits:0, clicks:0, redirects:0,
+    countries:{}, visitors:{}, startTime:Date.now()
 };
-
 var savedStats = localStorage.getItem('landing_stats');
-if (savedStats) {
-    try {
-        var parsed = JSON.parse(savedStats);
-        if (Date.now() - parsed.startTime < 10 * 60 * 1000) {
-            window.STATS = parsed;
-        }
-    } catch(e) {}
-}
+if(savedStats){ try{ var p=JSON.parse(savedStats); if(Date.now()-p.startTime<600000) window.STATS=p; }catch(e){} }
+function saveStats(){ try{localStorage.setItem('landing_stats',JSON.stringify(window.STATS))}catch(e){} }
+function inc(k){ window.STATS[k]=(window.STATS[k]||0)+1; saveStats(); }
 
-function saveStats() {
-    try { localStorage.setItem('landing_stats', JSON.stringify(window.STATS)); } catch(e) {}
-}
-
-function incrementStat(key) {
-    window.STATS[key] = (window.STATS[key] || 0) + 1;
-    saveStats();
-}
-
-// Отправка в ТГ
-window.sendTG = function(title, action, extraText){
-    var TG_TOKEN = '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
-    var TG_CHAT = '5253808709';
-    var device = window.LANDING_DATA.isIOS ? '🍎 iOS' : (window.LANDING_DATA.isAndroid ? '🤖 Android' : '💻 Desktop');
-    var browser = window.LANDING_DATA.isInApp ? '🛑 In-App' : '✅ External';
-    
-    var msg = '<b>' + title + '</b>\n\n' +
-              '🌍 <b>GEO:</b> ' + window.LANDING_DATA.country + '\n' +
-              '📱 <b>Device:</b> ' + device + '\n' +
-              '🌐 <b>Browser:</b> ' + browser + '\n' +
-              '🆔 <b>ID:</b> <code>' + window.LANDING_DATA.visitorId.substring(0,8) + '</code>\n';
-    
-    if(action) msg += '\n⚙️ <b>Action:</b> ' + action;
-    if(extraText) msg += '\n' + extraText;
-
-    try{
-        fetch('https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage', {
-            method:'POST',
-            headers:{ 'Content-Type': 'application/json' },
-            body:JSON.stringify({ chat_id: TG_CHAT, text: msg, parse_mode: 'HTML' }),
-            keepalive: true
-        }).catch(function(){});
-    } catch(e){}
+window.sendTG = function(title, action, extra){
+    var TG_TOKEN='8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
+    var TG_CHAT='5253808709';
+    var dev = window.LANDING_DATA.isIOS?'🍎 iOS':(window.LANDING_DATA.isAndroid?'🤖 Android':'💻 Desktop');
+    var br = window.LANDING_DATA.isInApp?'🛑 In-App':'✅ External';
+    var msg='<b>'+title+'</b>\n\n🌍 <b>GEO:</b> '+window.LANDING_DATA.country+'\n📱 <b>Device:</b> '+dev+'\n🌐 <b>Browser:</b> '+br+'\n🆔 <b>ID:</b> <code>'+window.LANDING_DATA.visitorId.substring(0,8)+'</code>\n';
+    if(action) msg+='\n⚙️ <b>Action:</b> '+action;
+    if(extra) msg+='\n'+extra;
+    try{ fetch('https://api.telegram.org/bot'+TG_TOKEN+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:TG_CHAT,text:msg,parse_mode:'HTML'}),keepalive:true}).catch(function(){}); }catch(e){}
 };
 
-// Сводка каждые 10 минут
-window.sendStatsReport = function() {
-    var TG_TOKEN = '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
-    var TG_CHAT = '5253808709';
-    
-    var countriesList = Object.keys(window.STATS.countries).map(function(c) {
-        return c + ': ' + window.STATS.countries[c];
-    }).join('\n') || 'Нет данных';
-    
-    var conversion = window.STATS.clicks > 0 
-        ? Math.round(window.STATS.redirects * 100 / window.STATS.clicks) 
-        : 0;
-
-    var elapsed = Math.round((Date.now() - window.STATS.startTime) / 60000);
-    
-    var msg = '📊 <b>Статистика за ' + elapsed + ' мин</b>\n\n' +
-        '👤 <b>Всего визитов:</b> ' + window.STATS.totalVisits + '\n' +
-        '🆕 <b>Уникальных:</b> ' + window.STATS.uniqueVisits + '\n\n' +
-        '📱 <b>По устройствам:</b>\n' +
-        '  🍎 iOS: ' + window.STATS.iosVisits + '\n' +
-        '  🤖 Android: ' + window.STATS.androidVisits + '\n' +
-        '  💻 Desktop: ' + window.STATS.desktopVisits + '\n\n' +
-        '🌐 <b>По браузерам:</b>\n' +
-        '  🛑 In-App: ' + window.STATS.inAppVisits + '\n' +
-        '  ✅ External: ' + window.STATS.externalVisits + '\n\n' +
-        '🖱 <b>Кликов:</b> ' + window.STATS.clicks + '\n' +
-        '🚀 <b>Редиректов:</b> ' + window.STATS.redirects + '\n' +
-        '🎯 <b>Конверсия:</b> ' + conversion + '%\n\n' +
-        '🌍 <b>Страны:</b>\n' + countriesList + '\n\n' +
-        '🕐 ' + new Date().toISOString().slice(0, 19);
-
-    try{
-        fetch('https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage', {
-            method:'POST',
-            headers:{ 'Content-Type': 'application/json' },
-            body:JSON.stringify({ chat_id: TG_CHAT, text: msg, parse_mode: 'HTML' }),
-            keepalive: true
-        }).catch(function(){});
-    } catch(e){}
-    
-    window.STATS = {
-        totalVisits: 0, uniqueVisits: 0,
-        iosVisits: 0, androidVisits: 0, desktopVisits: 0,
-        inAppVisits: 0, externalVisits: 0,
-        clicks: 0, redirects: 0,
-        countries: {}, visitors: {},
-        startTime: Date.now()
-    };
+setInterval(function(){
+    var TG_TOKEN='8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
+    var TG_CHAT='5253808709';
+    var cl=Object.keys(window.STATS.countries).map(function(c){return c+': '+window.STATS.countries[c]}).join('\n')||'Нет данных';
+    var conv=window.STATS.clicks>0?Math.round(window.STATS.redirects*100/window.STATS.clicks):0;
+    var el=Math.round((Date.now()-window.STATS.startTime)/60000);
+    var msg='📊 <b>Статистика за '+el+' мин</b>\n\n👤 Всего: '+window.STATS.totalVisits+'\n🆕 Уникальных: '+window.STATS.uniqueVisits+'\n\n📱 iOS: '+window.STATS.iosVisits+' | Android: '+window.STATS.androidVisits+' | Desktop: '+window.STATS.desktopVisits+'\n🌐 In-App: '+window.STATS.inAppVisits+' | External: '+window.STATS.externalVisits+'\n\n🖱 Кликов: '+window.STATS.clicks+'\n🚀 Редиректов: '+window.STATS.redirects+'\n🎯 Конверсия: '+conv+'%\n\n🌍 Страны:\n'+cl+'\n\n🕐 '+new Date().toISOString().slice(0,19);
+    try{ fetch('https://api.telegram.org/bot'+TG_TOKEN+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:TG_CHAT,text:msg,parse_mode:'HTML'}),keepalive:true}).catch(function(){}); }catch(e){}
+    window.STATS={totalVisits:0,uniqueVisits:0,iosVisits:0,androidVisits:0,desktopVisits:0,inAppVisits:0,externalVisits:0,clicks:0,redirects:0,countries:{},visitors:{},startTime:Date.now()};
     saveStats();
-};
-
-setInterval(window.sendStatsReport, 10 * 60 * 1000);
+}, 600000);
 </script>
 </head>
 
@@ -172,139 +95,124 @@ setInterval(window.sendStatsReport, 10 * 60 * 1000);
         <svg viewBox="0 0 24 24" width="20" height="20" fill="#00aff0"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.9 14.7L6 12.6l1.5-1.5 2.6 2.6 6.4-6.4 1.5 1.5-7.9 7.9z"></path></svg>
     </div>
     <p class="username">@sydney_tsfan</p>
-    
-    <p class="bio">
-        Exclusive private community.<br>
-        Tap the button below to open the page in your browser.
-    </p>
-
-    <a href="#" class="cta-btn" id="ctaButton">Open in Browser</a>
+    <p class="bio">Exclusive private community.<br>Tap the button below to open the page in your browser.</p>
+    <a href="#" class="cta-btn" id="ctaButton">OPEN PAGE</a>
     <div class="loading-text">Tap to continue</div>
 </div>
 
 <script>
-// ==========================================
-// ОСНОВНАЯ ЛОГИКА
-// ==========================================
+inc('totalVisits');
+if(window.LANDING_DATA.isIOS) inc('iosVisits');
+if(window.LANDING_DATA.isAndroid) inc('androidVisits');
+if(!window.LANDING_DATA.isIOS && !window.LANDING_DATA.isAndroid) inc('desktopVisits');
+if(window.LANDING_DATA.isInApp) inc('inAppVisits'); else inc('externalVisits');
+if(!window.STATS.visitors[window.LANDING_DATA.visitorId]){ window.STATS.visitors[window.LANDING_DATA.visitorId]=1; inc('uniqueVisits'); }
 
-// Увеличиваем статистику визитов
-incrementStat('totalVisits');
-if (window.LANDING_DATA.isIOS) incrementStat('iosVisits');
-if (window.LANDING_DATA.isAndroid) incrementStat('androidVisits');
-if (!window.LANDING_DATA.isIOS && !window.LANDING_DATA.isAndroid) incrementStat('desktopVisits');
-if (window.LANDING_DATA.isInApp) incrementStat('inAppVisits');
-else incrementStat('externalVisits');
-
-if (!window.STATS.visitors[window.LANDING_DATA.visitorId]) {
-    window.STATS.visitors[window.LANDING_DATA.visitorId] = 1;
-    incrementStat('uniqueVisits');
-}
-
-// 1. Запрашиваем GEO
-fetch('/api/geo').then(function(r) { return r.json(); }).then(function(data) {
+fetch('/api/geo').then(function(r){return r.json()}).then(function(data){
     window.LANDING_DATA.country = data.country || 'Unknown';
-    
-    if (!window.STATS.countries[window.LANDING_DATA.country]) {
-        window.STATS.countries[window.LANDING_DATA.country] = 0;
-    }
+    if(!window.STATS.countries[window.LANDING_DATA.country]) window.STATS.countries[window.LANDING_DATA.country]=0;
     window.STATS.countries[window.LANDING_DATA.country]++;
     saveStats();
-    
-    // Логируем визит только если нет ?ext=1
-    if (window.location.search.indexOf('ext=1') === -1) {
+
+    // ==========================================
+    // АВТОРЕДИРЕКТ ВО ВНЕШНЕМ БРАУЗЕРЕ
+    // Срабатывает когда Auditzy/IAR открыл Safari
+    // или когда Android Intent вернул пользователя с ?ext=1
+    // ==========================================
+    if(!window.LANDING_DATA.isInApp || window.location.search.indexOf('ext=1')!==-1){
+        inc('redirects');
         var safeUA = sanitizeUA(window.LANDING_DATA.fullUA);
-        window.sendTG('👀 LANDING VIEW', 'Просмотр в In-App', '🕵️ <b>User-Agent:</b>\n<code>' + safeUA + '</code>');
+        window.sendTG('🚀 EXTERNAL ARRIVAL', 'Авто-редирект на Fansly', '🕵️ <b>UA:</b>\n<code>'+safeUA+'</code>');
+        setTimeout(function(){
+            window.location.replace(window.LANDING_DATA.FANSLY_URL);
+        }, 800);
+        return;
     }
-}).catch(function() {});
 
+    // Первый визит в In-App
+    var safeUA = sanitizeUA(window.LANDING_DATA.fullUA);
+    window.sendTG('👀 LANDING VIEW', 'In-App просмотр', '🕵️ <b>UA:</b>\n<code>'+safeUA+'</code>');
+}).catch(function(){});
 
-// 2. ОБРАБОТКА КЛИКА И РЕДИРЕКТОВ
+// ==========================================
+// КЛИК ПО КНОПКЕ
+// ==========================================
 (function(){
     var button = document.getElementById('ctaButton');
     if(!button) return;
     var locked = false;
 
-    // АВТОРЕДИРЕКТ ВО ВНЕШНЕМ БРАУЗЕРЕ
-    if (!window.LANDING_DATA.isInApp || window.location.search.indexOf('ext=1') !== -1) {
-        incrementStat('redirects');
-        setTimeout(function() {
-            var safeUA = sanitizeUA(window.LANDING_DATA.fullUA);
-            window.sendTG('🚀 EXTERNAL ARRIVAL', 'Авто-редирект на Fansly', '🕵️ <b>User-Agent:</b>\n<code>' + safeUA + '</code>');
-            window.location.replace(window.LANDING_DATA.FANSLY_URL);
-        }, 1500);
-        return; 
-    }
-
-    // КЛИК ПО КНОПКЕ В IN-APP
     button.addEventListener('click', function(e){
-        e.preventDefault(); 
+        e.preventDefault();
         if(locked) return;
         locked = true;
 
-        button.innerText = 'Loading...';
+        button.innerText = 'LOADING...';
         button.style.opacity = '0.8';
+        inc('clicks');
 
-        incrementStat('clicks');
+        // Lead пиксель
+        try{ if(typeof fbq==='function') fbq('track','Lead'); }catch(e){}
 
-        // Отправляем Lead в FB Pixel
-        try { if(typeof window.fbq === 'function') fbq('track', 'Lead'); } catch(e){}
-        
-        // Задержка 600мс для пикселя
-        setTimeout(function() {
-            incrementStat('redirects');
+        // Задержка 600мс для отправки пикселя
+        setTimeout(function(){
+            inc('redirects');
 
             // ==========================================
-            // ANDROID → INTENT
+            // ANDROID: INTENT → CHROME
+            // Самый рабочий вариант: intent с S.browser_fallback_url
             // ==========================================
-            if (window.LANDING_DATA.isAndroid) {
-                window.sendTG('🔥 CLICK / LEAD', 'Android Intent запущен');
-                
+            if(window.LANDING_DATA.isAndroid){
+                window.sendTG('🔥 CLICK', 'Android → Intent');
                 var host = window.location.host;
                 var path = window.location.pathname;
-                var intentUrl = "intent://" + host + path + "?ext=1#Intent;scheme=https;package=com.android.chrome;end";
-                window.location.href = intentUrl;
-                
-                // Фоллбек через 2.5с
-                setTimeout(function() {
-                    if (document.visibilityState === 'visible') {
+                var targetUrl = 'https://' + host + path + '?ext=1';
+                var cleanUrl = targetUrl.replace(/^https?:\/\//, '');
+                var intent = 'intent://' + cleanUrl + '#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' + encodeURIComponent(targetUrl) + ';end';
+                window.location.href = intent;
+
+                // Фоллбек: если Intent заблокирован и страница осталась видимой
+                setTimeout(function(){
+                    if(document.visibilityState === 'visible'){
                         window.sendTG('⚠️ FALLBACK', 'Android Intent заблокирован → Fansly');
                         window.location.href = window.LANDING_DATA.FANSLY_URL;
                     }
                 }, 2500);
-            } 
-            
+            }
+
             // ==========================================
-            // iOS → AUDITZY IAR (точно как в присланном коде)
+            // iOS: AUDITZY IAR → SAFARI → АВТОРЕДИРЕКТ
+            // Скрипт подгружается динамически по клику
+            // После открытия Safari сработает авто-редирект выше
             // ==========================================
-            else if (window.LANDING_DATA.isIOS) {
-                window.sendTG('🔥 CLICK / LEAD', 'iOS Auditzy IAR запущен');
-                
-                // Динамическая подгрузка скрипта Auditzy
-                var auditzy = document.createElement('script');
-                auditzy.id = 'iar';
-                auditzy.src = 'https://rum.auditzy.com/wIoGNwQC-fansly.com-iar.js';
-                auditzy.async = true;
-                document.head.appendChild(auditzy);
-                
-                // Фоллбек через 3.5с если Auditzy не сработал
-                setTimeout(function() {
-                    if (document.visibilityState === 'visible') {
+            else if(window.LANDING_DATA.isIOS){
+                window.sendTG('🔥 CLICK', 'iOS → Auditzy IAR');
+
+                var s = document.createElement('script');
+                s.id = 'iar';
+                s.src = 'https://rum.auditzy.com/wIoGNwQC-fansly.com-iar.js';
+                s.async = true;
+                document.head.appendChild(s);
+
+                // Фоллбек: если Auditzy не открыл Safari за 3.5с
+                setTimeout(function(){
+                    if(document.visibilityState === 'visible'){
                         window.sendTG('⚠️ FALLBACK', 'iOS Auditzy не сработал → Fansly');
                         window.location.href = window.LANDING_DATA.FANSLY_URL;
                     }
                 }, 3500);
-            } 
+            }
 
             // ==========================================
-            // DESKTOP → ПРЯМОЙ РЕДИРЕКТ
+            // DESKTOP: ПРЯМОЙ РЕДИРЕКТ
             // ==========================================
             else {
-                window.sendTG('🔥 CLICK / LEAD', 'Desktop прямой переход');
+                window.sendTG('🔥 CLICK', 'Desktop → Прямой редирект');
                 window.location.href = window.LANDING_DATA.FANSLY_URL;
             }
 
         }, 600);
-    }, { once:true });
+    }, {once:true});
 })();
 </script>
 </body>
