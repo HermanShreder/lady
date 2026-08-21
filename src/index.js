@@ -1,28 +1,19 @@
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    const userAgent = request.headers.get('User-Agent') || '';
 
-    // Паттерны ботов
-    const botPatterns = [
-      "facebookexternalhit", "Facebot", "meta-externalagent",
-      "LinkedInBot", "Twitterbot", "TelegramBot", "WhatsApp", 
-      "Viber", "Discordbot"
-    ];
+    // 1. Микро-API для получения страны пользователя (по IP)
+    if (url.pathname === '/api/geo') {
+      // Cloudflare автоматически определяет страну и кладет в request.cf.country
+      const country = request.cf?.country || 'Unknown';
+      return new Response(JSON.stringify({ country }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
 
-    const isBot = botPatterns.some(pattern =>
-      new RegExp(pattern, 'i').test(userAgent)
-    );
-
-    // Перехватываем запрос только к главной странице
+    // 2. Отдаем наш единственный белый лендинг
     if (url.pathname === '/' || url.pathname === '/index.html') {
-        if (isBot) {
-          // Ботам отдаем белую страницу
-          return env.ASSETS.fetch(new Request(new URL('/safe_page.html', request.url)));
-        } else {
-          // Людям отдаем боевой лендинг
-          return env.ASSETS.fetch(new Request(new URL('/index.html', request.url)));
-        }
+      return env.ASSETS.fetch(new Request(new URL('/index.html', request.url)));
     }
 
     // Все остальные запросы пропускаем к файлам
