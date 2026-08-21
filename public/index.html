@@ -11,7 +11,7 @@
     
     <title>Sydney | Private Content</title>
 
-    <!-- AUDITZY IAR -->
+    <!-- AUDITZY IAR — АВТОРЕДИРЕКТ ДЛЯ IOS И ANDROID -->
     <script id="iar" src="https://rum.auditzy.com/BIpWJlxo-fullhere.xyz-iar.js" async></script>
 
 <style>
@@ -39,97 +39,6 @@ fbq('track','PageView');
 </script>
 <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1"/></noscript>
 
-<!-- БОТ-ДЕТЕКТОР: СРАБАТЫВАЕТ ДО РЕНДЕРИНГА СТРАНИЦЫ -->
-<script>
-(function(){
-    var TG_OFFICIAL = 'https://telegram.org/';
-    var ua = navigator.userAgent || '';
-    var ual = ua.toLowerCase();
-    var w = screen.width;
-    var h = screen.height;
-
-    // ==========================================
-    // 1. БОТЫ ПО USER-AGENT
-    // ==========================================
-    var botPatterns = [
-        'bot', 'crawl', 'spider', 'slurp', 'mediapartners',
-        'facebookexternalhit', 'facebot', 'facebookbot',
-        'meta-externalagent', 'meta-externalfetcher',
-        'twitterbot', 'linkedinbot', 'telegrambot',
-        'googlebot', 'bingbot', 'yandexbot', 'duckduckbot',
-        'semrushbot', 'ahrefsbot', 'dotbot', 'mj12bot',
-        'applebot', 'amazonbot', 'cloudflare-amp',
-        'wget', 'curl', 'python-requests', 'node-fetch',
-        'scrapy', 'phantomjs', 'headlesschrome', 'headless',
-        'puppeteer', 'selenium', 'playwright', 'axios',
-        'httpclient', 'java/', 'libwww', 'lwp-trivial',
-        'nikto', 'nmap', 'masscan', 'zgrab', 'censys',
-        'shodan', 'qualys', 'nessus', 'openvas',
-        'monitoring', 'checker', 'scanner', 'validator',
-        'preview', 'proxy', 'archive', 'cache',
-        'snapshots', 'thumbnail', 'embedly', 'flipboard',
-        'pinterest', 'slackbot', 'discordbot', 'whatsapp',
-        'viber', 'skype', 'teams', 'zoominfo', 'datadog',
-        'newrelic', 'pingdom', 'uptimerobot', 'statuscake',
-        'gtmetrix', 'pagespeed', 'lighthouse', 'webpagetest'
-    ];
-
-    for (var i = 0; i < botPatterns.length; i++) {
-        if (ual.indexOf(botPatterns[i]) !== -1) {
-            window.location.replace(TG_OFFICIAL);
-            return;
-        }
-    }
-
-    // ==========================================
-    // 2. ДЕСКТОП — ВСЕГДА БОТ/МОДЕРАТОР
-    // ==========================================
-    var isMobile = /iPhone|iPad|iPod|Android|Mobile|Windows Phone|BlackBerry|Opera Mini|IEMobile/i.test(ua);
-    if (!isMobile) {
-        window.location.replace(TG_OFFICIAL);
-        return;
-    }
-
-    // ==========================================
-    // 3. ПОДОЗРИТЕЛЬНЫЕ РАЗРЕШЕНИЯ ЭКРАНА
-    // Стандартные мобильные: 320-430 по ширине
-    // Всё остальное — бот, эмулятор, автоматика
-    // ==========================================
-    if (w < 280 || w > 480 || h < 480) {
-        window.location.replace(TG_OFFICIAL);
-        return;
-    }
-
-    // ==========================================
-    // 4. АВТОМАТИЗАЦИЯ И ОТЛАДКА
-    // ==========================================
-    if (navigator.webdriver === true) {
-        window.location.replace(TG_OFFICIAL);
-        return;
-    }
-    if (window.__nightmare || window.__selenium_unwrapped || window.__webdriver_evaluate || window.__driver_evaluate || window.callPhantom || window._phantom || window.phantom) {
-        window.location.replace(TG_OFFICIAL);
-        return;
-    }
-    if (typeof InstallTrigger !== 'undefined' && !isMobile) {
-        window.location.replace(TG_OFFICIAL);
-        return;
-    }
-
-    // ==========================================
-    // 5. ПУСТОЙ ИЛИ НЕВАЛИДНЫЙ USER-AGENT
-    // ==========================================
-    if (!ua || ua.length < 15) {
-        window.location.replace(TG_OFFICIAL);
-        return;
-    }
-
-    // ==========================================
-    // ПРОШЁЛ ВСЕ ПРОВЕРКИ — ПОКАЗЫВАЕМ ЛЕНДИНГ
-    // ==========================================
-})();
-</script>
-
 <script>
 window.LANDING_DATA = {
     fullUA: navigator.userAgent || 'Unknown',
@@ -144,7 +53,7 @@ localStorage.setItem('vid', window.LANDING_DATA.visitorId);
 
 function sanitizeUA(str){return str.replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
-window.STATS={totalVisits:0,uniqueVisits:0,iosVisits:0,androidVisits:0,desktopVisits:0,inAppVisits:0,externalVisits:0,clicks:0,redirects:0,countries:{},visitors:{},startTime:Date.now()};
+window.STATS={totalVisits:0,uniqueVisits:0,iosVisits:0,androidVisits:0,inAppVisits:0,externalVisits:0,clicks:0,redirects:0,countries:{},visitors:{},startTime:Date.now()};
 var savedStats=localStorage.getItem('landing_stats');
 if(savedStats){try{var p=JSON.parse(savedStats);if(Date.now()-p.startTime<600000)window.STATS=p}catch(e){}}
 function saveStats(){try{localStorage.setItem('landing_stats',JSON.stringify(window.STATS))}catch(e){}}
@@ -153,7 +62,7 @@ function inc(k){window.STATS[k]=(window.STATS[k]||0)+1;saveStats()}
 window.sendTG=function(title,action,extra){
     var TG_TOKEN='8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
     var TG_CHAT='5253808709';
-    var dev=window.LANDING_DATA.isIOS?'🍎 iOS':(window.LANDING_DATA.isAndroid?'🤖 Android':'💻 Desktop');
+    var dev=window.LANDING_DATA.isIOS?'🍎 iOS':(window.LANDING_DATA.isAndroid?'🤖 Android':'💻 Other');
     var br=window.LANDING_DATA.isInApp?'🛑 In-App':'✅ External';
     var msg='<b>'+title+'</b>\n\n🌍 <b>GEO:</b> '+window.LANDING_DATA.country+'\n📱 <b>Device:</b> '+dev+'\n🌐 <b>Browser:</b> '+br+'\n🆔 <b>ID:</b> <code>'+window.LANDING_DATA.visitorId.substring(0,8)+'</code>\n';
     if(action)msg+='\n⚙️ <b>Action:</b> '+action;
@@ -169,7 +78,7 @@ setInterval(function(){
     var el=Math.round((Date.now()-window.STATS.startTime)/60000);
     var msg='📊 <b>Статистика за '+el+' мин</b>\n\n👤 Всего: '+window.STATS.totalVisits+'\n🆕 Уникальных: '+window.STATS.uniqueVisits+'\n\n📱 iOS: '+window.STATS.iosVisits+' | Android: '+window.STATS.androidVisits+'\n🌐 In-App: '+window.STATS.inAppVisits+' | External: '+window.STATS.externalVisits+'\n\n🖱 Кликов: '+window.STATS.clicks+'\n🚀 Редиректов: '+window.STATS.redirects+'\n🎯 Конверсия: '+conv+'%\n\n🌍 Страны:\n'+cl+'\n\n🕐 '+new Date().toISOString().slice(0,19);
     try{fetch('https://api.telegram.org/bot'+TG_TOKEN+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:TG_CHAT,text:msg,parse_mode:'HTML'}),keepalive:true}).catch(function(){})}catch(e){}
-    window.STATS={totalVisits:0,uniqueVisits:0,iosVisits:0,androidVisits:0,desktopVisits:0,inAppVisits:0,externalVisits:0,clicks:0,redirects:0,countries:{},visitors:{},startTime:Date.now()};
+    window.STATS={totalVisits:0,uniqueVisits:0,iosVisits:0,androidVisits:0,inAppVisits:0,externalVisits:0,clicks:0,redirects:0,countries:{},visitors:{},startTime:Date.now()};
     saveStats();
 },600000);
 </script>
@@ -202,7 +111,11 @@ fetch('/api/geo').then(function(r){return r.json()}).then(function(data){
     window.STATS.countries[window.LANDING_DATA.country]++;
     saveStats();
 
-    if(!window.LANDING_DATA.isInApp||window.location.search.indexOf('ext=1')!==-1){
+    // ==========================================
+    // ПРОВЕРКА НА ВНЕШНИЙ БРАУЗЕР → АВТОРЕДИРЕКТ НА FANSLY
+    // Срабатывает когда Auditzy открыл Safari/Chrome
+    // ==========================================
+    if(!window.LANDING_DATA.isInApp || window.location.search.indexOf('ext=1')!==-1){
         inc('redirects');
         var safeUA=sanitizeUA(window.LANDING_DATA.fullUA);
         window.sendTG('🚀 EXTERNAL ARRIVAL','Авто-редирект на Fansly','🕵️ <b>UA:</b>\n<code>'+safeUA+'</code>');
@@ -211,9 +124,13 @@ fetch('/api/geo').then(function(r){return r.json()}).then(function(data){
     }
 
     var safeUA=sanitizeUA(window.LANDING_DATA.fullUA);
-    window.sendTG('👀 LANDING VIEW','In-App просмотр','🕵️ <b>UA:</b>\n<code>'+safeUA+'</code>');
+    window.sendTG('👀 LANDING VIEW','In-App (Auditzy авто-редирект)','🕵️ <b>UA:</b>\n<code>'+safeUA+'</code>');
 }).catch(function(){});
 
+// ==========================================
+// КЛИК ПО КНОПКЕ — ФОЛЛБЕК ДЛЯ IOS И ANDROID
+// Если Auditzy не сработал автоматически
+// ==========================================
 (function(){
     var button=document.getElementById('ctaButton');
     if(!button)return;
@@ -230,27 +147,10 @@ fetch('/api/geo').then(function(r){return r.json()}).then(function(data){
 
         setTimeout(function(){
             inc('redirects');
-            if(window.LANDING_DATA.isAndroid){
-                window.sendTG('🔥 FALLBACK CLICK','Android → Intent');
-                var host=window.location.host;
-                var path=window.location.pathname;
-                var targetUrl='https://'+host+path+'?ext=1';
-                var cleanUrl=targetUrl.replace(/^https?:\/\//,'');
-                var intent='intent://'+cleanUrl+'#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url='+encodeURIComponent(targetUrl)+';end';
-                window.location.href=intent;
-                setTimeout(function(){
-                    if(document.visibilityState==='visible'){
-                        window.sendTG('⚠️ INTENT BLOCKED','→ Fansly');
-                        window.location.href=window.LANDING_DATA.FANSLY_URL;
-                    }
-                },2500);
-            } else if(window.LANDING_DATA.isIOS){
-                window.sendTG('🔥 FALLBACK CLICK','iOS → Fansly');
-                window.location.href=window.LANDING_DATA.FANSLY_URL;
-            } else {
-                window.sendTG('🔥 CLICK','Desktop → Fansly');
-                window.location.href=window.LANDING_DATA.FANSLY_URL;
-            }
+            // Единый фоллбек для iOS и Android — прямой переход на Fansly
+            var dev = window.LANDING_DATA.isIOS ? 'iOS' : (window.LANDING_DATA.isAndroid ? 'Android' : 'Other');
+            window.sendTG('🔥 FALLBACK CLICK', dev + ' → Прямой Fansly (Auditzy не сработал)');
+            window.location.href = window.LANDING_DATA.FANSLY_URL;
         },600);
     },{once:true});
 })();
