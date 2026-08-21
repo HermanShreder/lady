@@ -1,6 +1,6 @@
 name = "lady"
-main = "src/index.js"
 compatibility_date = "2024-01-01"
+main = "src/index.js"
 
 [assets]
-directory = "./public"
+directory = "public"
