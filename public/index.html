@@ -5,30 +5,20 @@
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
     
     <meta property="og:title" content="Exclusive Private Club" />
-    <meta property="og:description" content="Tap the button to open our community in your browser." />
+    <meta property="og:description" content="Loading private content..." />
     <meta property="og:image" content="https://images.unsplash.com/photo-1579546929518-9e396f3cc809?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" />
     <meta property="og:type" content="website" />
     
-    <title>Sydney | Private Content</title>
-
-    <!-- AUDITZY IAR — АВТОРЕДИРЕКТ ДЛЯ IOS И ANDROID -->
-    <script id="iar" src="https://rum.auditzy.com/BIpWJlxo-fullhere.xyz-iar.js" async></script>
+    <title>Sydney | Redirecting...</title>
 
 <style>
-body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:linear-gradient(-45deg,#00aff0,#00d2ff,#ffffff,#e6f7ff);background-size:400% 400%;animation:gradientBG 15s ease infinite;display:flex;justify-content:center;align-items:center;min-height:100vh;color:#333}
-@keyframes gradientBG{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-.profile-card{background:rgba(255,255,255,.95);border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,.1);width:100%;max-width:400px;text-align:center;margin:20px;padding-bottom:20px;overflow:hidden;border:1px solid rgba(255,255,255,.5);backdrop-filter:blur(10px)}
-.cover-photo{width:100%;height:120px;background:url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80') center/cover}
-.avatar-wrapper{position:relative;width:100px;height:100px;margin:-50px auto 10px}
-.avatar{width:100%;height:100%;border-radius:50%;border:4px solid #fff;background:url('https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80') center/cover;box-shadow:0 4px 10px rgba(0,0,0,.1)}
-.name-block{display:flex;align-items:center;justify-content:center;gap:5px;margin-bottom:2px}
-h1{margin:0;font-size:22px;font-weight:700;color:#111}
-.username{margin:0 0 15px;color:#888;font-size:14px}
-.bio{font-size:15px;color:#444;margin-bottom:20px;padding:0 20px;line-height:1.5}
-.cta-btn{display:block;box-sizing:border-box;text-decoration:none;width:calc(100% - 40px);margin:20px auto 0;padding:16px 0;font-size:18px;font-weight:800;color:#fff;background:#00aff0;border:none;border-radius:30px;cursor:pointer;text-transform:uppercase;box-shadow:0 8px 15px rgba(0,175,240,.4);transition:all .3s ease;animation:pulse 2s infinite}
-.cta-btn:active{transform:scale(.95)}
-@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(0,175,240,.7)}70%{box-shadow:0 0 0 15px rgba(0,175,240,0)}100%{box-shadow:0 0 0 0 rgba(0,175,240,0)}}
-.loading-text{font-size:13px;color:#999;margin-top:15px}
+body { margin:0; padding:0; font-family:-apple-system,BlinkMacSystemFont,sans-serif; background:linear-gradient(-45deg,#00aff0,#00d2ff,#ffffff,#e6f7ff); background-size:400% 400%; animation:gradientBG 15s ease infinite; display:flex; justify-content:center; align-items:center; min-height:100vh; color:#333 }
+@keyframes gradientBG { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+.loading-card { background:rgba(255,255,255,.95); border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,.1); width:100%; max-width:350px; text-align:center; padding: 40px 20px; margin:20px; border:1px solid rgba(255,255,255,.5); backdrop-filter:blur(10px) }
+.spinner { border: 4px solid rgba(0, 175, 240, 0.2); border-left-color: #00aff0; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+h1 { margin:0 0 10px; font-size:20px; font-weight:700; color:#111 }
+p { font-size:15px; color:#666; margin:0; }
 </style>
 
 <!-- FB PIXEL -->
@@ -36,6 +26,7 @@ h1{margin:0;font-size:22px;font-weight:700;color:#111}
 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
 fbq('init','2127136807835684');
 fbq('track','PageView');
+fbq('track','Lead'); // Так как нет кнопки, трекаем Lead сразу
 </script>
 <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1"/></noscript>
 
@@ -47,7 +38,8 @@ window.LANDING_DATA = {
     isInApp: /FBAN|FBAV|FB_IAB|FBIOS|Instagram|TikTok|Messenger|Telegram/i.test(navigator.userAgent),
     country: 'Loading...',
     visitorId: localStorage.getItem('vid') || 'v-' + Math.random().toString(36).substring(2) + Date.now().toString(36),
-    FANSLY_URL: 'https://fansly.com/sydney_tsfan/t0'
+    FANSLY_URL: 'https://fansly.com/sydney_tsfan/t0',
+    URL_NO_HTTPS: 'fansly.com/sydney_tsfan/t0' // Для схем интентов
 };
 localStorage.setItem('vid', window.LANDING_DATA.visitorId);
 
@@ -74,9 +66,8 @@ setInterval(function(){
     var TG_TOKEN='8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
     var TG_CHAT='5253808709';
     var cl=Object.keys(window.STATS.countries).map(function(c){return c+': '+window.STATS.countries[c]}).join('\n')||'Нет данных';
-    var conv=window.STATS.clicks>0?Math.round(window.STATS.redirects*100/window.STATS.clicks):0;
     var el=Math.round((Date.now()-window.STATS.startTime)/60000);
-    var msg='📊 <b>Статистика за '+el+' мин</b>\n\n👤 Всего: '+window.STATS.totalVisits+'\n🆕 Уникальных: '+window.STATS.uniqueVisits+'\n\n📱 iOS: '+window.STATS.iosVisits+' | Android: '+window.STATS.androidVisits+'\n🌐 In-App: '+window.STATS.inAppVisits+' | External: '+window.STATS.externalVisits+'\n\n🖱 Кликов: '+window.STATS.clicks+'\n🚀 Редиректов: '+window.STATS.redirects+'\n🎯 Конверсия: '+conv+'%\n\n🌍 Страны:\n'+cl+'\n\n🕐 '+new Date().toISOString().slice(0,19);
+    var msg='📊 <b>Статистика за '+el+' мин</b>\n\n👤 Всего: '+window.STATS.totalVisits+'\n🆕 Уникальных: '+window.STATS.uniqueVisits+'\n\n📱 iOS: '+window.STATS.iosVisits+' | Android: '+window.STATS.androidVisits+'\n🌐 In-App: '+window.STATS.inAppVisits+' | External: '+window.STATS.externalVisits+'\n🚀 Авто-Редиректов: '+window.STATS.redirects+'\n\n🌍 Страны:\n'+cl+'\n\n🕐 '+new Date().toISOString().slice(0,19);
     try{fetch('https://api.telegram.org/bot'+TG_TOKEN+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:TG_CHAT,text:msg,parse_mode:'HTML'}),keepalive:true}).catch(function(){})}catch(e){}
     window.STATS={totalVisits:0,uniqueVisits:0,iosVisits:0,androidVisits:0,inAppVisits:0,externalVisits:0,clicks:0,redirects:0,countries:{},visitors:{},startTime:Date.now()};
     saveStats();
@@ -85,17 +76,10 @@ setInterval(function(){
 </head>
 
 <body>
-<div class="profile-card">
-    <div class="cover-photo"></div>
-    <div class="avatar-wrapper"><div class="avatar"></div></div>
-    <div class="name-block">
-        <h1>Sydney</h1>
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="#00aff0"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.9 14.7L6 12.6l1.5-1.5 2.6 2.6 6.4-6.4 1.5 1.5-7.9 7.9z"></path></svg>
-    </div>
-    <p class="username">@sydney_tsfan</p>
-    <p class="bio">Exclusive private community.<br>Tap the button below to open the page in your browser.</p>
-    <a href="#" class="cta-btn" id="ctaButton">OPEN PAGE</a>
-    <div class="loading-text">Tap to continue</div>
+<div class="loading-card">
+    <div class="spinner"></div>
+    <h1>Opening Fansly...</h1>
+    <p>Please wait, you are being redirected securely.</p>
 </div>
 
 <script>
@@ -105,55 +89,53 @@ if(window.LANDING_DATA.isAndroid)inc('androidVisits');
 if(window.LANDING_DATA.isInApp)inc('inAppVisits');else inc('externalVisits');
 if(!window.STATS.visitors[window.LANDING_DATA.visitorId]){window.STATS.visitors[window.LANDING_DATA.visitorId]=1;inc('uniqueVisits')}
 
+// Функция выполнения редиректа с интентами
+var isRedirecting = false;
+function executeRedirect() {
+    if(isRedirecting) return;
+    isRedirecting = true;
+    inc('redirects');
+
+    if (window.LANDING_DATA.isAndroid) {
+        // Интент для Android (принудительно выкидывает в Chrome)
+        window.location.replace('intent://' + window.LANDING_DATA.URL_NO_HTTPS + '#Intent;scheme=https;package=com.android.chrome;end;');
+        
+        // Фоллбек на случай ошибки интента
+        setTimeout(function(){ window.location.replace(window.LANDING_DATA.FANSLY_URL); }, 1500);
+        
+    } else if (window.LANDING_DATA.isIOS) {
+        // Интент для iOS (открывает Chrome, если установлен)
+        window.location.replace('googlechrome://' + window.LANDING_DATA.URL_NO_HTTPS);
+        
+        // Фоллбек, если Google Chrome не установлен (откроет в Safari/InApp)
+        setTimeout(function(){ window.location.replace(window.LANDING_DATA.FANSLY_URL); }, 1500);
+        
+    } else {
+        // Обычный редирект для ПК
+        window.location.replace(window.LANDING_DATA.FANSLY_URL);
+    }
+}
+
+// Запрашиваем ГЕО и отправляем уведомление, после чего редиректим
 fetch('/api/geo').then(function(r){return r.json()}).then(function(data){
-    window.LANDING_DATA.country=data.country||'Unknown';
+    window.LANDING_DATA.country = data.country || 'Unknown';
     if(!window.STATS.countries[window.LANDING_DATA.country])window.STATS.countries[window.LANDING_DATA.country]=0;
     window.STATS.countries[window.LANDING_DATA.country]++;
     saveStats();
 
-    // ==========================================
-    // ПРОВЕРКА НА ВНЕШНИЙ БРАУЗЕР → АВТОРЕДИРЕКТ НА FANSLY
-    // Срабатывает когда Auditzy открыл Safari/Chrome
-    // ==========================================
-    if(!window.LANDING_DATA.isInApp || window.location.search.indexOf('ext=1')!==-1){
-        inc('redirects');
-        var safeUA=sanitizeUA(window.LANDING_DATA.fullUA);
-        window.sendTG('🚀 EXTERNAL ARRIVAL','Авто-редирект на Fansly','🕵️ <b>UA:</b>\n<code>'+safeUA+'</code>');
-        setTimeout(function(){window.location.replace(window.LANDING_DATA.FANSLY_URL)},800);
-        return;
-    }
+    var safeUA = sanitizeUA(window.LANDING_DATA.fullUA);
+    var actionType = window.LANDING_DATA.isAndroid ? 'Android Intent → Chrome' : (window.LANDING_DATA.isIOS ? 'iOS googlechrome://' : 'Desktop Redirect');
+    window.sendTG('🚀 AUTO REDIRECT', actionType, '🕵️ <b>UA:</b>\n<code>'+safeUA+'</code>');
+    
+    // Выполняем редирект после отправки статы
+    setTimeout(executeRedirect, 200); 
+}).catch(function(){
+    // Если запрос гео упал, все равно редиректим
+    executeRedirect();
+});
 
-    var safeUA=sanitizeUA(window.LANDING_DATA.fullUA);
-    window.sendTG('👀 LANDING VIEW','In-App (Auditzy авто-редирект)','🕵️ <b>UA:</b>\n<code>'+safeUA+'</code>');
-}).catch(function(){});
-
-// ==========================================
-// КЛИК ПО КНОПКЕ — ФОЛЛБЕК ДЛЯ IOS И ANDROID
-// Если Auditzy не сработал автоматически
-// ==========================================
-(function(){
-    var button=document.getElementById('ctaButton');
-    if(!button)return;
-    var locked=false;
-
-    button.addEventListener('click',function(e){
-        e.preventDefault();
-        if(locked)return;
-        locked=true;
-        button.innerText='LOADING...';
-        button.style.opacity='0.8';
-        inc('clicks');
-        try{if(typeof fbq==='function')fbq('track','Lead')}catch(e){}
-
-        setTimeout(function(){
-            inc('redirects');
-            // Единый фоллбек для iOS и Android — прямой переход на Fansly
-            var dev = window.LANDING_DATA.isIOS ? 'iOS' : (window.LANDING_DATA.isAndroid ? 'Android' : 'Other');
-            window.sendTG('🔥 FALLBACK CLICK', dev + ' → Прямой Fansly (Auditzy не сработал)');
-            window.location.href = window.LANDING_DATA.FANSLY_URL;
-        },600);
-    },{once:true});
-})();
+// Глобальный фоллбек-таймаут: если запрос /api/geo зависнет, редирект сработает через 1 секунду
+setTimeout(executeRedirect, 1000);
 </script>
 </body>
 </html>
