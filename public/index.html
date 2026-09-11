@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-    
+
     <meta property="og:title" content="Exclusive Private Club" />
     <meta property="og:description" content="Loading private content..." />
     <meta property="og:image" content="https://images.unsplash.com/photo-1579546929518-9e396f3cc809?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" />
     <meta property="og:type" content="website" />
 
-    <title>Sydney | Redirecting...</title>
+    <title>Sydney | Exclusive Access</title>
 
     <style>
         body {
@@ -26,7 +26,7 @@
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
-        .loading-card {
+        .card {
             background: rgba(255,255,255,.95);
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,.1);
@@ -34,22 +34,30 @@
             padding: 40px 20px; margin: 20px;
             backdrop-filter: blur(10px);
         }
-        .spinner {
-            border: 4px solid rgba(0,175,240,0.2);
-            border-left-color: #00aff0;
-            border-radius: 50%; width: 50px; height: 50px;
-            animation: spin 1s linear infinite; margin: 0 auto 20px;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* Кнопка fallback */
-        .manual-btn {
-            display: none;
-            background: #00aff0; color: white; border: none;
-            padding: 15px 30px; border-radius: 50px;
-            font-size: 16px; font-weight: bold; cursor: pointer;
-            text-decoration: none; margin-top: 20px;
+        /* Стиль кнопки */
+        .open-btn {
+            display: inline-block;
+            background: #00aff0;
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0,175,240,0.4);
+            transition: transform 0.2s, background 0.2s;
+            width: 80%;
         }
+        .open-btn:active {
+            transform: scale(0.95);
+            background: #008ecc;
+        }
+        
+        h1 { font-size: 22px; margin-bottom: 10px; color: #111; }
+        p { font-size: 15px; color: #666; margin-bottom: 30px; }
     </style>
 
     <!-- FACEBOOK PIXEL -->
@@ -62,33 +70,28 @@
         }(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
         fbq('init','2127136807835684');
         fbq('track','PageView');
-        fbq('track','Lead');
     </script>
     <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1"/></noscript>
 
     <script>
         /* ==========================================
-           CONFIG & DATA
+           CONFIG
         ========================================== */
         window.LANDING_DATA = {
-            fullUA: navigator.userAgent || 'Unknown',
             isIOS: /iPhone|iPad|iPod/i.test(navigator.userAgent),
             isAndroid: /Android/i.test(navigator.userAgent),
             isInApp: /FBAN|FBAV|FB_IAB|FBIS|Instagram|TikTok|Messenger|Telegram/i.test(navigator.userAgent),
-            country: 'Unknown',
-            visitorId: localStorage.getItem('vid') || 'v-' + Math.random().toString(36).substring(2) + Date.now().toString(36),
-            TARGET_URL: 'https://fansly.com/Elinamissss/t0'
+            TARGET_URL: 'https://fansly.com/Elinamissss/t0' // Твоя ссылка
         };
-        localStorage.setItem('vid', window.LANDING_DATA.visitorId);
 
         /* ==========================================
-           LOGGING (TG)
+           LOGGING
         ========================================== */
-        window.sendTG = function(title, action, extra) {
+        window.sendTG = function(action) {
             var TG_TOKEN = '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
             var TG_CHAT = '5253808709';
             var dev = window.LANDING_DATA.isIOS ? '🍎 iOS' : (window.LANDING_DATA.isAndroid ? '🤖 Android' : '💻 Other');
-            var msg = '<b>' + title + '</b>\n📱 ' + dev + '\n⚙️ ' + action + (extra ? '\n' + extra : '');
+            var msg = '<b>🖱️ BUTTON CLICK</b>\n📱 ' + dev + '\n⚙️ ' + action;
             
             try {
                 navigator.sendBeacon('https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage', 
@@ -97,79 +100,47 @@
         };
 
         /* ==========================================
-           REDIRECT LOGIC
+           MANUAL REDIRECT FUNCTION
         ========================================== */
-        var hasRedirected = false;
-
-        function doRedirect() {
-            if (hasRedirected) return;
-            hasRedirected = true;
+        function openLink() {
             var url = window.LANDING_DATA.TARGET_URL;
+            
+            // Отправляем Lead в FB при клике
+            if(typeof fbq !== 'undefined') fbq('track', 'Lead');
 
-            // 1. ANDROID INTENT (Открывает Chrome принудительно)
+            // 1. ANDROID INTENT (Открывает именно Chrome)
             if (window.LANDING_DATA.isAndroid && window.LANDING_DATA.isInApp) {
-                window.sendTG('🚀 REDIRECT', 'Android Intent', url);
+                sendTG('Android Intent -> Chrome');
                 var host = url.replace(/^https?:\/\//i, '');
                 var intent = 'intent://' + host + '#Intent;scheme=https;package=com.android.chrome;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;end;';
                 window.location.href = intent;
-                
-                // Fallback для Android
-                setTimeout(function(){ if(!document.hidden) window.location.href = url; }, 2000);
                 return;
             }
 
-            // 2. iOS LOGIC (Специальная обработка)
+            // 2. iOS (Открывает Safari/Chrome)
             if (window.LANDING_DATA.isIOS) {
-                window.sendTG('🚀 REDIRECT', 'iOS Logic', url);
-                
-                if (window.LANDING_DATA.isInApp) {
-                    // На iOS внутри приложений window.open часто работает лучше всего, 
-                    // так как вызывает системный выбор "Открыть в Safari"
-                    var win = window.open(url, '_blank');
-                    
-                    // Если window.open заблокирован или не сработал, пробуем location
-                    if (!win) {
-                        window.location.href = url;
-                    }
-                } else {
-                    // Если уже в Safari/Chrome - просто идем
-                    window.location.href = url;
-                }
+                sendTG('iOS Open Link');
+                window.open(url, '_blank');
                 return;
             }
 
-            // 3. DESKTOP / OTHER
-            window.sendTG('🚀 REDIRECT', 'Standard', url);
+            // 3. Остальные
+            sendTG('Standard Click');
             window.location.href = url;
         }
-
-        /* ==========================================
-           START
-        ========================================== */
-        // Задержка 500мс чтобы успел прогрузиться Pixel Lead
-        setTimeout(doRedirect, 500);
-
-        // Fallback кнопка если редирект застрял
-        setTimeout(function() {
-            if (!hasRedirected) {
-                document.querySelector('.spinner').style.display = 'none';
-                document.querySelector('h1').innerText = "Tap to Continue";
-                var btn = document.createElement('a');
-                btn.href = window.LANDING_DATA.TARGET_URL;
-                btn.className = 'manual-btn';
-                btn.innerText = 'OPEN LINK';
-                btn.style.display = 'inline-block';
-                document.querySelector('.loading-card').appendChild(btn);
-            }
-        }, 3500);
-
     </script>
 </head>
 <body>
-    <div class="loading-card">
-        <div class="spinner"></div>
-        <h1>Opening Fansly...</h1>
-        <p>Please wait...</p>
+
+    <div class="card">
+        <h1>Private Content</h1>
+        <p>Click the button below to view exclusive videos.</p>
+        
+        <!-- КНОПКА -->
+        <a href="#" onclick="openLink(); return false;" class="open-btn">
+            OPEN IN BROWSER
+        </a>
     </div>
+
 </body>
 </html>
