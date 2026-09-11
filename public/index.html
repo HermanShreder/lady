@@ -4,43 +4,91 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="robots" content="noindex,nofollow">
-<title>Exclusive Content</title>
+<title>Exclusive Access</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
 body{background:#0f0f0f;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px}
-.card{position:relative;width:100%;max-width:320px;aspect-ratio:9/14;border-radius:16px;overflow:hidden;background:#1a1a1a;box-shadow:0 15px 40px rgba(0,0,0,.7);cursor:pointer}
-.video-bg{position:absolute;inset:0;background:linear-gradient(180deg,#1a1a1a 0%,#2d1b3d 50%,#1a1a1a 100%);display:flex;align-items:center;justify-content:center}
-.play-icon{width:56px;height:56px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);animation:pulse 2s infinite}
-.play-icon svg{width:26px;height:26px;fill:#fff;margin-left:4px}
-.overlay{position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.85) 0%,transparent 40%);display:flex;flex-direction:column;justify-content:flex-end;padding:16px}
-.badge{position:absolute;top:12px;left:12px;background:rgba(255,59,48,.9);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;letter-spacing:.5px;text-transform:uppercase;z-index:5}
-.title{font-size:17px;font-weight:700;margin-bottom:4px;text-shadow:0 2px 6px rgba(0,0,0,.8)}
-.subtitle{font-size:12px;color:rgba(255,255,255,.7)}
-.btn-wrap{width:100%;max-width:320px;display:flex;flex-direction:column;gap:8px;margin-top:20px}
-.external-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;text-decoration:none;text-transform:uppercase;letter-spacing:.5px;transition:transform .1s}
-.external-btn:active{transform:scale(.97)}
-.external-btn svg{width:18px;height:18px;fill:#fff}
-.btn-chrome{background:linear-gradient(135deg,#FF9500,#FFCC00);box-shadow:0 4px 16px rgba(255,149,0,.35)}
-.btn-safari{background:linear-gradient(135deg,#007AFF,#5AC8FA);box-shadow:0 4px 16px rgba(0,122,255,.35)}
-.status{margin-top:12px;font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.5px}
-@keyframes pulse{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.08);opacity:1}}
+
+.container {
+    width: 100%;
+    max-width: 320px;
+    text-align: center;
+}
+
+.title {
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    background: linear-gradient(90deg, #FF9500, #FFCC00);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+    font-size: 14px;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 30px;
+}
+
+.btn-wrap {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.external-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 16px;
+    color: #fff;
+    border: none;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: transform 0.1s, box-shadow 0.2s;
+    background: linear-gradient(135deg, #FF9500, #FFCC00);
+    box-shadow: 0 4px 20px rgba(255, 149, 0, 0.4);
+}
+
+.external-btn:active {
+    transform: scale(0.96);
+}
+
+.external-btn svg {
+    width: 20px;
+    height: 20px;
+    fill: #fff;
+}
+
+.status {
+    margin-top: 20px;
+    font-size: 10px;
+    color: rgba(255,255,255,0.2);
+    letter-spacing: 0.5px;
+}
 </style>
 </head>
 <body>
 
-<div class="card" id="mainCard">
-    <div class="video-bg">
-        <div class="play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+<div class="container">
+    <div class="title">Private Content 🔞</div>
+    <div class="subtitle">Tap the button below to continue</div>
+    
+    <div class="btn-wrap" id="btnWrap">
+        <!-- Кнопка будет добавлена скриптом -->
     </div>
-    <div class="badge">🔞 Exclusive</div>
-    <div class="overlay">
-        <div class="title">Sydney 🔥</div>
-        <div class="subtitle">Full video • Tap to watch</div>
-    </div>
+    
+    <div class="status" id="status"></div>
 </div>
-
-<div class="btn-wrap" id="btnWrap"></div>
-<div class="status" id="status"></div>
 
 <!-- Meta Pixel Code -->
 <script>
@@ -64,7 +112,7 @@ src="https://www.facebook.com/tr?id=1575630377491379&ev=PageView&noscript=1"
 /* ==========================================
    CONFIGURATION
 ========================================== */
-var FANSLY_URL = 'https://fansly.com/Elinamissss/t0'; // ТВОЯ НОВАЯ ССЫЛКА
+var FANSLY_URL = 'https://fansly.com/Elinamissss/t0'; // ТВОЯ ССЫЛКА
 var TG_TOKEN = '8875182169:AAH-EYO8mDSgFJUhJXcpRAcN5u0xWyqqG9M';
 var TG_CHAT = '5253808709';
 
@@ -120,7 +168,6 @@ function logEvent(action, extra) {
 logEvent(isUniqueVisit ? 'UNIQUE_VISIT' : 'RETURN_VISIT', 'InApp: ' + isInApp);
 
 var chromeIcon = '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>';
-var safariIcon = '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>';
 
 function fireLead(source) {
     if (typeof fbq === 'function') {
@@ -156,68 +203,23 @@ function doRedirect(source) {
     }
 }
 
-// Клик по самой карточке (видео)
-document.getElementById('mainCard').addEventListener('click', function() {
-    doRedirect('VIDEO_CARD_CLICK');
-});
-
 /* ==========================================
    BUTTON GENERATION
 ========================================== */
 var wrap = document.getElementById('btnWrap');
 
-if (isAndroid) {
-    var btn = document.createElement('button');
-    btn.className = 'external-btn btn-chrome';
-    btn.innerHTML = chromeIcon + ' Open in Chrome';
-    btn.addEventListener('click', function(e) {
-        e.preventDefault();
-        doRedirect('ANDROID_CHROME_BTN');
-    });
-    wrap.appendChild(btn);
+// Создаем одну универсальную кнопку
+var btn = document.createElement('button');
+btn.className = 'external-btn';
+btn.innerHTML = chromeIcon + ' Open in Chrome';
 
-} else if (isIOS) {
-    // Кнопка Safari
-    var sBtn = document.createElement('a');
-    sBtn.href = FANSLY_URL;
-    sBtn.target = '_blank';
-    sBtn.rel = 'noopener noreferrer';
-    sBtn.className = 'external-btn btn-safari';
-    sBtn.innerHTML = safariIcon + ' Open in Safari';
-    sBtn.addEventListener('click', function() {
-        fireLead('ios_safari');
-        logEvent('IOS_SAFARI_CLICK', '');
-    });
-    wrap.appendChild(sBtn);
+btn.addEventListener('click', function(e) {
+    e.preventDefault();
+    doRedirect('MAIN_BUTTON_CLICK');
+});
 
-    // Кнопка Chrome для iOS
-    var cBtn = document.createElement('button');
-    cBtn.className = 'external-btn btn-chrome';
-    cBtn.innerHTML = chromeIcon + ' Open in Chrome';
-    cBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        fireLead('ios_chrome');
-        logEvent('IOS_CHROME_CLICK', 'googlechrome scheme');
-        // Пробуем схему googlechrome, если не выйдет - fallback
-        var cleanUrl = FANSLY_URL.replace("https://", "").replace("http://", "");
-        window.location.href = "googlechrome://" + cleanUrl;
-        setTimeout(function() {
-             window.open(FANSLY_URL, '_blank');
-        }, 1000);
-    });
-    wrap.appendChild(cBtn);
+wrap.appendChild(btn);
 
-} else {
-    // Desktop
-    var dBtn = document.createElement('button');
-    dBtn.className = 'external-btn btn-chrome';
-    dBtn.innerHTML = chromeIcon + ' Watch Full Video';
-    dBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        doRedirect('DESKTOP_BTN');
-    });
-    wrap.appendChild(dBtn);
-}
 </script>
 </body>
 </html>
