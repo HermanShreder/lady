@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,865 +11,802 @@
 
     <title>Sydney | Redirecting...</title>
 
-<style>
-body {
-    margin:0;
-    padding:0;
-    font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-    background:linear-gradient(-45deg,#00aff0,#00d2ff,#ffffff,#e6f7ff);
-    background-size:400% 400%;
-    animation:gradientBG 15s ease infinite;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    min-height:100vh;
-    color:#333;
-}
-
-@keyframes gradientBG {
-    0%{background-position:0% 50%}
-    50%{background-position:100% 50%}
-    100%{background-position:0% 50%}
-}
-
-.loading-card {
-    background:rgba(255,255,255,.95);
-    border-radius:20px;
-    box-shadow:0 10px 30px rgba(0,0,0,.1);
-    width:100%;
-    max-width:350px;
-    text-align:center;
-    padding:40px 20px;
-    margin:20px;
-    border:1px solid rgba(255,255,255,.5);
-    backdrop-filter:blur(10px);
-}
-
-.spinner {
-    border:4px solid rgba(0,175,240,0.2);
-    border-left-color:#00aff0;
-    border-radius:50%;
-    width:50px;
-    height:50px;
-    animation:spin 1s linear infinite;
-    margin:0 auto 20px;
-}
-
-@keyframes spin {
-    0%{transform:rotate(0deg)}
-    100%{transform:rotate(360deg)}
-}
-
-h1 {
-    margin:0 0 10px;
-    font-size:20px;
-    font-weight:700;
-    color:#111;
-}
-
-p {
-    font-size:15px;
-    color:#666;
-    margin:0;
-}
-</style>
-
-
-<!-- =========================
-     FACEBOOK PIXEL
-========================= -->
-
-<script>
-!function(f,b,e,v,n,t,s){
-    if(f.fbq)return;
-
-    n=f.fbq=function(){
-        n.callMethod
-        ? n.callMethod.apply(n,arguments)
-        : n.queue.push(arguments)
-    };
-
-    if(!f._fbq)f._fbq=n;
-
-    n.push=n;
-    n.loaded=!0;
-    n.version='2.0';
-    n.queue=[];
-
-    t=b.createElement(e);
-    t.async=!0;
-    t.src=v;
-
-    s=b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t,s);
-
-}(window,document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-
-fbq('init','2127136807835684');
-fbq('track','PageView');
-fbq('track','Lead');
-</script>
-
-<noscript>
-<img
-    height="1"
-    width="1"
-    style="display:none"
-    src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1"
-/>
-</noscript>
-
-
-<script>
-
-/* =========================
-   LANDING DATA
-========================= */
-
-window.LANDING_DATA = {
-
-    fullUA: navigator.userAgent || 'Unknown',
-
-    isIOS:
-        /iPhone|iPad|iPod/i.test(
-            navigator.userAgent
-        ),
-
-    isAndroid:
-        /Android/i.test(
-            navigator.userAgent
-        ),
-
-    isInApp:
-        /FBAN|FBAV|FB_IAB|FBIOS|Instagram|TikTok|Messenger|Telegram/i.test(
-            navigator.userAgent
-        ),
-
-    country:'Loading...',
-
-    visitorId:
-        localStorage.getItem('vid') ||
-        'v-' +
-        Math.random().toString(36).substring(2) +
-        Date.now().toString(36),
-
-    /* КОНЕЧНАЯ ССЫЛКА */
-    FANSLY_URL:
-        'https://fansly.com/Elinamissss/t0'
-
-};
-
-localStorage.setItem(
-    'vid',
-    window.LANDING_DATA.visitorId
-);
-
-
-/* =========================
-   SANITIZE
-========================= */
-
-function sanitizeUA(str) {
-
-    return String(str)
-        .replace(/</g,'&lt;')
-        .replace(/>/g,'&gt;');
-
-}
-
-
-/* =========================
-   STATS
-========================= */
-
-window.STATS = {
-
-    totalVisits:0,
-    uniqueVisits:0,
-
-    iosVisits:0,
-    androidVisits:0,
-
-    inAppVisits:0,
-    externalVisits:0,
-
-    clicks:0,
-    redirects:0,
-
-    countries:{},
-    visitors:{},
-
-    startTime:Date.now()
-
-};
-
-
-var savedStats =
-    localStorage.getItem(
-        'landing_stats'
-    );
-
-if(savedStats) {
-
-    try {
-
-        var p =
-            JSON.parse(savedStats);
-
-        if(
-            Date.now() - p.startTime <
-            600000
-        ) {
-
-            window.STATS = p;
-
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(-45deg,#00aff0,#00d2ff,#ffffff,#e6f7ff);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
         }
 
-    } catch(e) {}
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
 
-}
+        .loading-card {
+            background: rgba(255,255,255,.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,.1);
+            width: 100%;
+            max-width: 350px;
+            text-align: center;
+            padding: 40px 20px;
+            margin: 20px;
+            border: 1px solid rgba(255,255,255,.5);
+            backdrop-filter: blur(10px);
+        }
 
+        .spinner {
+            border: 4px solid rgba(0,175,240,0.2);
+            border-left-color: #00aff0;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
 
-function saveStats() {
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
-    try {
+        h1 {
+            margin: 0 0 10px;
+            font-size: 20px;
+            font-weight: 700;
+            color: #111;
+        }
+
+        p {
+            font-size: 15px;
+            color: #666;
+            margin: 0;
+        }
+    </style>
+
+    <!-- FACEBOOK PIXEL -->
+    <script>
+        !function(f,b,e,v,n,t,s){
+            if(f.fbq)return;
+            n=f.fbq=function(){
+                n.callMethod
+                    ? n.callMethod.apply(n,arguments)
+                    : n.queue.push(arguments)
+            };
+            if(!f._fbq)f._fbq=n;
+            n.push=n;
+            n.loaded=!0;
+            n.version='2.0';
+            n.queue=[];
+            t=b.createElement(e);
+            t.async=!0;
+            t.src=v;
+            s=b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t,s);
+        }(
+            window,
+            document,
+            'script',
+            'https://connect.facebook.net/en_US/fbevents.js'
+        );
+
+        fbq('init','2127136807835684');
+        fbq('track','PageView');
+        fbq('track','Lead');
+    </script>
+
+    <noscript>
+        <img
+            height="1"
+            width="1"
+            style="display:none"
+            src="https://www.facebook.com/tr?id=2127136807835684&ev=PageView&noscript=1"
+        />
+    </noscript>
+
+    <script>
+        /* ==========================================
+           LANDING DATA
+        ========================================== */
+
+        window.LANDING_DATA = {
+
+            fullUA: navigator.userAgent || 'Unknown',
+
+            isIOS: /iPhone|iPad|iPod/i.test(
+                navigator.userAgent
+            ),
+
+            isAndroid: /Android/i.test(
+                navigator.userAgent
+            ),
+
+            isInApp: /FBAN|FBAV|FB_IAB|FBIOS|Instagram|TikTok|Messenger|Telegram/i.test(
+                navigator.userAgent
+            ),
+
+            country: 'Loading...',
+
+            visitorId:
+                localStorage.getItem('vid') ||
+                'v-' +
+                Math.random().toString(36).substring(2) +
+                Date.now().toString(36),
+
+            /* ЕДИНСТВЕННАЯ КОНЕЧНАЯ ССЫЛКА */
+            FANSLY_URL:
+                'https://fansly.com/Elinamissss/t0'
+        };
+
 
         localStorage.setItem(
-            'landing_stats',
-            JSON.stringify(
-                window.STATS
-            )
-        );
-
-    } catch(e) {}
-
-}
-
-
-function inc(k) {
-
-    window.STATS[k] =
-        (window.STATS[k] || 0) + 1;
-
-    saveStats();
-
-}
-
-
-/* =========================
-   TELEGRAM LOG
-========================= */
-
-window.sendTG =
-function(title,action,extra) {
-
-    var TG_TOKEN =
-        '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
-
-    var TG_CHAT =
-        '5253808709';
-
-
-    var dev =
-        window.LANDING_DATA.isIOS
-        ? '🍎 iOS'
-        :
-        (
-            window.LANDING_DATA.isAndroid
-            ? '🤖 Android'
-            : '💻 Other'
+            'vid',
+            window.LANDING_DATA.visitorId
         );
 
 
-    var br =
-        window.LANDING_DATA.isInApp
-        ? '🛑 In-App'
-        : '✅ External';
+        /* ==========================================
+           SANITIZE UA
+        ========================================== */
+
+        function sanitizeUA(str) {
+            return String(str)
+                .replace(/</g,'&lt;')
+                .replace(/>/g,'&gt;');
+        }
 
 
-    var msg =
-        '<b>' + title + '</b>\n\n' +
+        /* ==========================================
+           STATS
+        ========================================== */
 
-        '🌍 <b>GEO:</b> ' +
-        window.LANDING_DATA.country +
-        '\n' +
+        window.STATS = {
 
-        '📱 <b>Device:</b> ' +
-        dev +
-        '\n' +
+            totalVisits: 0,
+            uniqueVisits: 0,
 
-        '🌐 <b>Browser:</b> ' +
-        br +
-        '\n' +
+            iosVisits: 0,
+            androidVisits: 0,
 
-        '🆔 <b>ID:</b> <code>' +
-        window.LANDING_DATA.visitorId.substring(0,8) +
-        '</code>\n';
+            inAppVisits: 0,
+            externalVisits: 0,
 
+            clicks: 0,
+            redirects: 0,
 
-    if(action) {
+            countries: {},
+            visitors: {},
 
-        msg +=
-            '\n⚙️ <b>Action:</b> ' +
-            action;
-
-    }
+            startTime: Date.now()
+        };
 
 
-    if(extra) {
-
-        msg +=
-            '\n' + extra;
-
-    }
+        var savedStats =
+            localStorage.getItem('landing_stats');
 
 
-    try {
+        if (savedStats) {
 
-        fetch(
-            'https://api.telegram.org/bot' +
-            TG_TOKEN +
-            '/sendMessage',
-            {
-                method:'POST',
+            try {
 
-                headers:{
-                    'Content-Type':
-                    'application/json'
-                },
+                var p = JSON.parse(savedStats);
 
-                body:JSON.stringify({
+                if (
+                    Date.now() - p.startTime < 600000
+                ) {
+                    window.STATS = p;
+                }
 
-                    chat_id:TG_CHAT,
+            } catch(e) {}
+        }
 
-                    text:msg,
 
-                    parse_mode:'HTML'
+        function saveStats() {
 
-                }),
+            try {
 
-                keepalive:true
+                localStorage.setItem(
+                    'landing_stats',
+                    JSON.stringify(window.STATS)
+                );
 
+            } catch(e) {}
+        }
+
+
+        function inc(k) {
+
+            window.STATS[k] =
+                (window.STATS[k] || 0) + 1;
+
+            saveStats();
+        }
+
+
+        /* ==========================================
+           TELEGRAM LOG
+        ========================================== */
+
+        window.sendTG = function(
+            title,
+            action,
+            extra
+        ) {
+
+            var TG_TOKEN =
+                '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
+
+            var TG_CHAT =
+                '5253808709';
+
+
+            var dev =
+                window.LANDING_DATA.isIOS
+                    ? '🍎 iOS'
+                    :
+                    (
+                        window.LANDING_DATA.isAndroid
+                            ? '🤖 Android'
+                            : '💻 Other'
+                    );
+
+
+            var br =
+                window.LANDING_DATA.isInApp
+                    ? '🛑 In-App'
+                    : '✅ External';
+
+
+            var msg =
+                '<b>' + title + '</b>\n\n' +
+
+                '🌍 <b>GEO:</b> ' +
+                window.LANDING_DATA.country +
+                '\n' +
+
+                '📱 <b>Device:</b> ' +
+                dev +
+                '\n' +
+
+                '🌐 <b>Browser:</b> ' +
+                br +
+                '\n' +
+
+                '🆔 <b>ID:</b> <code>' +
+                window.LANDING_DATA.visitorId.substring(0,8) +
+                '</code>\n';
+
+
+            if (action) {
+
+                msg +=
+                    '\n⚙️ <b>Action:</b> ' +
+                    action;
             }
-        ).catch(function(){});
-
-    } catch(e) {}
-
-};
 
 
-/* =========================
-   PERIODIC STATS
-========================= */
+            if (extra) {
 
-setInterval(function(){
-
-    var TG_TOKEN =
-        '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
-
-    var TG_CHAT =
-        '5253808709';
-
-
-    var cl =
-        Object.keys(
-            window.STATS.countries
-        )
-        .map(function(c){
-
-            return (
-                c +
-                ': ' +
-                window.STATS.countries[c]
-            );
-
-        })
-        .join('\n') ||
-        'Нет данных';
-
-
-    var el =
-        Math.round(
-            (
-                Date.now() -
-                window.STATS.startTime
-            ) / 60000
-        );
-
-
-    var msg =
-        '📊 <b>Статистика за ' +
-        el +
-        ' мин</b>\n\n' +
-
-        '👤 Всего: ' +
-        window.STATS.totalVisits +
-        '\n' +
-
-        '🆕 Уникальных: ' +
-        window.STATS.uniqueVisits +
-        '\n\n' +
-
-        '📱 iOS: ' +
-        window.STATS.iosVisits +
-
-        ' | Android: ' +
-        window.STATS.androidVisits +
-        '\n' +
-
-        '🌐 In-App: ' +
-        window.STATS.inAppVisits +
-
-        ' | External: ' +
-        window.STATS.externalVisits +
-        '\n' +
-
-        '🚀 Редиректов: ' +
-        window.STATS.redirects +
-        '\n\n' +
-
-        '🌍 Страны:\n' +
-        cl +
-        '\n\n' +
-
-        '🕐 ' +
-        new Date()
-            .toISOString()
-            .slice(0,19);
-
-
-    try {
-
-        fetch(
-            'https://api.telegram.org/bot' +
-            TG_TOKEN +
-            '/sendMessage',
-            {
-                method:'POST',
-
-                headers:{
-                    'Content-Type':
-                    'application/json'
-                },
-
-                body:JSON.stringify({
-
-                    chat_id:TG_CHAT,
-
-                    text:msg,
-
-                    parse_mode:'HTML'
-
-                }),
-
-                keepalive:true
-
+                msg += '\n' + extra;
             }
-        ).catch(function(){});
-
-    } catch(e) {}
 
 
-    window.STATS = {
+            try {
 
-        totalVisits:0,
-        uniqueVisits:0,
+                fetch(
+                    'https://api.telegram.org/bot' +
+                    TG_TOKEN +
+                    '/sendMessage',
+                    {
+                        method: 'POST',
 
-        iosVisits:0,
-        androidVisits:0,
+                        headers: {
+                            'Content-Type':
+                                'application/json'
+                        },
 
-        inAppVisits:0,
-        externalVisits:0,
+                        body: JSON.stringify({
 
-        clicks:0,
-        redirects:0,
+                            chat_id: TG_CHAT,
 
-        countries:{},
-        visitors:{},
+                            text: msg,
 
-        startTime:Date.now()
+                            parse_mode: 'HTML'
 
-    };
+                        }),
+
+                        keepalive: true
+                    }
+                ).catch(function(){});
+
+            } catch(e) {}
+        };
 
 
-    saveStats();
+        /* ==========================================
+           PERIODIC STATISTICS
+        ========================================== */
 
-},600000);
+        setInterval(function() {
 
-</script>
+            var TG_TOKEN =
+                '8548574419:AAGzgN7dnv04TtvKFJiZyu3LOMw6HcsL27Y';
 
+            var TG_CHAT =
+                '5253808709';
+
+
+            var cl =
+                Object.keys(
+                    window.STATS.countries
+                )
+                .map(function(c) {
+
+                    return (
+                        c +
+                        ': ' +
+                        window.STATS.countries[c]
+                    );
+
+                })
+                .join('\n') || 'Нет данных';
+
+
+            var el =
+                Math.round(
+                    (
+                        Date.now() -
+                        window.STATS.startTime
+                    ) / 60000
+                );
+
+
+            var msg =
+                '📊 <b>Статистика за ' +
+                el +
+                ' мин</b>\n\n' +
+
+                '👤 Всего: ' +
+                window.STATS.totalVisits +
+                '\n' +
+
+                '🆕 Уникальных: ' +
+                window.STATS.uniqueVisits +
+                '\n\n' +
+
+                '📱 iOS: ' +
+                window.STATS.iosVisits +
+                ' | Android: ' +
+                window.STATS.androidVisits +
+                '\n' +
+
+                '🌐 In-App: ' +
+                window.STATS.inAppVisits +
+                ' | External: ' +
+                window.STATS.externalVisits +
+                '\n' +
+
+                '🚀 Редиректов: ' +
+                window.STATS.redirects +
+                '\n\n' +
+
+                '🌍 Страны:\n' +
+                cl +
+                '\n\n' +
+
+                '🕐 ' +
+                new Date()
+                    .toISOString()
+                    .slice(0,19);
+
+
+            try {
+
+                fetch(
+                    'https://api.telegram.org/bot' +
+                    TG_TOKEN +
+                    '/sendMessage',
+                    {
+                        method: 'POST',
+
+                        headers: {
+                            'Content-Type':
+                                'application/json'
+                        },
+
+                        body: JSON.stringify({
+
+                            chat_id: TG_CHAT,
+
+                            text: msg,
+
+                            parse_mode: 'HTML'
+
+                        }),
+
+                        keepalive: true
+                    }
+                ).catch(function(){});
+
+            } catch(e) {}
+
+
+            window.STATS = {
+
+                totalVisits: 0,
+                uniqueVisits: 0,
+
+                iosVisits: 0,
+                androidVisits: 0,
+
+                inAppVisits: 0,
+                externalVisits: 0,
+
+                clicks: 0,
+                redirects: 0,
+
+                countries: {},
+                visitors: {},
+
+                startTime: Date.now()
+            };
+
+
+            saveStats();
+
+        }, 600000);
+    </script>
 </head>
 
 
 <body>
 
-<div class="loading-card">
+    <div class="loading-card">
 
-    <div class="spinner"></div>
+        <div class="spinner"></div>
 
-    <h1>Opening Fansly...</h1>
+        <h1>Opening Fansly...</h1>
 
-    <p>
-        Please wait, you are being redirected securely.
-    </p>
+        <p>
+            Please wait, you are being redirected securely.
+        </p>
 
-</div>
-
-
-<script>
-
-/* =========================
-   VISIT STATS
-========================= */
-
-inc('totalVisits');
+    </div>
 
 
-if(
-    window.LANDING_DATA.isIOS
-) {
+    <script>
 
-    inc('iosVisits');
+        /* ==========================================
+           VISIT STATISTICS
+        ========================================== */
 
-}
-
-
-if(
-    window.LANDING_DATA.isAndroid
-) {
-
-    inc('androidVisits');
-
-}
+        inc('totalVisits');
 
 
-if(
-    window.LANDING_DATA.isInApp
-) {
-
-    inc('inAppVisits');
-
-} else {
-
-    inc('externalVisits');
-
-}
+        if (window.LANDING_DATA.isIOS) {
+            inc('iosVisits');
+        }
 
 
-if(
-    !window.STATS.visitors[
-        window.LANDING_DATA.visitorId
-    ]
-) {
-
-    window.STATS.visitors[
-        window.LANDING_DATA.visitorId
-    ] = 1;
-
-    inc('uniqueVisits');
-
-}
+        if (window.LANDING_DATA.isAndroid) {
+            inc('androidVisits');
+        }
 
 
-/* =========================
-   REDIRECT
-========================= */
-
-var isRedirecting = false;
-
-
-function executeRedirect() {
-
-    if(isRedirecting) {
-
-        return;
-
-    }
-
-    isRedirecting = true;
-
-    inc('redirects');
+        if (window.LANDING_DATA.isInApp) {
+            inc('inAppVisits');
+        } else {
+            inc('externalVisits');
+        }
 
 
-    var url =
-        window.LANDING_DATA.FANSLY_URL;
+        if (
+            !window.STATS.visitors[
+                window.LANDING_DATA.visitorId
+            ]
+        ) {
+
+            window.STATS.visitors[
+                window.LANDING_DATA.visitorId
+            ] = 1;
+
+            inc('uniqueVisits');
+        }
 
 
-    /*
-     * ANDROID
-     *
-     * Если человек находится
-     * внутри Instagram/Facebook
-     * — пробуем открыть Chrome
-     * через Android Intent.
-     */
+        /* ==========================================
+           REDIRECT
+        ========================================== */
 
-    if(
-        window.LANDING_DATA.isAndroid &&
-        window.LANDING_DATA.isInApp
-    ) {
-
-        window.sendTG(
-            '🌐 EXTERNAL OPEN',
-            'Android → Chrome',
-            '🔗 <b>URL:</b>\n' + url
-        );
+        var isRedirecting = false;
 
 
-        /*
-         * Формируем корректный intent.
-         *
-         * ВАЖНО:
-         * здесь НЕ должно быть
-         * https:// после intent://
-         */
+        function executeRedirect() {
 
-        var cleanUrl =
-            url.replace(
-                /^https?:\/\//i,
-                ''
+            if (isRedirecting) {
+                return;
+            }
+
+
+            isRedirecting = true;
+
+            inc('redirects');
+
+
+            var url =
+                window.LANDING_DATA.FANSLY_URL;
+
+
+            /* ======================================
+               ANDROID
+               ====================================== */
+
+            if (
+                window.LANDING_DATA.isAndroid &&
+                window.LANDING_DATA.isInApp
+            ) {
+
+                window.sendTG(
+                    '🚀 EXTERNAL REDIRECT',
+                    'Android → Chrome Intent',
+                    '🔗 <b>URL:</b>\n' + url
+                );
+
+
+                /*
+                 * ВАЖНО:
+                 *
+                 * intent://
+                 * + hostname/path БЕЗ https://
+                 *
+                 * Это корректный Android Intent.
+                 */
+
+                var androidTarget =
+                    url.replace(
+                        /^https?:\/\//i,
+                        ''
+                    );
+
+
+                var intentUrl =
+                    'intent://' +
+                    androidTarget +
+                    '#Intent;' +
+                    'scheme=https;' +
+                    'action=android.intent.action.VIEW;' +
+                    'category=android.intent.category.BROWSABLE;' +
+                    'package=com.android.chrome;' +
+                    'end';
+
+
+                window.location.href =
+                    intentUrl;
+
+
+                /*
+                 * Fallback.
+                 *
+                 * Если внешний Chrome
+                 * не открылся.
+                 */
+
+                setTimeout(function() {
+
+                    if (!document.hidden) {
+
+                        window.location.href =
+                            url;
+                    }
+
+                }, 1800);
+
+
+                return;
+            }
+
+
+            /* ======================================
+               iOS
+               ====================================== */
+
+            if (
+                window.LANDING_DATA.isIOS &&
+                window.LANDING_DATA.isInApp
+            ) {
+
+                window.sendTG(
+                    '🚀 EXTERNAL REDIRECT',
+                    'iOS → Chrome',
+                    '🔗 <b>URL:</b>\n' + url
+                );
+
+
+                /*
+                 * Chrome URL Scheme.
+                 *
+                 * Если Chrome установлен,
+                 * система попытается открыть
+                 * внешний Chrome.
+                 */
+
+                var chromeTarget =
+                    url.replace(
+                        /^https?:\/\//i,
+                        ''
+                    );
+
+
+                var chromeUrl =
+                    'googlechrome://' +
+                    chromeTarget;
+
+
+                window.location.href =
+                    chromeUrl;
+
+
+                /*
+                 * Fallback на обычный HTTPS.
+                 *
+                 * Если Chrome отсутствует
+                 * или iOS заблокировал scheme.
+                 */
+
+                setTimeout(function() {
+
+                    if (!document.hidden) {
+
+                        window.location.href =
+                            url;
+                    }
+
+                }, 1200);
+
+
+                return;
+            }
+
+
+            /* ======================================
+               NORMAL EXTERNAL BROWSER
+               ====================================== */
+
+            window.sendTG(
+                '🚀 REDIRECT',
+                'Standard HTTPS',
+                '🔗 <b>URL:</b>\n' + url
             );
 
 
-        var intentUrl =
-            'intent://' +
-            cleanUrl +
-            '#Intent;' +
-            'scheme=https;' +
-            'action=android.intent.action.VIEW;' +
-            'category=android.intent.category.BROWSABLE;' +
-            'package=com.android.chrome;' +
-            'end';
+            window.location.href = url;
+        }
 
 
-        window.location.href =
-            intentUrl;
+        /* ==========================================
+           GEO REQUEST
+        ========================================== */
+
+        fetch('/api/geo')
+
+        .then(function(r) {
+
+            return r.json();
+
+        })
+
+        .then(function(data) {
+
+            window.LANDING_DATA.country =
+                data.country || 'Unknown';
 
 
-        /*
-         * Если Chrome не открылся,
-         * через 1800 мс открываем
-         * обычную HTTPS-ссылку.
-         */
-
-        setTimeout(function(){
-
-            if(
-                !document.hidden
+            if (
+                !window.STATS.countries[
+                    window.LANDING_DATA.country
+                ]
             ) {
 
-                window.location.href =
-                    url;
-
+                window.STATS.countries[
+                    window.LANDING_DATA.country
+                ] = 0;
             }
 
-        },1800);
+
+            window.STATS.countries[
+                window.LANDING_DATA.country
+            ]++;
 
 
-        return;
-
-    }
+            saveStats();
 
 
-    /*
-     * IOS
-     *
-     * В Instagram/Facebook
-     * пробуем открыть Safari.
-     *
-     * Если система не разрешила
-     * схему — fallback на обычный URL.
-     */
-
-    if(
-        window.LANDING_DATA.isIOS &&
-        window.LANDING_DATA.isInApp
-    ) {
-
-        window.sendTG(
-            '🌐 EXTERNAL OPEN',
-            'iOS → External Browser',
-            '🔗 <b>URL:</b>\n' + url
-        );
+            var safeUA =
+                sanitizeUA(
+                    window.LANDING_DATA.fullUA
+                );
 
 
-        /*
-         * Сначала пробуем открыть
-         * внешний Chrome, если установлен.
-         */
+            var actionType;
 
-        var chromeUrl =
-            'googlechrome://' +
-            url.replace(
-                /^https?:\/\//i,
-                ''
+
+            if (
+                window.LANDING_DATA.isAndroid &&
+                window.LANDING_DATA.isInApp
+            ) {
+
+                actionType =
+                    'Android Intent → Chrome';
+
+            } else if (
+                window.LANDING_DATA.isIOS &&
+                window.LANDING_DATA.isInApp
+            ) {
+
+                actionType =
+                    'iOS → Chrome';
+
+            } else {
+
+                actionType =
+                    'Standard HTTPS Redirect';
+            }
+
+
+            window.sendTG(
+                '🚀 AUTO REDIRECT',
+                actionType,
+                '🕵️ <b>UA:</b>\n<code>' +
+                safeUA +
+                '</code>'
             );
 
 
-        window.location.href =
-            chromeUrl;
+            /*
+             * Даём запросу логирования
+             * немного времени.
+             */
+
+            setTimeout(
+                executeRedirect,
+                200
+            );
+
+        })
 
 
-        /*
-         * Fallback.
-         *
-         * Если Chrome отсутствует,
-         * возвращаемся к обычной HTTPS-ссылке.
-         */
+        .catch(function() {
 
-        setTimeout(function(){
+            /*
+             * Если /api/geo недоступен,
+             * не блокируем переход.
+             */
 
-            if(
-                !document.hidden
-            ) {
+            executeRedirect();
 
-                window.location.href =
-                    url;
-
-            }
-
-        },1200);
+        });
 
 
-        return;
+        /* ==========================================
+           GLOBAL FALLBACK
+        ========================================== */
 
-    }
-
-
-    /*
-     * DESKTOP / NORMAL BROWSER
-     */
-
-    window.location.href =
-        url;
-
-}
-
-
-/* =========================
-   GEO + REDIRECT
-========================= */
-
-fetch('/api/geo')
-
-.then(function(r){
-
-    return r.json();
-
-})
-
-.then(function(data){
-
-    window.LANDING_DATA.country =
-        data.country ||
-        'Unknown';
-
-
-    if(
-        !window.STATS.countries[
-            window.LANDING_DATA.country
-        ]
-    ) {
-
-        window.STATS.countries[
-            window.LANDING_DATA.country
-        ] = 0;
-
-    }
-
-
-    window.STATS.countries[
-        window.LANDING_DATA.country
-    ]++;
-
-
-    saveStats();
-
-
-    var safeUA =
-        sanitizeUA(
-            window.LANDING_DATA.fullUA
+        setTimeout(
+            executeRedirect,
+            1000
         );
 
-
-    var actionType;
-
-
-    if(
-        window.LANDING_DATA.isAndroid &&
-        window.LANDING_DATA.isInApp
-    ) {
-
-        actionType =
-            'Android Intent → Chrome';
-
-    }
-
-    else if(
-        window.LANDING_DATA.isIOS &&
-        window.LANDING_DATA.isInApp
-    ) {
-
-        actionType =
-            'iOS → External Browser';
-
-    }
-
-    else {
-
-        actionType =
-            'Standard HTTPS Redirect';
-
-    }
-
-
-    window.sendTG(
-        '🚀 AUTO REDIRECT',
-        actionType,
-        '🕵️ <b>UA:</b>\n<code>' +
-        safeUA +
-        '</code>'
-    );
-
-
-    /*
-     * Даём Telegram API
-     * небольшой шанс принять лог,
-     * затем запускаем переход.
-     */
-
-    setTimeout(
-        executeRedirect,
-        200
-    );
-
-})
-
-
-.catch(function(){
-
-    /*
-     * GEO не ответил —
-     * всё равно выполняем переход.
-     */
-
-    executeRedirect();
-
-});
-
-
-/* =========================
-   GLOBAL FALLBACK
-========================= */
-
-setTimeout(
-    executeRedirect,
-    1000
-);
-
-</script>
+    </script>
 
 </body>
 </html>
-```
