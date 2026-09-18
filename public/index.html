@@ -5,6 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <title>Exclusive Access | Elinamissss</title>
 
+  <!-- Meta Pixel Code -->
+  <script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '1046697538357907');
+  fbq('track', 'PageView');
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+  src="https://www.facebook.com/tr?id=1046697538357907&ev=PageView&noscript=1"
+  /></noscript>
+  <!-- End Meta Pixel Code -->
+
   <style>
     :root {
       --of-blue: #00aff0;
@@ -173,24 +191,6 @@
     }
   </style>
 
-  <!-- Meta Pixel Code -->
-<script>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '1046697538357907');
-fbq('track', 'PageView');
-</script>
-<noscript><img height="1" width="1" style="display:none"
-src="https://www.facebook.com/tr?id=1046697538357907&ev=PageView&noscript=1"
-/></noscript>
-<!-- End Meta Pixel Code -->
-
 </head>
 
 <body>
@@ -234,7 +234,7 @@ src="https://www.facebook.com/tr?id=1046697538357907&ev=PageView&noscript=1"
     document.getElementById('accessBtn').addEventListener('click', function(e) {
       e.preventDefault();
 
-      // 1. Отправка события Lead в Facebook
+      // 1. Отправка события Lead в Facebook (Пиксель)
       try {
         if (typeof fbq === "function") {
           fbq('track', 'Lead', {
@@ -253,22 +253,19 @@ src="https://www.facebook.com/tr?id=1046697538357907&ev=PageView&noscript=1"
       // 3. Логика перехода
       if (isAndroid) {
         // ЖЕСТКИЙ ИНТЕНТ ДЛЯ CHROME НА ANDROID
-        // scheme=https, host=fansly.com, path=/Elinamissss/t0
-        // browser=com.android.chrome
-        // fallback_url - куда идти, если Chrome не установлен (откроет стандартный браузер)
+        // Принудительно открывает приложение Chrome
         const intentUrl = `intent://${TARGET_URL.replace(/^https?:\/\//, '')}#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent(TARGET_URL)};end`;
         window.location.href = intentUrl;
       } 
       else if (isIOS) {
         // ОТКРЫТИЕ ЧЕРЕЗ GOOGLE CHROME НА IPHONE
         // Используем схему googlechrome://
-        // Если Chrome не установлен, ничего не произойдет (можно добавить fallback, но обычно пользователи iOS знают свой браузер)
         const chromeUrl = TARGET_URL.replace(/^https?:\/\//, 'googlechrome://');
         
         // Пробуем открыть Chrome
         window.location.href = chromeUrl;
 
-        // Fallback: Если через 1 секунду мы все еще здесь (Chrome не открылся), открываем в Safari
+        // Fallback: Если через 1.5 секунды мы все еще здесь (Chrome не открылся), открываем в Safari
         setTimeout(function() {
             window.location.href = TARGET_URL;
         }, 1500);
