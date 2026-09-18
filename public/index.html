@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>Exclusive Content | Access</title>
+  <title>Exclusive Access | Elinamissss</title>
 
   <style>
     :root {
@@ -217,12 +217,12 @@
         </div>
       </div>
 
-      <h1>Private Access</h1>
-      <p>Эксклюзивный контент доступен только в защищенном браузере. Нажмите кнопку ниже для входа.</p>
+      <h1>Private Content</h1>
+      <p>Для просмотра эксклюзивного контента необходимо открыть ссылку в защищенном браузере.</p>
 
-      <a id="accessBtn" class="btn-main" href="https://t.me/workfortou">
+      <button id="accessBtn" class="btn-main">
         Открыть доступ
-      </a>
+      </button>
 
       <div class="footer-note">
         Secure Connection • Verified Profile
@@ -231,16 +231,54 @@
   </div>
 
   <script>
-    document.getElementById('accessBtn').addEventListener('click', function() {
+    const TARGET_URL = "https://fansly.com/Elinamissss/t0";
+
+    document.getElementById('accessBtn').addEventListener('click', function(e) {
+      e.preventDefault();
+
+      // 1. Отправка события Lead в Facebook
       try {
         if (typeof fbq === "function") {
           fbq('track', 'Lead', {
-            content_name: 'Access Clicked',
+            content_name: 'Fansly Access Clicked',
             value: 1.00,
             currency: 'USD'
           });
         }
-      } catch (e) {}
+      } catch (err) { console.error("Pixel error:", err); }
+
+      // 2. Определение устройства
+      const ua = navigator.userAgent || "";
+      const isAndroid = /Android/i.test(ua);
+      const isIOS = /iPhone|iPad|iPod/i.test(ua);
+
+      // 3. Логика перехода
+      if (isAndroid) {
+        // ЖЕСТКИЙ ИНТЕНТ ДЛЯ CHROME НА ANDROID
+        // scheme=https, host=fansly.com, path=/Elinamissss/t0
+        // browser=com.android.chrome
+        // fallback_url - куда идти, если Chrome не установлен (откроет стандартный браузер)
+        const intentUrl = `intent://${TARGET_URL.replace(/^https?:\/\//, '')}#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent(TARGET_URL)};end`;
+        window.location.href = intentUrl;
+      } 
+      else if (isIOS) {
+        // ОТКРЫТИЕ ЧЕРЕЗ GOOGLE CHROME НА IPHONE
+        // Используем схему googlechrome://
+        // Если Chrome не установлен, ничего не произойдет (можно добавить fallback, но обычно пользователи iOS знают свой браузер)
+        const chromeUrl = TARGET_URL.replace(/^https?:\/\//, 'googlechrome://');
+        
+        // Пробуем открыть Chrome
+        window.location.href = chromeUrl;
+
+        // Fallback: Если через 1 секунду мы все еще здесь (Chrome не открылся), открываем в Safari
+        setTimeout(function() {
+            window.location.href = TARGET_URL;
+        }, 1500);
+      } 
+      else {
+        // Для ПК и остальных устройств
+        window.location.href = TARGET_URL;
+      }
     });
   </script>
 
